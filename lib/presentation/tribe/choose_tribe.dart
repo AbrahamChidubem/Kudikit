@@ -1,0 +1,210 @@
+import 'package:flutter/material.dart';
+import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/model/tribe/tribe_card.dart';
+import 'package:kudipay/presentation/selfie/selfie_instruction.dart';
+
+class TribeScreen extends StatefulWidget {
+  const TribeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<TribeScreen> createState() => _KudikitTribeScreenState();
+}
+
+class _KudikitTribeScreenState extends State<TribeScreen> {
+  int? selectedTribe;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F0),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF5F5F0),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black,
+            size: AppLayout.scaleWidth(context, 18),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          Padding(
+            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
+            child: Center(
+              child: Stack(
+                children: [
+                  SizedBox(
+                    width: AppLayout.scaleWidth(context, 40),
+                    height: AppLayout.scaleWidth(context, 40),
+                    child: CircularProgressIndicator(
+                      value: 1.0,
+                      strokeWidth: AppLayout.scaleWidth(context, 2),
+                      backgroundColor: const Color(0xFFE0E0E0),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF4DB6AC)),
+                    ),
+                  ),
+                  Positioned.fill(
+                    child: Center(
+                      child: Text(
+                        '100%',
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 12),
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Choose Your Kudikit Tribe',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Select the account type that fits your needs',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  TribeCard(
+                    icon: Icons.shield,
+                    iconColor: const Color(0xFF4DB6AC),
+                    title: 'Basic Tribe',
+                    tier: 'Tier 1',
+                    subtitle: 'For everyday transactions',
+                    requirements: const ['NIN / BVN', 'Face verification'],
+                    limits: const [
+                      'Daily Send Limit: ₦50,000',
+                      'Daily Receive Limit: ₦100,000',
+                      'Maximum Balance: ₦300,000',
+                      'Single Transaction Max: ₦50,000',
+                    ],
+                    isSelected: selectedTribe == 0,
+                    isExpanded: selectedTribe == 0,
+                    onTap: () {
+                      setState(() {
+                        selectedTribe = selectedTribe == 0 ? null : 0;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TribeCard(
+                    icon: Icons.star,
+                    iconColor: const Color(0xFFFFA726),
+                    title: 'Pro Tribe',
+                    tier: 'Tier 2',
+                    subtitle: 'For growing your finances',
+                    requirements: const [
+                      'NIN / BVN',
+                      'Face verification',
+                      'Valid ID Card(Front and Back)'
+                    ],
+                    limits: const [
+                      'Daily Send Limit: ₦500,000',
+                      'Daily Receive Limit: ₦1,000,000',
+                      'Maximum Balance: ₦3,000,000',
+                    ],
+                    isSelected: selectedTribe == 1,
+                    isExpanded: selectedTribe == 1,
+                    onTap: () {
+                      setState(() {
+                        selectedTribe = selectedTribe == 1 ? null : 1;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TribeCard(
+                    icon: Icons.verified,
+                    iconColor: const Color(0xFF7E57C2),
+                    title: 'Mega Tribe',
+                    tier: 'Tier 3',
+                    subtitle: 'For high-value transactions',
+                    requirements: const [
+                      'NIN / BVN',
+                      'Face verification',
+                      'Valid ID Card (Front and Back)',
+                      'Address Verification (Agent visit)',
+                      'Utility Bill'
+                    ],
+                    limits: const [
+                      'Daily Send Limit: ₦5,000,000',
+                      'Daily Receive Limit: Unlimited',
+                      'Maximum Balance: Unlimited',
+                      'Single Transaction Max: ₦5,000,000',
+                    ],
+                    isSelected: selectedTribe == 2,
+                    isExpanded: selectedTribe == 2,
+                    onTap: () {
+                      setState(() {
+                        selectedTribe = selectedTribe == 2 ? null : 2;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
+              width: double.infinity,
+              height: 56,
+              child: ElevatedButton(
+                onPressed: selectedTribe != null
+                    ? () {
+                        // Handle continue action
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) =>
+                                    const SelfieInstructionsScreen()));
+                        print('Selected tribe: $selectedTribe');
+                      }
+                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF389165),
+                  disabledBackgroundColor:
+                      const Color(0xFF9ED4C5).withOpacity(0.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(28),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Continue',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

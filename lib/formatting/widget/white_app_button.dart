@@ -1,0 +1,44 @@
+import 'package:flutter/material.dart';
+
+import '../../core/constant/constant.dart';
+
+class WhiteAppButton extends StatelessWidget {
+  final String text;
+
+  final GestureTapCallback press;
+
+  const WhiteAppButton({Key? key, required this.press, required this.text})
+      : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 50,
+      width: 350,
+      child: ElevatedButton(
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
+          backgroundColor: Colors.white,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(28)),
+            side: BorderSide(
+              color: Color(0xFF389165), // 👈 border color
+              width: 1, // 👈 border width
+            ),
+          ),
+        ),
+        onPressed: press,
+        child: Center(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 20,
+              color: Color(0xFF389165),
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

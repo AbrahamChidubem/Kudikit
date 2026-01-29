@@ -1,0 +1,53 @@
+name: kudipay
+description: "A new Flutter project."
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.2.5 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.2
+  provider: ^6.1.5+1
+  flutter_svg:
+  form_field_validator:
+  flutter_swiper_null_safety_flutter3:
+  flutter_clean_calendar:
+  shared_preferences:
+  google_fonts:
+ 
+  flutter_riverpod:
+  http:
+  intl:
+  firebase_auth:
+  firebase_core:
+  pinput: ^5.0.0
+  cloud_firestore:
+  flutter_lints: ^2.0.0
+  camera: ^0.10.5+5
+  image_picker: ^1.0.7
+  permission_handler:
+  file_picker:
+  flutter_secure_storage:
+  smooth_page_indicator: ^1.1.0
+  dio:
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/fonts/
+
+  fonts:
+    - family: OpenSans
+      fonts:
+        - asset: assets/fonts/OpenSans-Regular.ttf
