@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/provider/provider.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -17,7 +18,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
-
+    final userInfo = ref.watch(userInfoProvider);
+    // The name comes from the BVN/NIN verification!
+    final firstName = userInfo?.firstName ?? 'User';
     if (user == null) {
       return const Scaffold(
         body: Center(child: Text('Not logged in')),
@@ -61,7 +64,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   Container(
                     width: 60,
                     height: 60,
-                   
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(12),
                       child: Image.asset(
@@ -91,7 +93,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         Row(
                           children: [
                             Text(
-                              'Hello, ${user.name ?? "User"}',
+                              'Hi, $firstName',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

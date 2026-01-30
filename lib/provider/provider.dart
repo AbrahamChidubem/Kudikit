@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
@@ -755,12 +755,14 @@ class QrCodeNotifier extends StateNotifier<QrCodeState> {
   }
 }
 
-final qrCodeProvider = StateNotifierProvider<QrCodeNotifier, QrCodeState>((ref) {
+final qrCodeProvider =
+    StateNotifierProvider<QrCodeNotifier, QrCodeState>((ref) {
   final service = ref.watch(addMoneyServiceProvider);
   return QrCodeNotifier(service);
 });
 
-final selectedAddMoneyOptionProvider = StateProvider<AddMoneyOption?>((ref) => null);
+final selectedAddMoneyOptionProvider =
+    StateProvider<AddMoneyOption?>((ref) => null);
 
 class BanksState {
   final List<Bank> banks;
@@ -1092,6 +1094,12 @@ final bankSearchQueryProvider = StateProvider<String>((ref) => '');
 
 // ==================== IDENTITY VERIFICATION PROVIDERS ====================
 
+// Identification Type Enum
+enum IdentificationType {
+  BVN,
+  NIN,
+}
+
 // User Verification Data Model
 class UserVerificationData {
   final String firstName;
@@ -1123,9 +1131,9 @@ class UserVerificationData {
       firstName: json['first_name'] ?? json['firstName'] ?? '',
       middleName: json['middle_name'] ?? json['middleName'] ?? '',
       lastName: json['last_name'] ?? json['lastName'] ?? '',
-      fullName: json['full_name'] ?? 
-                json['fullName'] ?? 
-                '${json['first_name']} ${json['middle_name']} ${json['last_name']}',
+      fullName: json['full_name'] ??
+          json['fullName'] ??
+          '${json['first_name']} ${json['middle_name']} ${json['last_name']}',
       dateOfBirth: DateTime.parse(json['date_of_birth'] ?? json['dateOfBirth']),
       phoneNumber: json['phone_number'] ?? json['phoneNumber'] ?? '',
       photoUrl: json['photo_url'] ?? json['photoUrl'],
@@ -1198,29 +1206,47 @@ class IdentityVerificationService {
     this.authToken,
   });
 
+  // Detect if input is BVN or NIN
+  IdentificationType detectIdType(String input) {
+    if (input.length != 11) {
+      throw VerificationException('Invalid ID length. Must be 11 digits.');
+    }
+
+    // BVN typically starts with 2, but this is simplified logic
+    // Adjust based on actual requirements
+    if (input.startsWith('2')) {
+      return IdentificationType.BVN;
+    } else {
+      return IdentificationType.NIN;
+    }
+  }
+
   Future<UserVerificationData> verifyIdentity({
     required String idNumber,
-    required String idType,
+    String? idType,
   }) async {
+    // Auto-detect ID type if not provided
+    final detectedIdType = idType ?? detectIdType(idNumber).name;
+
     // Mock implementation for testing
-    return _mockVerifyIdentity(idNumber, idType);
-    
+    return _mockVerifyIdentity(idNumber, detectedIdType);
+
     // TODO: Replace with real API call
     // final response = await http.post(
-    //   Uri.parse('$baseUrl/verify-bvn-nin'),
+    //   Uri.parse('$baseUrl/verify-identity'),
     //   headers: {
     //     'Content-Type': 'application/json',
     //     if (authToken != null) 'Authorization': 'Bearer $authToken',
     //   },
     //   body: jsonEncode({
     //     'id_number': idNumber,
-    //     'id_type': idType,
+    //     'id_type': detectedIdType,
     //   }),
     // );
     //
     // if (response.statusCode == 200) {
     //   final data = jsonDecode(response.body);
-    //   return UserVerificationData.fromJson(data);
+    //   return UserVerificationData.fromJson(data['user_data']);
     // } else if (response.statusCode == 404) {
     //   throw VerificationException('BVN/NIN not found', 404);
     // } else if (response.statusCode == 400) {
@@ -1255,20 +1281,27 @@ class IdentityVerificationService {
 }
 
 // Identity Verification Notifier
-class IdentityVerificationNotifier extends StateNotifier<IdentityVerificationState> {
+class IdentityVerificationNotifier
+    extends StateNotifier<IdentityVerificationState> {
   final IdentityVerificationService _service;
 
-  IdentityVerificationNotifier(this._service) 
+  IdentityVerificationNotifier(this._service)
       : super(const IdentityVerificationState());
 
   Future<void> verifyIdentity({
     required String idNumber,
-    required dynamic idType,
+    dynamic idType,
   }) async {
     state = state.copyWith(isVerifying: true, clearError: true);
 
     try {
-      final idTypeString = idType.toString().split('.').last;
+      String? idTypeString;
+      if (idType != null) {
+        idTypeString = idType.toString().contains('.')
+            ? idType.toString().split('.').last
+            : idType.toString();
+      }
+
       final verificationData = await _service.verifyIdentity(
         idNumber: idNumber,
         idType: idTypeString,
@@ -1310,11 +1343,16 @@ class IdentityVerificationNotifier extends StateNotifier<IdentityVerificationSta
   }
 }
 
+// Auth Token Provider (add this if you have authentication)
+final authTokenProvider = StateProvider<String?>((ref) => null);
+
 // Identity Verification Service Provider
-final identityVerificationServiceProvider = Provider<IdentityVerificationService>((ref) {
+final identityVerificationServiceProvider =
+    Provider<IdentityVerificationService>((ref) {
+  final authToken = ref.watch(authTokenProvider);
   return IdentityVerificationService(
     baseUrl: 'https://api.kudipay.com/api/v1',
-    // authToken: ref.watch(authTokenProvider), // Add when you have auth token provider
+    authToken: authToken,
   );
 });
 
@@ -1325,9 +1363,7 @@ final identityVerificationProvider = StateNotifierProvider<
   return IdentityVerificationNotifier(service);
 });
 
-
-
-// ==================REGISTRATION PROVIDER=======
+// ==================== REGISTRATION PROVIDER ====================
 
 class RegistrationState {
   final String? email;
@@ -1335,23 +1371,26 @@ class RegistrationState {
   final String? password;
   final UserVerificationData? verificationData;
   final bool isVerifying;
+  final bool isRegistering;
   final String? error;
-  
+
   const RegistrationState({
     this.email,
     this.phone,
     this.password,
     this.verificationData,
     this.isVerifying = false,
+    this.isRegistering = false,
     this.error,
   });
-  
+
   RegistrationState copyWith({
     String? email,
     String? phone,
     String? password,
     UserVerificationData? verificationData,
     bool? isVerifying,
+    bool? isRegistering,
     String? error,
     bool clearError = false,
   }) {
@@ -1361,6 +1400,7 @@ class RegistrationState {
       password: password ?? this.password,
       verificationData: verificationData ?? this.verificationData,
       isVerifying: isVerifying ?? this.isVerifying,
+      isRegistering: isRegistering ?? this.isRegistering,
       error: clearError ? null : (error ?? this.error),
     );
   }
@@ -1368,57 +1408,108 @@ class RegistrationState {
 
 class RegistrationNotifier extends StateNotifier<RegistrationState> {
   final IdentityVerificationService _verificationService;
-  
-  RegistrationNotifier(this._verificationService) 
+
+  RegistrationNotifier(this._verificationService)
       : super(const RegistrationState());
-  
+
   void setEmail(String email) {
     state = state.copyWith(email: email);
   }
-  
+
+  void setPhone(String phone) {
+    state = state.copyWith(phone: phone);
+  }
+
   void setPassword(String password) {
     state = state.copyWith(password: password);
   }
-  
-  Future<void> verifyIdentity(String bvnOrNin) async {
+
+  Future<void> verifyIdentity(String idNumber) async {
     state = state.copyWith(isVerifying: true, clearError: true);
-    
+
     try {
-      final verificationData = 
-          await _verificationService.verifyIdentity(bvnOrNin);
-      
+      final verificationData = await _verificationService.verifyIdentity(
+        idNumber: idNumber,
+      );
+
       state = state.copyWith(
         verificationData: verificationData,
         isVerifying: false,
       );
+    } on SocketException {
+      state = state.copyWith(
+        isVerifying: false,
+        error: 'No internet connection. Please check your network.',
+      );
+    } on TimeoutException {
+      state = state.copyWith(
+        isVerifying: false,
+        error: 'Request timed out. Please try again.',
+      );
+    } on VerificationException catch (e) {
+      state = state.copyWith(
+        isVerifying: false,
+        error: e.message,
+      );
     } catch (e) {
       state = state.copyWith(
         isVerifying: false,
-        error: e.toString(),
+        error: 'Verification failed: ${e.toString()}',
       );
     }
   }
-  
+
   Future<void> completeRegistration() async {
-    // Save user to database with the verified information
-    final user = User(
-      email: state.email!,
-      password: state.password!, // Should be hashed on backend
-      fullName: state.verificationData!.fullName,
-      firstName: state.verificationData!.firstName,
-      lastName: state.verificationData!.lastName,
-      dateOfBirth: state.verificationData!.dateOfBirth,
-      bvn: state.verificationData!.bvn,
-      phone: state.verificationData!.phoneNumber,
-    );
-    
-    // Send to backend...
-    await UserService().createAccount(user);
+    if (state.email == null ||
+        state.password == null ||
+        state.verificationData == null) {
+      state = state.copyWith(
+        error: 'Missing required registration information',
+      );
+      return;
+    }
+
+    state = state.copyWith(isRegistering: true, clearError: true);
+
+    try {
+      // TODO: Replace with actual user creation logic
+      // Example:
+      // final user = UserModel(
+      //   email: state.email!,
+      //   password: state.password!, // Should be hashed on backend
+      //   fullName: state.verificationData!.fullName,
+      //   firstName: state.verificationData!.firstName,
+      //   lastName: state.verificationData!.lastName,
+      //   dateOfBirth: state.verificationData!.dateOfBirth,
+      //   idNumber: state.verificationData!.idNumber,
+      //   phone: state.verificationData!.phoneNumber,
+      // );
+
+      // await UserService().createAccount(user);
+
+      // Mock delay
+      await Future.delayed(const Duration(seconds: 2));
+
+      state = state.copyWith(isRegistering: false);
+    } catch (e) {
+      state = state.copyWith(
+        isRegistering: false,
+        error: 'Registration failed: ${e.toString()}',
+      );
+    }
+  }
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
+  }
+
+  void reset() {
+    state = const RegistrationState();
   }
 }
 
-final registrationProvider = 
+final registrationProvider =
     StateNotifierProvider<RegistrationNotifier, RegistrationState>((ref) {
-  final service = IdentityVerificationService(baseUrl: '');
+  final service = ref.watch(identityVerificationServiceProvider);
   return RegistrationNotifier(service);
 });

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/presentation/address/verify_address.dart';
 import 'package:kudipay/provider/id_verification_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 
@@ -9,19 +10,20 @@ class IdVerificationScreen extends ConsumerStatefulWidget {
   const IdVerificationScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<IdVerificationScreen> createState() => _IdVerificationScreenState();
+  ConsumerState<IdVerificationScreen> createState() =>
+      _IdVerificationScreenState();
 }
 
 class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
   final TextEditingController _idNumberController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  
+
   // Selected ID type (BVN or NIN)
   IdType _selectedIdType = IdType.BVN;
-  
+
   // Progress percentage (can be calculated based on registration steps)
   final int _progressPercentage = 48;
-  
+
   @override
   void dispose() {
     _idNumberController.dispose();
@@ -101,7 +103,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
     );
   }
 
-  Widget _buildBody(BuildContext context, IdentityVerificationState verificationState) {
+  Widget _buildBody(
+      BuildContext context, IdentityVerificationState verificationState) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
@@ -155,7 +158,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             // Error Message
             if (verificationState.error != null)
               Padding(
-                padding: EdgeInsets.only(top: AppLayout.scaleHeight(context, 16)),
+                padding:
+                    EdgeInsets.only(top: AppLayout.scaleHeight(context, 16)),
                 child: Container(
                   padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
                   decoration: BoxDecoration(
@@ -245,7 +249,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
         height: AppLayout.scaleHeight(context, 56),
         decoration: BoxDecoration(
           color: isSelected ? const Color(0xFFD4F1D4) : Colors.white,
-          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           border: Border.all(
             color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
@@ -315,19 +320,23 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             filled: true,
             fillColor: Colors.white,
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: const BorderSide(color: Colors.red),
             ),
             contentPadding: EdgeInsets.symmetric(
@@ -373,8 +382,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             ],
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 12)),
-          
-         
           Text(
             verificationData.fullName.toUpperCase(),
             style: TextStyle(
@@ -419,7 +426,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
               AppLayout.scaleHeight(context, 56),
             ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 28)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 28)),
             ),
             elevation: 0,
           ),
@@ -446,11 +454,16 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
   }
 
   void _handleNext() {
-    final verificationData = ref.read(identityVerificationProvider).verificationData;
-    
+    final verificationData =
+        ref.read(identityVerificationProvider).verificationData;
+
     if (verificationData != null) {
       // Navigate to next registration step
-      Navigator.pushNamed(context, '/complete-registration');
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => AddressVerificationScreen(),
+          ));
       // Or pass the data to the next screen
       // Navigator.push(
       //   context,

@@ -301,9 +301,9 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
               return 'Required';
             }
 
-            if (input.length != 4) {
-              return 'Invalid';
-            }
+            // if (input.length != 4) {
+            //   return 'Invalid';
+            // }
 
             return null;
           },

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/provider/auth_provider.dart';
 
@@ -199,11 +200,10 @@ class ConfirmInfoScreen extends ConsumerWidget {
           );
 
           // Navigate to dashboard/home and clear navigation stack
-          Navigator.pushNamedAndRemoveUntil(
-            context,
-            '/home', // Replace with your actual home route
-            (route) => false,
-          );
+           Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const BottomNavBar()),
+      );
         }
       } else {
         throw Exception('Failed to submit information');
