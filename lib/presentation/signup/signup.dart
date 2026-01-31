@@ -1,13 +1,12 @@
-// ===================================================================
-// FILE: lib/presentation/signup/signup.dart (RESPONSIVE VERSION)
-// ===================================================================
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/color_app_button.dart';
+import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/provider/auth_provider.dart';
+
+import 'package:kudipay/services/api_services.dart';
 
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
@@ -29,6 +28,27 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    // Setup connectivity listener
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupConnectivityListener();
+    });
+  }
+
+  void _setupConnectivityListener() {
+    ref.listen(connectivityProvider, (previous, next) {
+      next.whenData((isConnected) {
+        if (previous?.value != null && previous!.value! && !isConnected) {
+          ConnectivitySnackBar.showNoInternet(context);
+        } else if (previous?.value != null && !previous!.value! && isConnected) {
+          ConnectivitySnackBar.showConnectionRestored(context);
+        }
+      });
+    });
+  }
+
+  @override
   void dispose() {
     emailController.dispose();
     numberController.dispose();
@@ -38,6 +58,13 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Future<void> handleSignUp() async {
+    // Check connectivity first
+    final isConnected = ref.read(currentConnectivityProvider);
+    if (!isConnected) {
+      await NoInternetDialog.show(context);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
     final termsAccepted = ref.read(_termsAcceptedProvider);
@@ -75,6 +102,17 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
         ),
       );
+    } on NoInternetException {
+      if (!mounted) return;
+      ConnectivitySnackBar.showNoInternet(context);
+    } on TimeoutException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.orange,
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
 
@@ -90,7 +128,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final connectivityState = ref.watch(connectivityStateProvider);
     final isLoading = authState.isLoading;
+    final isOnline = connectivityState.isConnected;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
@@ -106,6 +146,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
+          // Connectivity indicator
+          if (!isOnline)
+            Padding(
+              padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
+              child: const Center(child: ConnectivityIndicator()),
+            ),
           Padding(
             padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
             child: Center(
@@ -140,361 +186,405 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        child: SafeArea(
-          child: Form(
-            key: _formKey,
-            child: Padding(
-              padding: AppLayout.pagePadding(context),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body: Column(
+        children: [
+          // Connectivity banner
+          if (!isOnline)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              color: Colors.red.shade700,
+              child: Row(
                 children: [
-                  SizedBox(height: AppLayout.scaleHeight(context, 25)),
-
-                  // Title
-                  Text(
-                    'Create an account with KudiKit',
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 25),
-                      fontWeight: FontWeight.w700,
-                      height: 1,
+                  const Icon(Icons.wifi_off, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'No internet - Sign up requires connection',
+                      style: TextStyle(color: Colors.white, fontSize: 14),
                     ),
-                    textAlign: TextAlign.left,
                   ),
-                  SizedBox(height: AppLayout.scaleHeight(context, 25)),
-
-                  /// Email
-                  _buildLabel(context, 'Email'),
-                  SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                  _buildTextField(
-                    context,
-                    controller: emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    enabled: !isLoading,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!value.contains('@') || !value.contains('.')) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
+                  TextButton(
+                    onPressed: () {
+                      ref.read(connectivityStateProvider.notifier).refresh();
                     },
-                  ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-                  /// Phone Number
-                  _buildLabel(context, 'Number'),
-                  SizedBox(height: AppLayout.scaleHeight(context, 5)),
-                  _buildTextField(
-                    context,
-                    controller: numberController,
-                    prefixText: '+234 ',
-                    keyboardType: TextInputType.phone,
-                    enabled: !isLoading,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(10),
-                    ],
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please enter your phone number';
-                      }
-                      if (value.length != 10) {
-                        return 'Enter a valid Nigerian phone number';
-                      }
-                      return null;
-                    },
-                  ),
-                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-                  /// PIN
-                  _buildLabel(context, 'Passcode'),
-                  SizedBox(height: AppLayout.scaleHeight(context, 5)),
-                  _buildTextField(
-                    context,
-                    controller: pinController,
-                    obscureText: !ref.watch(pinVisibilityProvider),
-                    enabled: !isLoading,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(8),
-                    ],
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        ref.watch(pinVisibilityProvider)
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        size: AppLayout.scaleWidth(context, 20),
-                      ),
-                      onPressed: () {
-                        ref.read(pinVisibilityProvider.notifier).state =
-                            !ref.read(pinVisibilityProvider.notifier).state;
-                      },
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Your passcode must be 6-8 digits and not sequential';
-                      }
-
-                      if (value.length < 6 || value.length > 8) {
-                        return 'passcode must be 6–8 digits';
-                      }
-
-                      bool isSequential(String s) {
-                        bool asc = true;
-                        bool desc = true;
-
-                        for (int i = 0; i < s.length - 1; i++) {
-                          if (s.codeUnitAt(i + 1) != s.codeUnitAt(i) + 1) {
-                            asc = false;
-                          }
-                          if (s.codeUnitAt(i + 1) != s.codeUnitAt(i) - 1) {
-                            desc = false;
-                          }
-                        }
-                        return asc || desc;
-                      }
-
-                      if (isSequential(value)) {
-                        return 'Sequential numbers are not allowed';
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 14)),
-
-                  /// Confirm PIN
-                  _buildLabel(context, 'Confirm Passcode'),
-                  SizedBox(height: AppLayout.scaleHeight(context, 5)),
-                  _buildTextField(
-                    context,
-                    controller: confirmPinController,
-                    obscureText: !ref.watch(confirmPinVisibilityProvider),
-                    enabled: !isLoading,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [
-                      FilteringTextInputFormatter.digitsOnly,
-                      LengthLimitingTextInputFormatter(8),
-                    ],
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        ref.watch(confirmPinVisibilityProvider)
-                            ? Icons.visibility
-                            : Icons.visibility_off,
-                        size: AppLayout.scaleWidth(context, 20),
-                      ),
-                      onPressed: () {
-                        ref.read(confirmPinVisibilityProvider.notifier).state =
-                            !ref
-                                .read(confirmPinVisibilityProvider.notifier)
-                                .state;
-                      },
-                    ),
-                    validator: (value) {
-                      if (value == null || value.trim().isEmpty) {
-                        return 'Please confirm your passcode';
-                      }
-
-                      if (value != pinController.text) {
-                        return 'passcode does not match';
-                      }
-
-                      return null;
-                    },
-                  ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 20)),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: AppLayout.scaleWidth(context, 24),
-                        height: AppLayout.scaleWidth(context, 24),
-                        child: Checkbox(
-                          value: ref.watch(_termsAcceptedProvider),
-                          onChanged: isLoading
-                              ? null
-                              : (value) {
-                                  ref
-                                      .read(_termsAcceptedProvider.notifier)
-                                      .state = value ?? false;
-                                },
-                          activeColor: const Color(0xFF389165),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(
-                              AppLayout.scaleWidth(context, 4),
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: AppLayout.scaleWidth(context, 12)),
-                      Expanded(
-                        child: RichText(
-                          text: TextSpan(
-                            style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 12),
-                              color: Colors.grey[700],
-                              height: 1.4,
-                            ),
-                            children: const [
-                              TextSpan(
-                                text:
-                                    'I have read, understood and agreed to the ',
-                              ),
-                              TextSpan(
-                                text: 'Term & Conditions',
-                                style: TextStyle(
-                                  color: Color(0xFF389165),
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                // Add GestureRecognizer here for tap handling if needed
-                              ),
-                              TextSpan(text: ' and '),
-                              TextSpan(
-                                text: 'Privacy Policy',
-                                style: TextStyle(
-                                  color: Color(0xFF389165),
-                                  fontWeight: FontWeight.w600,
-                                  decoration: TextDecoration.underline,
-                                ),
-                                // Add GestureRecognizer here for tap handling if needed
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppLayout.scaleHeight(context, 14)),
-
-                  /// Sign Up Button
-                  isLoading
-                      ? Center(
-                          child: CircularProgressIndicator(
-                            color: const Color(0xFF389165),
-                            strokeWidth: AppLayout.scaleWidth(context, 3),
-                          ),
-                        )
-                      : ColorAppButton(
-                          press: handleSignUp,
-                          text: 'Continue',
-                        ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
-                  // Already have account
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account? ',
-                        style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 14),
-                          fontWeight: FontWeight.w500,
-                          color: Colors.black54,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: isLoading
-                            ? null
-                            : () {
-                                Navigator.pushReplacement(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LoginPage(
-                                      email: emailController.text.trim(),
-                                    ),
-                                  ),
-                                );
-                              },
-                        child: Text(
-                          'Log in',
-                          style: TextStyle(
-                            fontSize: AppLayout.fontSize(context, 14),
-                            fontWeight: FontWeight.bold,
-                            color: const Color(0xFF389165),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppLayout.scaleHeight(context, 40)),
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        // CBN Logo
-                        Container(
-                          width: 32,
-                          height: 32,
-                          padding: const EdgeInsets.all(4),
-                          child: Image.asset(
-                            'assets/images/cbn.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.account_balance,
-                                  size: 20, color: Color(0xFF2C2C2C));
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Licensed by the ',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const Text(
-                          'CBN',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          'and insured by the',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        // NDIC Logo
-                        Container(
-                          height: 24,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Image.asset(
-                            'assets/images/ndicc.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.account_balance,
-                                  size: 20, color: Color(0xFF2C2C2C));
-                            },
-                          ),
-                        ),
-                      ],
+                    child: const Text(
+                      'Retry',
+                      style: TextStyle(color: Colors.white),
                     ),
                   ),
                 ],
               ),
             ),
+          
+          Expanded(
+            child: SingleChildScrollView(
+              child: SafeArea(
+                child: Form(
+                  key: _formKey,
+                  child: Padding(
+                    padding: AppLayout.pagePadding(context),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(height: AppLayout.scaleHeight(context, 25)),
+
+                        // Title
+                        Text(
+                          'Create an account with KudiKit',
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 25),
+                            fontWeight: FontWeight.w700,
+                            height: 1,
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                        SizedBox(height: AppLayout.scaleHeight(context, 25)),
+
+                        /// Email
+                        _buildLabel(context, 'Email'),
+                        SizedBox(height: AppLayout.scaleHeight(context, 8)),
+                        _buildTextField(
+                          context,
+                          controller: emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          enabled: !isLoading && isOnline,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter your email';
+                            }
+                            if (!value.contains('@') || !value.contains('.')) {
+                              return 'Please enter a valid email';
+                            }
+                            return null;
+                          },
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+                        /// Phone Number
+                        _buildLabel(context, 'Number'),
+                        SizedBox(height: AppLayout.scaleHeight(context, 5)),
+                        _buildTextField(
+                          context,
+                          controller: numberController,
+                          prefixText: '+234 ',
+                          keyboardType: TextInputType.phone,
+                          enabled: !isLoading && isOnline,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(10),
+                          ],
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please enter your phone number';
+                            }
+                            if (value.length != 10) {
+                              return 'Enter a valid Nigerian phone number';
+                            }
+                            return null;
+                          },
+                        ),
+                        SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+                        /// PIN
+                        _buildLabel(context, 'Passcode'),
+                        SizedBox(height: AppLayout.scaleHeight(context, 5)),
+                        _buildTextField(
+                          context,
+                          controller: pinController,
+                          obscureText: !ref.watch(pinVisibilityProvider),
+                          enabled: !isLoading && isOnline,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(8),
+                          ],
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              ref.watch(pinVisibilityProvider)
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              size: AppLayout.scaleWidth(context, 20),
+                            ),
+                            onPressed: () {
+                              ref.read(pinVisibilityProvider.notifier).state =
+                                  !ref.read(pinVisibilityProvider.notifier).state;
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Your passcode must be 6-8 digits and not sequential';
+                            }
+
+                            if (value.length < 6 || value.length > 8) {
+                              return 'passcode must be 6–8 digits';
+                            }
+
+                            bool isSequential(String s) {
+                              bool asc = true;
+                              bool desc = true;
+
+                              for (int i = 0; i < s.length - 1; i++) {
+                                if (s.codeUnitAt(i + 1) != s.codeUnitAt(i) + 1) {
+                                  asc = false;
+                                }
+                                if (s.codeUnitAt(i + 1) != s.codeUnitAt(i) - 1) {
+                                  desc = false;
+                                }
+                              }
+                              return asc || desc;
+                            }
+
+                            if (isSequential(value)) {
+                              return 'Sequential numbers are not allowed';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 14)),
+
+                        /// Confirm PIN
+                        _buildLabel(context, 'Confirm Passcode'),
+                        SizedBox(height: AppLayout.scaleHeight(context, 5)),
+                        _buildTextField(
+                          context,
+                          controller: confirmPinController,
+                          obscureText: !ref.watch(confirmPinVisibilityProvider),
+                          enabled: !isLoading && isOnline,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(8),
+                          ],
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              ref.watch(confirmPinVisibilityProvider)
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                              size: AppLayout.scaleWidth(context, 20),
+                            ),
+                            onPressed: () {
+                              ref.read(confirmPinVisibilityProvider.notifier).state =
+                                  !ref
+                                      .read(confirmPinVisibilityProvider.notifier)
+                                      .state;
+                            },
+                          ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Please confirm your passcode';
+                            }
+
+                            if (value != pinController.text) {
+                              return 'passcode does not match';
+                            }
+
+                            return null;
+                          },
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 20)),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: AppLayout.scaleWidth(context, 24),
+                              height: AppLayout.scaleWidth(context, 24),
+                              child: Checkbox(
+                                value: ref.watch(_termsAcceptedProvider),
+                                onChanged: (isLoading || !isOnline)
+                                    ? null
+                                    : (value) {
+                                        ref
+                                            .read(_termsAcceptedProvider.notifier)
+                                            .state = value ?? false;
+                                      },
+                                activeColor: const Color(0xFF389165),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(
+                                    AppLayout.scaleWidth(context, 4),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: AppLayout.scaleWidth(context, 12)),
+                            Expanded(
+                              child: RichText(
+                                text: TextSpan(
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 12),
+                                    color: Colors.grey[700],
+                                    height: 1.4,
+                                  ),
+                                  children: const [
+                                    TextSpan(
+                                      text:
+                                          'I have read, understood and agreed to the ',
+                                    ),
+                                    TextSpan(
+                                      text: 'Term & Conditions',
+                                      style: TextStyle(
+                                        color: Color(0xFF389165),
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                    TextSpan(text: ' and '),
+                                    TextSpan(
+                                      text: 'Privacy Policy',
+                                      style: TextStyle(
+                                        color: Color(0xFF389165),
+                                        fontWeight: FontWeight.w600,
+                                        decoration: TextDecoration.underline,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: AppLayout.scaleHeight(context, 14)),
+
+                        /// Sign Up Button
+                        if (isLoading)
+                          Center(
+                            child: CircularProgressIndicator(
+                              color: const Color(0xFF389165),
+                              strokeWidth: AppLayout.scaleWidth(context, 3),
+                            ),
+                          )
+                        else if (!isOnline)
+                          Opacity(
+                            opacity: 0.5,
+                            child: ColorAppButton(
+                              press: () {
+                                ConnectivitySnackBar.showNoInternet(context);
+                              },
+                              text: 'No Internet Connection',
+                            ),
+                          )
+                        else
+                          ColorAppButton(
+                            press: handleSignUp,
+                            text: 'Continue',
+                          ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+                        // Already have account
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Already have an account? ',
+                              style: TextStyle(
+                                fontSize: AppLayout.fontSize(context, 14),
+                                fontWeight: FontWeight.w500,
+                                color: Colors.black54,
+                              ),
+                            ),
+                            TextButton(
+                              onPressed: (isLoading || !isOnline)
+                                  ? null
+                                  : () {
+                                      Navigator.pushReplacement(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => LoginPage(
+                                            email: emailController.text.trim(),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                              child: Text(
+                                'Log in',
+                                style: TextStyle(
+                                  fontSize: AppLayout.fontSize(context, 14),
+                                  fontWeight: FontWeight.bold,
+                                  color: isOnline 
+                                      ? const Color(0xFF389165)
+                                      : Colors.grey,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: AppLayout.scaleHeight(context, 40)),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 20, horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                padding: const EdgeInsets.all(4),
+                                child: Image.asset(
+                                  'assets/images/cbn.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.account_balance,
+                                        size: 20, color: Color(0xFF2C2C2C));
+                                  },
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text(
+                                'Licensed by the ',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              const Text(
+                                'CBN',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              const Text(
+                                'and insured by the',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Container(
+                                height: 24,
+                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                child: Image.asset(
+                                  'assets/images/ndicc.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.account_balance,
+                                        size: 20, color: Color(0xFF2C2C2C));
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -523,12 +613,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: enabled ? Colors.white : Colors.grey[200],
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-        // border: Border.all(
-        //   color: Colors.grey[300]!,
-        //   width: AppLayout.scaleWidth(context, 1.5),
-        // ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),

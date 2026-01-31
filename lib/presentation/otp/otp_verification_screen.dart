@@ -2,19 +2,42 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/transaction/transaction_success.dart';
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/services/api_services.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   const OtpVerificationScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<OtpVerificationScreen> createState() => _OtpVerificationScreenState();
+  ConsumerState<OtpVerificationScreen> createState() =>
+      _OtpVerificationScreenState();
 }
 
 class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   final TextEditingController _otpController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupConnectivityListener();
+    });
+  }
+
+  void _setupConnectivityListener() {
+    ref.listen(connectivityProvider, (previous, next) {
+      next.whenData((isConnected) {
+        if (previous?.value != null && previous!.value! && !isConnected) {
+          ConnectivitySnackBar.showNoInternet(context);
+        } else if (previous?.value != null && !previous!.value! && isConnected) {
+          ConnectivitySnackBar.showConnectionRestored(context);
+        }
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -25,14 +48,16 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final cardTopUpState = ref.watch(cardTopUpProvider);
+    final connectivityState = ref.watch(connectivityStateProvider);
+    final isOnline = connectivityState.isConnected;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F5),
-      appBar: _buildAppBar(context),
+      appBar: _buildAppBar(context, isOnline),
       body: Stack(
         children: [
-          _buildBody(context),
-          _buildVerifyButton(context),
+          _buildBody(context, isOnline),
+          _buildVerifyButton(context, isOnline),
           if (cardTopUpState.isLoading)
             Container(
               color: Colors.black26,
@@ -45,7 +70,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context) {
+  PreferredSizeWidget _buildAppBar(BuildContext context, bool isOnline) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -53,18 +78,32 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Text(
-        'Top-up with card or account',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: AppLayout.fontSize(context, 18),
-          fontWeight: FontWeight.w600,
-        ),
+      title: Row(
+        children: [
+          Text(
+            'Top-up with card or account',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: AppLayout.fontSize(context, 18),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Connectivity indicator
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: isOnline ? Colors.green : Colors.red,
+              shape: BoxShape.circle,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, bool isOnline) {
     return Form(
       key: _formKey,
       child: SingleChildScrollView(
@@ -72,6 +111,40 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Connectivity warning if offline
+            if (!isOnline)
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.wifi_off, color: Colors.red.shade700, size: 20),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Internet connection required to verify payment',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.red.shade900,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.refresh, size: 20),
+                      onPressed: () {
+                        ref.read(connectivityStateProvider.notifier).refresh();
+                      },
+                      color: Colors.red.shade700,
+                    ),
+                  ],
+                ),
+              ),
+
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
             // Instruction Text
@@ -80,7 +153,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
             // OTP Input Field
-            _buildOtpField(context),
+            _buildOtpField(context, isOnline),
 
             SizedBox(height: AppLayout.scaleHeight(context, 120)),
           ],
@@ -100,7 +173,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     );
   }
 
-  Widget _buildOtpField(BuildContext context) {
+  Widget _buildOtpField(BuildContext context, bool isOnline) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -116,6 +189,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         TextFormField(
           controller: _otpController,
           keyboardType: TextInputType.number,
+          enabled: isOnline,
           inputFormatters: [
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(6),
@@ -131,7 +205,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           },
           onChanged: (value) {
             // Auto-submit when OTP is complete
-            if (value.length == 6) {
+            if (value.length == 6 && isOnline) {
               _handleVerify();
             }
           },
@@ -139,25 +213,39 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             fontSize: AppLayout.fontSize(context, 16),
             fontWeight: FontWeight.w500,
             letterSpacing: 2,
+            color: isOnline ? Colors.black : Colors.grey,
           ),
           decoration: InputDecoration(
-            hintText: '',
+            hintText: isOnline ? '' : 'Internet required',
+            hintStyle: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              color: Colors.red[300],
+            ),
             filled: true,
-            fillColor: Colors.white,
+            fillColor: isOnline ? Colors.white : Colors.grey[100],
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: BorderSide(color: Colors.grey[300]!),
             ),
+            disabledBorder: OutlineInputBorder(
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderSide: BorderSide(color: Colors.grey[200]!),
+            ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide: const BorderSide(color: Colors.red),
             ),
             contentPadding: EdgeInsets.symmetric(
@@ -166,11 +254,28 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             ),
           ),
         ),
+        if (!isOnline)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 16, color: Colors.red[700]),
+                const SizedBox(width: 4),
+                Text(
+                  'Connect to internet to verify payment',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.red[700],
+                  ),
+                ),
+              ],
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildVerifyButton(BuildContext context) {
+  Widget _buildVerifyButton(BuildContext context, bool isOnline) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -188,25 +293,45 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           ],
         ),
         child: ElevatedButton(
-          onPressed: _handleVerify,
+          onPressed: isOnline
+              ? _handleVerify
+              : () {
+                  ConnectivitySnackBar.showNoInternet(context);
+                },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor:
+                isOnline ? const Color(0xFF4CAF50) : Colors.grey[400],
             minimumSize: Size(
               double.infinity,
               AppLayout.scaleHeight(context, 50),
             ),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
             ),
             elevation: 0,
           ),
-          child: Text(
-            'Verify Payment',
-            style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 16),
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                isOnline ? 'Verify Payment' : 'No Internet Connection',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 16),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+              if (!isOnline)
+                const Padding(
+                  padding: EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.wifi_off,
+                    size: 18,
+                    color: Colors.white,
+                  ),
+                ),
+            ],
           ),
         ),
       ),
@@ -214,28 +339,56 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   }
 
   Future<void> _handleVerify() async {
+    // Check connectivity first
+    final isConnected = ref.read(currentConnectivityProvider);
+    if (!isConnected) {
+      await NoInternetDialog.show(context);
+      return;
+    }
+
     if (!_formKey.currentState!.validate()) return;
 
-    await ref.read(cardTopUpProvider.notifier).verifyOtp(_otpController.text);
+    try {
+      await ref.read(cardTopUpProvider.notifier).verifyOtp(_otpController.text);
 
-    final state = ref.read(cardTopUpProvider);
+      final state = ref.read(cardTopUpProvider);
 
-    if (mounted) {
-      if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(state.error!.message),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } else if (state.receipt != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const TransactionReceiptScreen(),
-          ),
-        );
+      if (mounted) {
+        if (state.error != null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.error!.message),
+              backgroundColor: Colors.red,
+            ),
+          );
+        } else if (state.receipt != null) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const TransactionReceiptScreen(),
+            ),
+          );
+        }
       }
+    } on NoInternetException {
+      if (!mounted) return;
+      ConnectivitySnackBar.showNoInternet(context);
+    } on TimeoutException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Verification failed: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }

@@ -40,6 +40,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       body: Stack(
         children: [
           _buildBody(context, verificationState),
+          
           _buildNextButton(context),
           if (verificationState.isVerifying)
             Container(
@@ -74,8 +75,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 children: [
                   // Progress Circle
                   SizedBox(
-                    width: AppLayout.scaleWidth(context, 56),
-                    height: AppLayout.scaleWidth(context, 56),
+                    width: AppLayout.scaleWidth(context, 30),
+                    height: AppLayout.scaleWidth(context, 30),
                     child: CircularProgressIndicator(
                       value: _progressPercentage / 100,
                       strokeWidth: 3,
@@ -90,7 +91,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                     '$_progressPercentage%',
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 12),
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w400,
                       color: Colors.black87,
                     ),
                   ),
@@ -419,7 +420,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
         child: ElevatedButton(
           onPressed: isEnabled ? _handleNext : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: const Color(0xFF389165),
             disabledBackgroundColor: Colors.grey[300],
             minimumSize: Size(
               double.infinity,

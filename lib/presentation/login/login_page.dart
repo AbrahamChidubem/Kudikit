@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
-
+import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
 import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/services/api_services.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   final String? email;
@@ -21,230 +23,341 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   int _currentIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    // Setup connectivity listener
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupConnectivityListener();
+    });
+  }
+
+  void _setupConnectivityListener() {
+    ref.listen(connectivityProvider, (previous, next) {
+      next.whenData((isConnected) {
+        if (previous?.value != null && previous!.value! && !isConnected) {
+          // Connection lost
+          ConnectivitySnackBar.showNoInternet(context);
+          // Clear any ongoing login attempt
+          setState(() {
+            _pinDigits.fillRange(0, 6, '');
+            _pinFilled.fillRange(0, 6, false);
+            _currentIndex = 0;
+          });
+        } else if (previous?.value != null &&
+            !previous!.value! &&
+            isConnected) {
+          // Connection restored
+          ConnectivitySnackBar.showConnectionRestored(context);
+        }
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final connectivityState = ref.watch(connectivityStateProvider);
+    final isOnline = connectivityState.isConnected;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
       body: SafeArea(
         child: Column(
           children: [
-            // Top Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              child: Align(
-                alignment: Alignment.topRight,
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context)=>SignUpScreen()));
-                    // TODO: Implement account switching
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Switch account feature coming soon'),
-                        backgroundColor: Color(0xFF4CAF50),
+            // Connectivity Banner (shows when offline)
+            if (!isOnline)
+              Container(
+                width: double.infinity,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                color: Colors.red.shade700,
+                child: Row(
+                  children: [
+                    const Icon(Icons.wifi_off, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    const Expanded(
+                      child: Text(
+                        'No internet - Login requires connection',
+                        style: TextStyle(color: Colors.white, fontSize: 14),
                       ),
-                    );
-                  },
-                  child: const Text(
-                    'Switch account',
-                    style: TextStyle(
-                      color: Color(0xFF5C7C6F),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
                     ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 20),
-
-            // Profile Image
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/img_placeholder.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      color: const Color(0xFFE8F5E9),
-                      child: const Icon(
-                        Icons.person,
-                        size: 40,
-                        color: Color(0xFF4CAF50),
+                    TextButton(
+                      onPressed: () {
+                        ref.read(connectivityStateProvider.notifier).refresh();
+                      },
+                      child: const Text(
+                        'Retry',
+                        style: TextStyle(color: Colors.white),
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
-            ),
 
-            const SizedBox(height: 16),
-
-            // Phone Number with Dropdown
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  widget.phoneNumber ?? '08124608695',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Icon(
-                  Icons.keyboard_arrow_down,
-                  color: Colors.grey[600],
-                  size: 24,
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 60),
-
-            // PIN Input Section
-            const Text(
-              'Enter 6 digits PIN to login',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.black54,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            // PIN Dots
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(6, (index) {
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  width: 12,
-                  height: 12,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _pinFilled[index]
-                        ? const Color(0xFF5C7C6F)
-                        : const Color(0xFFD1D9D5),
-                  ),
-                );
-              }),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Forgot PIN
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Forgot PIN feature coming soon'),
-                    backgroundColor: Color(0xFF4CAF50),
-                  ),
-                );
-              },
-              child: const Text(
-                'Forgot PIN',
-                style: TextStyle(
-                  color: Color(0xFF5C7C6F),
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-
-            const Spacer(),
-
-            // Number Pad
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
+            Expanded(
               child: Column(
                 children: [
-                  _buildNumberRow([1, 2, 3]),
-                  const SizedBox(height: 32),
-                  _buildNumberRow([4, 5, 6]),
-                  const SizedBox(height: 32),
-                  _buildNumberRow([7, 8, 9]),
-                  const SizedBox(height: 32),
-                  _buildBottomRow(),
-                ],
-              ),
-            ),
+                  // Top Section
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 24, vertical: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        // Connectivity indicator
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: isOnline ? Colors.green : Colors.red,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isOnline ? 'Online' : 'Offline',
+                              style: TextStyle(
+                                color: isOnline ? Colors.green : Colors.red,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        TextButton(
+                          onPressed: isOnline
+                              ? () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SignUpScreen(),
+                                    ),
+                                  );
+                                }
+                              : () {
+                                  ConnectivitySnackBar.showNoInternet(context);
+                                },
+                          child: Text(
+                            'Switch account',
+                            style: TextStyle(
+                              color: isOnline
+                                  ? const Color(0xFF5C7C6F)
+                                  : Colors.grey,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
-            const SizedBox(height: 20),
-            // Footer - CBN and NDIC
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // CBN Logo
+                  const SizedBox(height: 20),
+
+                  // Profile Image
                   Container(
-                    width: 32,
-                    height: 32,
-                    padding: const EdgeInsets.all(4),
-                    child: Image.asset(
-                      'assets/images/cbn.png', // Add your CBN logo
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.account_balance,
-                            size: 20, color: Color(0xFF2C2C2C));
-                      },
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        'assets/images/img_placeholder.png',
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: const Color(0xFFE8F5E9),
+                            child: const Icon(
+                              Icons.person,
+                              size: 40,
+                              color: Color(0xFF4CAF50),
+                            ),
+                          );
+                        },
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    'Licensed by the ',
+
+                  const SizedBox(height: 16),
+
+                  // Phone Number with Dropdown
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        widget.phoneNumber ?? '08124608695',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.keyboard_arrow_down,
+                        color: Colors.grey[600],
+                        size: 24,
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 60),
+
+                  // PIN Input Section
+                  Text(
+                    isOnline
+                        ? 'Enter 6 digits PIN to login'
+                        : 'Internet required to login',
                     style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
+                      fontSize: 14,
+                      color: isOnline ? Colors.black54 : Colors.red,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
-                  const Text(
-                    'CBN',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+
+                  const SizedBox(height: 16),
+
+                  // PIN Dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(6, (index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _pinFilled[index]
+                              ? (isOnline
+                                  ? const Color(0xFF5C7C6F)
+                                  : Colors.grey)
+                              : const Color(0xFFD1D9D5),
+                        ),
+                      );
+                    }),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // Forgot PIN
+                  TextButton(
+                    onPressed: isOnline
+                        ? () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Forgot PIN feature coming soon'),
+                                backgroundColor: Color(0xFF4CAF50),
+                              ),
+                            );
+                          }
+                        : () {
+                            ConnectivitySnackBar.showNoInternet(context);
+                          },
+                    child: Text(
+                      'Forgot PIN',
+                      style: TextStyle(
+                        color: isOnline ? const Color(0xFF5C7C6F) : Colors.grey,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 4),
-                  const Text(
-                    'and insured by the',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w400,
+
+                  const Spacer(),
+
+                  // Number Pad
+                  Opacity(
+                    opacity: isOnline ? 1.0 : 0.5,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 60),
+                      child: Column(
+                        children: [
+                          _buildNumberRow([1, 2, 3], isOnline),
+                          const SizedBox(height: 32),
+                          _buildNumberRow([4, 5, 6], isOnline),
+                          const SizedBox(height: 32),
+                          _buildNumberRow([7, 8, 9], isOnline),
+                          const SizedBox(height: 32),
+                          _buildBottomRow(isOnline),
+                        ],
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  // NDIC Logo
+
+                  const SizedBox(height: 20),
+
+                  // Footer - CBN and NDIC
                   Container(
-                    height: 24,
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Image.asset(
-                      'assets/images/ndicc.png',
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.account_balance,
-                            size: 20, color: Color(0xFF2C2C2C));
-                      },
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 20, horizontal: 16),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          padding: const EdgeInsets.all(4),
+                          child: Image.asset(
+                            'assets/images/cbn.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.account_balance,
+                                  size: 20, color: Color(0xFF2C2C2C));
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'Licensed by the ',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const Text(
+                          'CBN',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Text(
+                          'and insured by the',
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          height: 24,
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Image.asset(
+                            'assets/images/ndicc.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.account_balance,
+                                  size: 20, color: Color(0xFF2C2C2C));
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -256,16 +369,18 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget _buildNumberRow(List<int> numbers) {
+  Widget _buildNumberRow(List<int> numbers, bool isEnabled) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: numbers.map((number) => _buildNumberButton(number)).toList(),
+      children: numbers
+          .map((number) => _buildNumberButton(number, isEnabled))
+          .toList(),
     );
   }
 
-  Widget _buildNumberButton(int number) {
+  Widget _buildNumberButton(int number, bool isEnabled) {
     return InkWell(
-      onTap: () => _onNumberTap(number.toString()),
+      onTap: isEnabled ? () => _onNumberTap(number.toString()) : null,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         width: 70,
@@ -273,30 +388,32 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         alignment: Alignment.center,
         child: Text(
           '$number',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w400,
-            color: Colors.black87,
+            color: isEnabled ? Colors.black87 : Colors.grey,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildBottomRow() {
+  Widget _buildBottomRow(bool isEnabled) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         // Biometric Button
         InkWell(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Biometric login coming soon'),
-                backgroundColor: Color(0xFF4CAF50),
-              ),
-            );
-          },
+          onTap: isEnabled
+              ? () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Biometric login coming soon'),
+                      backgroundColor: Color(0xFF4CAF50),
+                    ),
+                  );
+                }
+              : null,
           borderRadius: BorderRadius.circular(12),
           child: Container(
             width: 70,
@@ -305,17 +422,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             child: Icon(
               Icons.fingerprint,
               size: 32,
-              color: Colors.grey[600],
+              color: isEnabled ? Colors.grey[600] : Colors.grey[400],
             ),
           ),
         ),
 
         // Zero Button
-        _buildNumberButton(0),
+        _buildNumberButton(0, isEnabled),
 
         // Delete Button
         InkWell(
-          onTap: _onDeleteTap,
+          onTap: isEnabled ? _onDeleteTap : null,
           borderRadius: BorderRadius.circular(12),
           child: Container(
             width: 70,
@@ -324,7 +441,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             child: Icon(
               Icons.backspace_outlined,
               size: 28,
-              color: Colors.grey[600],
+              color: isEnabled ? Colors.grey[600] : Colors.grey[400],
             ),
           ),
         ),
@@ -333,6 +450,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   void _onNumberTap(String number) {
+    final isOnline = ref.read(currentConnectivityProvider);
+    if (!isOnline) {
+      ConnectivitySnackBar.showNoInternet(context);
+      return;
+    }
+
     if (_currentIndex < 6) {
       setState(() {
         _pinDigits[_currentIndex] = number;
@@ -360,6 +483,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
+    // Check connectivity first
+    final isConnected = ref.read(currentConnectivityProvider);
+    if (!isConnected) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Login requires an internet connection'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
+        ),
+      );
+
+      // Clear PIN
+      setState(() {
+        _pinDigits.fillRange(0, 6, '');
+        _pinFilled.fillRange(0, 6, false);
+        _currentIndex = 0;
+      });
+      return;
+    }
+
     final pin = _pinDigits.join();
 
     // Show loading
@@ -398,6 +541,40 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           content: Text('Login successful!'),
           backgroundColor: Color(0xFF4CAF50),
           duration: Duration(seconds: 2),
+        ),
+      );
+    } on NoInternetException {
+      if (!mounted) return;
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Clear PIN on error
+      setState(() {
+        _pinDigits.fillRange(0, 6, '');
+        _pinFilled.fillRange(0, 6, false);
+        _currentIndex = 0;
+      });
+
+      ConnectivitySnackBar.showNoInternet(context);
+    } on TimeoutException catch (e) {
+      if (!mounted) return;
+
+      // Close loading dialog
+      Navigator.pop(context);
+
+      // Clear PIN on error
+      setState(() {
+        _pinDigits.fillRange(0, 6, '');
+        _pinFilled.fillRange(0, 6, false);
+        _currentIndex = 0;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 3),
         ),
       );
     } catch (e) {

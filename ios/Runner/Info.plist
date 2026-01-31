@@ -49,5 +49,10 @@
 <string>This app needs camera access to capture selfies for verification.</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>We need access to select documents</string>
+<key>NSAppTransportSecurity</key>
+  <dict>
+      <key>NSAllowsArbitraryLoads</key>
+      <true/>
+  </dict>
 </dict>
 </plist>
