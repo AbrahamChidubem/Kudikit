@@ -8,7 +8,10 @@ import 'package:kudipay/model/id&document/document_data.dart';
 import 'package:kudipay/model/address/nigeria_state.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/model/user/user_info.dart';
+import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/services/add_money_services.dart';
+import 'package:kudipay/services/email_change_services.dart';
+import 'package:kudipay/services/notification_preference_services.dart';
 import 'package:kudipay/services/transaction_service.dart';
 import 'package:kudipay/usecases/selfie_state.dart';
 import 'package:kudipay/model/user/user.dart';
@@ -1668,4 +1671,1165 @@ final connectivityStateProvider =
     StateNotifierProvider<ConnectivityNotifier, ConnectivityState>((ref) {
   final connectivityService = ref.watch(connectivityServiceProvider);
   return ConnectivityNotifier(connectivityService);
+});
+
+// ======================DEVICE LINKING========================== this thing really stress me .. jesus
+
+// ==================== MODELS ====================
+
+enum VerificationMethod {
+  email,
+  oldDevice,
+}
+
+class DeviceLinkingData {
+  final String? email;
+  final String? maskedEmail;
+  final String? oldDeviceName;
+  final String? verificationCode;
+  final bool isCodeSent;
+  final bool isVerified;
+  final DateTime? codeSentAt;
+
+  const DeviceLinkingData({
+    this.email,
+    this.maskedEmail,
+    this.oldDeviceName,
+    this.verificationCode,
+    this.isCodeSent = false,
+    this.isVerified = false,
+    this.codeSentAt,
+  });
+
+  DeviceLinkingData copyWith({
+    String? email,
+    String? maskedEmail,
+    String? oldDeviceName,
+    String? verificationCode,
+    bool? isCodeSent,
+    bool? isVerified,
+    DateTime? codeSentAt,
+  }) {
+    return DeviceLinkingData(
+      email: email ?? this.email,
+      maskedEmail: maskedEmail ?? this.maskedEmail,
+      oldDeviceName: oldDeviceName ?? this.oldDeviceName,
+      verificationCode: verificationCode ?? this.verificationCode,
+      isCodeSent: isCodeSent ?? this.isCodeSent,
+      isVerified: isVerified ?? this.isVerified,
+      codeSentAt: codeSentAt ?? this.codeSentAt,
+    );
+  }
+}
+
+class DataSyncSelection {
+  final bool savedBeneficiary;
+  final bool recentTransactions;
+  final bool appPreferences;
+
+  const DataSyncSelection({
+    this.savedBeneficiary = true,
+    this.recentTransactions = true,
+    this.appPreferences = false,
+  });
+
+  DataSyncSelection copyWith({
+    bool? savedBeneficiary,
+    bool? recentTransactions,
+    bool? appPreferences,
+  }) {
+    return DataSyncSelection(
+      savedBeneficiary: savedBeneficiary ?? this.savedBeneficiary,
+      recentTransactions: recentTransactions ?? this.recentTransactions,
+      appPreferences: appPreferences ?? this.appPreferences,
+    );
+  }
+}
+
+// ==================== STATE ====================
+
+class DeviceLinkingState {
+  final DeviceLinkingData? data;
+  final DataSyncSelection syncSelection;
+  final VerificationMethod selectedMethod;
+  final bool isLoading;
+  final bool isSendingCode;
+  final bool isVerifyingCode;
+  final bool isSyncing;
+  final String? error;
+  final String? successMessage;
+
+  const DeviceLinkingState({
+    this.data,
+    this.syncSelection = const DataSyncSelection(),
+    this.selectedMethod = VerificationMethod.email,
+    this.isLoading = false,
+    this.isSendingCode = false,
+    this.isVerifyingCode = false,
+    this.isSyncing = false,
+    this.error,
+    this.successMessage,
+  });
+
+  DeviceLinkingState copyWith({
+    DeviceLinkingData? data,
+    DataSyncSelection? syncSelection,
+    VerificationMethod? selectedMethod,
+    bool? isLoading,
+    bool? isSendingCode,
+    bool? isVerifyingCode,
+    bool? isSyncing,
+    String? error,
+    String? successMessage,
+    bool clearError = false,
+    bool clearSuccess = false,
+  }) {
+    return DeviceLinkingState(
+      data: data ?? this.data,
+      syncSelection: syncSelection ?? this.syncSelection,
+      selectedMethod: selectedMethod ?? this.selectedMethod,
+      isLoading: isLoading ?? this.isLoading,
+      isSendingCode: isSendingCode ?? this.isSendingCode,
+      isVerifyingCode: isVerifyingCode ?? this.isVerifyingCode,
+      isSyncing: isSyncing ?? this.isSyncing,
+      error: clearError ? null : (error ?? this.error),
+      successMessage: clearSuccess ? null : (successMessage ?? this.successMessage),
+    );
+  }
+}
+
+// ==================== SERVICE ====================
+
+class DeviceLinkingException implements Exception {
+  final String message;
+  final int? statusCode;
+
+  DeviceLinkingException(this.message, [this.statusCode]);
+
+  @override
+  String toString() => message;
+}
+
+class DeviceLinkingService {
+  final String baseUrl;
+  final String? authToken;
+
+  DeviceLinkingService({
+    required this.baseUrl,
+    this.authToken,
+  });
+
+  Future<DeviceLinkingData> getUserDeviceInfo() async {
+    // Mock implementation
+    return _mockGetUserDeviceInfo();
+  }
+
+  Future<bool> sendVerificationCode(String email, VerificationMethod method) async {
+    // Mock implementation
+    return _mockSendVerificationCode(email, method);
+  }
+
+  Future<bool> verifyCode(String code) async {
+    // Mock implementation
+    return _mockVerifyCode(code);
+  }
+
+  Future<bool> syncData(DataSyncSelection selection) async {
+    // Mock implementation
+    return _mockSyncData(selection);
+  }
+
+  // Mock implementations
+  Future<DeviceLinkingData> _mockGetUserDeviceInfo() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+    return const DeviceLinkingData(
+      email: 'user@example.com',
+      maskedEmail: 'u***8@gmail.com',
+      oldDeviceName: 'iPhone 14 Pro',
+    );
+  }
+
+  Future<bool> _mockSendVerificationCode(String email, VerificationMethod method) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return true;
+  }
+
+  Future<bool> _mockVerifyCode(String code) async {
+    await Future.delayed(const Duration(seconds: 2));
+    // Simple mock validation
+    return code.length == 6;
+  }
+
+  Future<bool> _mockSyncData(DataSyncSelection selection) async {
+    await Future.delayed(const Duration(seconds: 2));
+    return true;
+  }
+}
+
+// ==================== NOTIFIER ====================
+
+class DeviceLinkingNotifier extends StateNotifier<DeviceLinkingState> {
+  final DeviceLinkingService _service;
+
+  DeviceLinkingNotifier(this._service) : super(const DeviceLinkingState());
+
+  Future<void> loadUserDeviceInfo() async {
+    state = state.copyWith(isLoading: true, clearError: true);
+
+    try {
+      final data = await _service.getUserDeviceInfo();
+      state = state.copyWith(
+        data: data,
+        isLoading: false,
+      );
+    } on SocketException {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'No internet connection. Please check your network.',
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to load device information.',
+      );
+    }
+  }
+
+  void selectVerificationMethod(VerificationMethod method) {
+    state = state.copyWith(selectedMethod: method);
+  }
+
+  Future<void> sendVerificationCode() async {
+    if (state.data?.email == null) {
+      state = state.copyWith(error: 'Email not found');
+      return;
+    }
+
+    state = state.copyWith(isSendingCode: true, clearError: true);
+
+    try {
+      await _service.sendVerificationCode(
+        state.data!.email!,
+        state.selectedMethod,
+      );
+
+      state = state.copyWith(
+        isSendingCode: false,
+        data: state.data?.copyWith(
+          isCodeSent: true,
+          codeSentAt: DateTime.now(),
+        ),
+        successMessage: 'Verification code sent successfully',
+      );
+    } on SocketException {
+      state = state.copyWith(
+        isSendingCode: false,
+        error: 'No internet connection. Please check your network.',
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isSendingCode: false,
+        error: 'Failed to send verification code.',
+      );
+    }
+  }
+
+  Future<bool> verifyCode(String code) async {
+    state = state.copyWith(isVerifyingCode: true, clearError: true);
+
+    try {
+      final isValid = await _service.verifyCode(code);
+
+      if (isValid) {
+        state = state.copyWith(
+          isVerifyingCode: false,
+          data: state.data?.copyWith(
+            verificationCode: code,
+            isVerified: true,
+          ),
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          isVerifyingCode: false,
+          error: 'Invalid verification code',
+        );
+        return false;
+      }
+    } on SocketException {
+      state = state.copyWith(
+        isVerifyingCode: false,
+        error: 'No internet connection. Please check your network.',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isVerifyingCode: false,
+        error: 'Verification failed. Please try again.',
+      );
+      return false;
+    }
+  }
+
+  void updateSyncSelection({
+    bool? savedBeneficiary,
+    bool? recentTransactions,
+    bool? appPreferences,
+  }) {
+    state = state.copyWith(
+      syncSelection: state.syncSelection.copyWith(
+        savedBeneficiary: savedBeneficiary,
+        recentTransactions: recentTransactions,
+        appPreferences: appPreferences,
+      ),
+    );
+  }
+
+  Future<bool> syncData() async {
+    state = state.copyWith(isSyncing: true, clearError: true);
+
+    try {
+      await _service.syncData(state.syncSelection);
+
+      state = state.copyWith(
+        isSyncing: false,
+        successMessage: 'Data synced successfully',
+      );
+      return true;
+    } on SocketException {
+      state = state.copyWith(
+        isSyncing: false,
+        error: 'No internet connection. Please check your network.',
+      );
+      return false;
+    } catch (e) {
+      state = state.copyWith(
+        isSyncing: false,
+        error: 'Failed to sync data.',
+      );
+      return false;
+    }
+  }
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
+  }
+
+  void clearSuccess() {
+    state = state.copyWith(clearSuccess: true);
+  }
+
+  void reset() {
+    state = const DeviceLinkingState();
+  }
+}
+
+// ====================DEVICE LINKING PROVIDERS ====================
+
+final deviceLinkingServiceProvider = Provider<DeviceLinkingService>((ref) {
+  return DeviceLinkingService(
+    baseUrl: 'https://api.kudipay.com/api/v1',
+  );
+});
+
+final deviceLinkingProvider =
+    StateNotifierProvider<DeviceLinkingNotifier, DeviceLinkingState>((ref) {
+  final service = ref.watch(deviceLinkingServiceProvider);
+  return DeviceLinkingNotifier(service);
+});
+
+
+
+// ====================   P2P TRANSFER MODELS   ====================
+
+enum TransferType {
+  kudikit,
+  otherBank,
+}
+
+enum TransactionCategory {
+  food,
+  transport,
+  bills,
+  shopping,
+  entertainment,
+  others,
+}
+
+class RecipientInfo {
+  final String accountNumber;
+  final String name;
+  final String? bank;
+  final String? avatarUrl;
+
+  const RecipientInfo({
+    required this.accountNumber,
+    required this.name,
+    this.bank,
+    this.avatarUrl,
+  });
+
+  RecipientInfo copyWith({
+    String? accountNumber,
+    String? name,
+    String? bank,
+    String? avatarUrl,
+  }) {
+    return RecipientInfo(
+      accountNumber: accountNumber ?? this.accountNumber,
+      name: name ?? this.name,
+      bank: bank ?? this.bank,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+    );
+  }
+}
+
+class RecentContact {
+  final String id;
+  final String name;
+  final String accountNumber;
+  final String bank;
+  final String? avatarUrl;
+  final DateTime lastTransferDate;
+
+  const RecentContact({
+    required this.id,
+    required this.name,
+    required this.accountNumber,
+    required this.bank,
+    this.avatarUrl,
+    required this.lastTransferDate,
+  });
+}
+
+class TransferData {
+  final RecipientInfo? recipient;
+  final double? amount;
+  final TransactionCategory? category;
+  final String? note;
+  final double balance;
+  final double fee;
+
+  const TransferData({
+    this.recipient,
+    this.amount,
+    this.category,
+    this.note,
+    this.balance = 5000.00,
+    this.fee = 0.0,
+  });
+
+  TransferData copyWith({
+    RecipientInfo? recipient,
+    double? amount,
+    TransactionCategory? category,
+    String? note,
+    double? balance,
+    double? fee,
+  }) {
+    return TransferData(
+      recipient: recipient ?? this.recipient,
+      amount: amount ?? this.amount,
+      category: category ?? this.category,
+      note: note ?? this.note,
+      balance: balance ?? this.balance,
+      fee: fee ?? this.fee,
+    );
+  }
+
+  bool get hasInsufficientBalance {
+    if (amount == null) return false;
+    return (amount! + fee) > balance;
+  }
+}
+
+class TransactionResult {
+  final String transactionId;
+  final String transactionType;
+  final double amount;
+  final double fee;
+  final String payingBank;
+  final String payingBankAccount;
+  final String creditedTo;
+  final String? note;
+  final DateTime transactionDate;
+  final bool isSuccessful;
+
+  const TransactionResult({
+    required this.transactionId,
+    required this.transactionType,
+    required this.amount,
+    required this.fee,
+    required this.payingBank,
+    required this.payingBankAccount,
+    required this.creditedTo,
+    this.note,
+    required this.transactionDate,
+    this.isSuccessful = true,
+  });
+}
+
+// ==================== STATE ====================
+
+class P2PTransferState {
+  final TransferType transferType;
+  final TransferData transferData;
+  final List<RecentContact> recentContacts;
+  final List<RecentContact> favouriteContacts;
+  final bool isValidatingAccount;
+  final bool isProcessingTransfer;
+  final String? error;
+  final TransactionResult? transactionResult;
+  final bool showPinDialog;
+  final bool showConfirmDialog;
+
+  const P2PTransferState({
+    this.transferType = TransferType.kudikit,
+    this.transferData = const TransferData(),
+    this.recentContacts = const [],
+    this.favouriteContacts = const [],
+    this.isValidatingAccount = false,
+    this.isProcessingTransfer = false,
+    this.error,
+    this.transactionResult,
+    this.showPinDialog = false,
+    this.showConfirmDialog = false,
+  });
+
+  P2PTransferState copyWith({
+    TransferType? transferType,
+    TransferData? transferData,
+    List<RecentContact>? recentContacts,
+    List<RecentContact>? favouriteContacts,
+    bool? isValidatingAccount,
+    bool? isProcessingTransfer,
+    String? error,
+    TransactionResult? transactionResult,
+    bool? showPinDialog,
+    bool? showConfirmDialog,
+    bool clearError = false,
+  }) {
+    return P2PTransferState(
+      transferType: transferType ?? this.transferType,
+      transferData: transferData ?? this.transferData,
+      recentContacts: recentContacts ?? this.recentContacts,
+      favouriteContacts: favouriteContacts ?? this.favouriteContacts,
+      isValidatingAccount: isValidatingAccount ?? this.isValidatingAccount,
+      isProcessingTransfer: isProcessingTransfer ?? this.isProcessingTransfer,
+      error: clearError ? null : (error ?? this.error),
+      transactionResult: transactionResult ?? this.transactionResult,
+      showPinDialog: showPinDialog ?? this.showPinDialog,
+      showConfirmDialog: showConfirmDialog ?? this.showConfirmDialog,
+    );
+  }
+}
+
+// ==================== SERVICE ====================
+
+class P2PTransferException implements Exception {
+  final String message;
+  final int? statusCode;
+
+  P2PTransferException(this.message, [this.statusCode]);
+
+  @override
+  String toString() => message;
+}
+
+class P2PTransferService {
+  final String baseUrl;
+  final String? authToken;
+
+  P2PTransferService({
+    required this.baseUrl,
+    this.authToken,
+  });
+
+  Future<RecipientInfo> validateAccount(String accountNumber, TransferType type) async {
+    return _mockValidateAccount(accountNumber, type);
+  }
+
+  Future<List<RecentContact>> getRecentContacts() async {
+    return _mockGetRecentContacts();
+  }
+
+  Future<TransactionResult> processTransfer(TransferData data) async {
+    return _mockProcessTransfer(data);
+  }
+
+  // Mock implementations
+  Future<RecipientInfo> _mockValidateAccount(String accountNumber, TransferType type) async {
+    await Future.delayed(const Duration(seconds: 1));
+
+    if (accountNumber.length < 10) {
+      throw P2PTransferException('Invalid account number');
+    }
+
+    if (type == TransferType.kudikit && !accountNumber.startsWith('8')) {
+      throw P2PTransferException('Invalid Kudikit account number.');
+    }
+
+    return RecipientInfo(
+      accountNumber: accountNumber,
+      name: 'PETER AKINOLA',
+      bank: type == TransferType.kudikit ? 'Kudikit' : 'Guaranty Trust Bank',
+    );
+  }
+
+  Future<List<RecentContact>> _mockGetRecentContacts() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    return [
+      RecentContact(
+        id: '1',
+        name: 'Squad YEM YEM SUPERSTORE LIMITED',
+        accountNumber: '3004749378',
+        bank: 'GTBank',
+        lastTransferDate: DateTime.now().subtract(const Duration(days: 7)),
+      ),
+      RecentContact(
+        id: '2',
+        name: 'John Doe Peters',
+        accountNumber: '3004749378',
+        bank: 'GTBank',
+        lastTransferDate: DateTime.now().subtract(const Duration(days: 11)),
+      ),
+    ];
+  }
+
+  Future<TransactionResult> _mockProcessTransfer(TransferData data) async {
+    await Future.delayed(const Duration(seconds: 2));
+
+    return TransactionResult(
+      transactionId: '213546364738829374474939',
+      transactionType: 'Transfer',
+      amount: data.amount!,
+      fee: data.fee,
+      payingBank: 'Guaranty Trust Bank',
+      payingBankAccount: '534256**********6758',
+      creditedTo: 'Kudikit wallet',
+      note: data.note,
+      transactionDate: DateTime.now(),
+      isSuccessful: true,
+    );
+  }
+}
+
+// ==================== NOTIFIER ====================
+
+class P2PTransferNotifier extends StateNotifier<P2PTransferState> {
+  final P2PTransferService _service;
+
+  P2PTransferNotifier(this._service) : super(const P2PTransferState()) {
+    _loadRecentContacts();
+  }
+
+  Future<void> _loadRecentContacts() async {
+    try {
+      final contacts = await _service.getRecentContacts();
+      state = state.copyWith(recentContacts: contacts);
+    } catch (e) {
+      // Silently fail for initial load
+    }
+  }
+
+  void setTransferType(TransferType type) {
+    state = state.copyWith(
+      transferType: type,
+      transferData: const TransferData(), // Reset transfer data
+    );
+  }
+
+  Future<void> validateAccount(String accountNumber) async {
+    state = state.copyWith(isValidatingAccount: true, clearError: true);
+
+    try {
+      final recipient = await _service.validateAccount(
+        accountNumber,
+        state.transferType,
+      );
+
+      state = state.copyWith(
+        isValidatingAccount: false,
+        transferData: state.transferData.copyWith(recipient: recipient),
+      );
+    } on SocketException {
+      state = state.copyWith(
+        isValidatingAccount: false,
+        error: 'No internet connection. Please check your network.',
+      );
+    } on P2PTransferException catch (e) {
+      state = state.copyWith(
+        isValidatingAccount: false,
+        error: e.message,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isValidatingAccount: false,
+        error: 'Account validation failed. Please try again.',
+      );
+    }
+  }
+
+  void selectRecipient(RecipientInfo recipient) {
+    state = state.copyWith(
+      transferData: state.transferData.copyWith(recipient: recipient),
+    );
+  }
+
+  void setAmount(double amount) {
+    state = state.copyWith(
+      transferData: state.transferData.copyWith(amount: amount),
+    );
+  }
+
+  void setCategory(TransactionCategory category) {
+    state = state.copyWith(
+      transferData: state.transferData.copyWith(category: category),
+    );
+  }
+
+  void setNote(String note) {
+    state = state.copyWith(
+      transferData: state.transferData.copyWith(note: note),
+    );
+  }
+
+  void showConfirmation() {
+    state = state.copyWith(showConfirmDialog: true);
+  }
+
+  void hideConfirmation() {
+    state = state.copyWith(showConfirmDialog: false);
+  }
+
+  void showPinEntry() {
+    state = state.copyWith(showPinDialog: true, showConfirmDialog: false);
+  }
+
+  void hidePinEntry() {
+    state = state.copyWith(showPinDialog: false);
+  }
+
+  Future<void> processTransfer(String pin) async {
+    state = state.copyWith(isProcessingTransfer: true, clearError: true);
+
+    try {
+      // Validate PIN (mock validation)
+      if (pin.length != 6) {
+        throw P2PTransferException('Invalid PIN');
+      }
+
+      final result = await _service.processTransfer(state.transferData);
+
+      state = state.copyWith(
+        isProcessingTransfer: false,
+        transactionResult: result,
+        showPinDialog: false,
+      );
+    } on SocketException {
+      state = state.copyWith(
+        isProcessingTransfer: false,
+        error: 'No internet connection. Please check your network.',
+      );
+    } on P2PTransferException catch (e) {
+      state = state.copyWith(
+        isProcessingTransfer: false,
+        error: e.message,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isProcessingTransfer: false,
+        error: 'Transfer failed. Please try again.',
+      );
+    }
+  }
+
+  void clearError() {
+    state = state.copyWith(clearError: true);
+  }
+
+  void reset() {
+    state = const P2PTransferState();
+    _loadRecentContacts();
+  }
+}
+
+// ==================== PROVIDERS ====================
+
+final p2pTransferServiceProvider = Provider<P2PTransferService>((ref) {
+  return P2PTransferService(
+    baseUrl: 'https://api.kudipay.com/api/v1',
+  );
+});
+
+final p2pTransferProvider =
+    StateNotifierProvider<P2PTransferNotifier, P2PTransferState>((ref) {
+  final service = ref.watch(p2pTransferServiceProvider);
+  return P2PTransferNotifier(service);
+});
+
+// Helper provider for quick amount selection
+final quickAmountsProvider = Provider<List<double>>((ref) {
+  return [200, 1000, 2000, 3000, 5000, 9999];
+});
+
+// ================================ NOTIFICATION PROVIDER ==============================
+
+final notificationPreferencesServiceProvider = Provider<NotificationPreferencesService>((ref) {
+  return NotificationPreferencesService();
+});
+
+// State notifier for notification preferences
+class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<NotificationPreferences>> {
+  final NotificationPreferencesService _service;
+
+  NotificationPreferencesNotifier(this._service) : super(const AsyncValue.loading()) {
+    loadPreferences();
+  }
+
+  /// Load preferences from server or local storage
+  Future<void> loadPreferences() async {
+    state = const AsyncValue.loading();
+    
+    try {
+      // Try to load from local storage first for instant UI
+      final localPrefs = await _service.loadLocalPreferences();
+      state = AsyncValue.data(localPrefs);
+      
+      // Then fetch from server to sync
+      final serverPrefs = await _service.fetchPreferences();
+      state = AsyncValue.data(serverPrefs);
+      
+      // Save to local storage
+      await _service.savePreferencesLocally(serverPrefs);
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  /// Toggle a specific preference
+  Future<void> togglePreference(String key, bool value) async {
+    final currentPrefs = state.value;
+    if (currentPrefs == null) return;
+
+    // Optimistically update UI
+    final updatedPrefs = _updatePreferenceByKey(currentPrefs, key, value);
+    state = AsyncValue.data(updatedPrefs);
+
+    try {
+      // Update on server
+      final success = await _service.updateSinglePreference(key, value);
+      
+      if (success) {
+        // Save to local storage
+        await _service.savePreferencesLocally(updatedPrefs);
+      } else {
+        // Revert on failure
+        state = AsyncValue.data(currentPrefs);
+      }
+    } catch (e) {
+      // Revert on error
+      state = AsyncValue.data(currentPrefs);
+    }
+  }
+
+  /// Update all preferences at once
+  Future<void> updateAllPreferences(NotificationPreferences preferences) async {
+    state = const AsyncValue.loading();
+    
+    try {
+      final success = await _service.updatePreferences(preferences);
+      
+      if (success) {
+        state = AsyncValue.data(preferences);
+        await _service.savePreferencesLocally(preferences);
+      } else {
+        throw Exception('Failed to update preferences');
+      }
+    } catch (e, stackTrace) {
+      state = AsyncValue.error(e, stackTrace);
+    }
+  }
+
+  /// Helper to update preference by key
+  NotificationPreferences _updatePreferenceByKey(
+    NotificationPreferences prefs,
+    String key,
+    bool value,
+  ) {
+    switch (key) {
+      // Transaction
+      case 'transactionSuccess':
+        return prefs.copyWith(transactionSuccess: value);
+      case 'depositNotification':
+        return prefs.copyWith(depositNotification: value);
+      case 'withdrawalNotification':
+        return prefs.copyWith(withdrawalNotification: value);
+      case 'largeTransactionAlert':
+        return prefs.copyWith(largeTransactionAlert: value);
+      
+      // Bills & Reminders
+      case 'billPaymentReminder':
+        return prefs.copyWith(billPaymentReminder: value);
+      case 'failedBillPaymentAlert':
+        return prefs.copyWith(failedBillPaymentAlert: value);
+      
+      // Rewards & Offers
+      case 'rewardEarnedAlert':
+        return prefs.copyWith(rewardEarnedAlert: value);
+      case 'rewardExpiryAlert':
+        return prefs.copyWith(rewardExpiryAlert: value);
+      case 'promotionalOffers':
+        return prefs.copyWith(promotionalOffers: value);
+      case 'partnerOffers':
+        return prefs.copyWith(partnerOffers: value);
+      
+      // App Updates & Tips
+      case 'newFeatureAnnouncements':
+        return prefs.copyWith(newFeatureAnnouncements: value);
+      case 'tutorialPrompt':
+        return prefs.copyWith(tutorialPrompt: value);
+      case 'feedbackRequest':
+        return prefs.copyWith(feedbackRequest: value);
+      case 'announcementBanners':
+        return prefs.copyWith(announcementBanners: value);
+      
+      default:
+        return prefs;
+    }
+  }
+}
+
+// Provider for notification preferences
+final notificationPreferencesProvider = 
+    StateNotifierProvider<NotificationPreferencesNotifier, AsyncValue<NotificationPreferences>>((ref) {
+  final service = ref.watch(notificationPreferencesServiceProvider);
+  return NotificationPreferencesNotifier(service);
+});
+
+
+
+
+// =============================== EMAIL CHANGE PROVIDER ==================================
+
+
+
+// Service provider
+final emailChangeServiceProvider = Provider<EmailChangeService>((ref) {
+  return EmailChangeService();
+});
+
+// Email change flow state
+enum EmailChangeStep {
+  initial,        // Show current email
+  requestingOtp,  // Getting OTP
+  verifyingOtp,   // Entering OTP
+  changingEmail,  // Entering new email
+  success,        // Email changed successfully
+}
+
+class EmailChangeState {
+  final EmailChangeStep step;
+  final String? currentEmail;
+  final String? maskedEmail;
+  final String? verificationToken;
+  final String? newEmail;
+  final String? errorMessage;
+  final bool isLoading;
+
+  EmailChangeState({
+    this.step = EmailChangeStep.initial,
+    this.currentEmail,
+    this.maskedEmail,
+    this.verificationToken,
+    this.newEmail,
+    this.errorMessage,
+    this.isLoading = false,
+  });
+
+  EmailChangeState copyWith({
+    EmailChangeStep? step,
+    String? currentEmail,
+    String? maskedEmail,
+    String? verificationToken,
+    String? newEmail,
+    String? errorMessage,
+    bool? isLoading,
+  }) {
+    return EmailChangeState(
+      step: step ?? this.step,
+      currentEmail: currentEmail ?? this.currentEmail,
+      maskedEmail: maskedEmail ?? this.maskedEmail,
+      verificationToken: verificationToken ?? this.verificationToken,
+      newEmail: newEmail ?? this.newEmail,
+      errorMessage: errorMessage,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+// Email change notifier
+class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
+  final EmailChangeService _service;
+
+  EmailChangeNotifier(this._service) : super(EmailChangeState()) {
+    _loadCurrentEmail();
+  }
+
+  /// Load current user email
+  Future<void> _loadCurrentEmail() async {
+    final email = await _service.getCurrentEmail();
+    if (email != null) {
+      state = state.copyWith(
+        currentEmail: email,
+        maskedEmail: _service.maskEmail(email),
+      );
+    }
+  }
+
+  /// Request OTP for email change
+  Future<bool> requestOTP() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _service.requestOTP(state.currentEmail ?? '');
+      
+      if (result['success']) {
+        state = state.copyWith(
+          step: EmailChangeStep.verifyingOtp,
+          maskedEmail: result['maskedEmail'] ?? state.maskedEmail,
+          isLoading: false,
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          errorMessage: result['message'],
+          isLoading: false,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to request OTP: ${e.toString()}',
+        isLoading: false,
+      );
+      return false;
+    }
+  }
+
+  /// Verify OTP
+  Future<bool> verifyOTP(String otp) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _service.verifyOTP(otp);
+      
+      if (result['success']) {
+        state = state.copyWith(
+          step: EmailChangeStep.changingEmail,
+          verificationToken: result['verificationToken'],
+          isLoading: false,
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          errorMessage: result['message'],
+          isLoading: false,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to verify OTP: ${e.toString()}',
+        isLoading: false,
+      );
+      return false;
+    }
+  }
+
+  /// Change email address
+  Future<bool> changeEmail(String newEmail) async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _service.changeEmail(
+        newEmail: newEmail,
+        verificationToken: state.verificationToken ?? '',
+      );
+      
+      if (result['success']) {
+        state = state.copyWith(
+          step: EmailChangeStep.success,
+          newEmail: result['newEmail'],
+          isLoading: false,
+        );
+        return true;
+      } else {
+        state = state.copyWith(
+          errorMessage: result['message'],
+          isLoading: false,
+        );
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to change email: ${e.toString()}',
+        isLoading: false,
+      );
+      return false;
+    }
+  }
+
+  /// Resend OTP
+  Future<bool> resendOTP() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      final result = await _service.resendOTP();
+      
+      state = state.copyWith(isLoading: false);
+      
+      if (result['success']) {
+        return true;
+      } else {
+        state = state.copyWith(errorMessage: result['message']);
+        return false;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        errorMessage: 'Failed to resend OTP: ${e.toString()}',
+        isLoading: false,
+      );
+      return false;
+    }
+  }
+
+  /// Reset state
+  void reset() {
+    state = EmailChangeState(
+      currentEmail: state.currentEmail,
+      maskedEmail: state.maskedEmail,
+    );
+  }
+
+  /// Go back to previous step
+  void goBack() {
+    switch (state.step) {
+      case EmailChangeStep.verifyingOtp:
+        state = state.copyWith(step: EmailChangeStep.initial);
+        break;
+      case EmailChangeStep.changingEmail:
+        state = state.copyWith(step: EmailChangeStep.verifyingOtp);
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+// Provider for email change
+final emailChangeProvider = StateNotifierProvider<EmailChangeNotifier, EmailChangeState>((ref) {
+  final service = ref.watch(emailChangeServiceProvider);
+  return EmailChangeNotifier(service);
 });

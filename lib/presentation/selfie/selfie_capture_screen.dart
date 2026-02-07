@@ -21,13 +21,12 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
   bool _isCameraInitialized = false;
   final ImagePicker _picker = ImagePicker();
 
-  final availableCamerasProvider =
-      Provider<List<CameraDescription>>((ref) => []);
-
   @override
   void initState() {
     super.initState();
-    _initializeCamera();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeCamera();
+    });
   }
 
   Future<void> _initializeCamera() async {
@@ -39,25 +38,32 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
       return;
     }
 
-    final cameras = ref.read(availableCamerasProvider);
-
-    if (cameras.isEmpty) {
-      return;
-    }
-
-    final frontCamera = cameras.firstWhere(
-      (camera) => camera.lensDirection == CameraLensDirection.front,
-      orElse: () => cameras.first,
-    );
-
-    _cameraController = CameraController(
-      frontCamera,
-      ResolutionPreset.high,
-      enableAudio: false,
-    );
-
     try {
+      final cameras = await availableCameras();
+      
+      if (cameras.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('No camera found on this device')),
+          );
+        }
+        return;
+      }
+
+      final frontCamera = cameras.firstWhere(
+        (camera) => camera.lensDirection == CameraLensDirection.front,
+        orElse: () => cameras.first,
+      );
+
+      _cameraController = CameraController(
+        frontCamera,
+        ResolutionPreset.high,
+        enableAudio: false,
+        imageFormatGroup: ImageFormatGroup.jpeg,
+      );
+
       await _cameraController!.initialize();
+      
       if (mounted) {
         setState(() {
           _isCameraInitialized = true;
@@ -67,6 +73,11 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
       }
     } catch (e) {
       print('Error initializing camera: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to initialize camera: $e')),
+        );
+      }
     }
   }
 

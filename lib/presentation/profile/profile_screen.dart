@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/presentation/email/change_email_screen.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
+import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
 import 'package:kudipay/provider/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 
@@ -302,6 +305,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: 16,
                 color: Colors.grey,
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ChangeEmailScreen(),
+                  ),
+                );
+              },
             ),
             _buildInfoTile(
               icon: Icons.phone_outlined,
@@ -319,6 +330,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: 16,
                 color: Colors.grey,
               ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const NotificationPreferenceScreen(),
+                  ),
+                );
+              },
             ),
 
             const SizedBox(height: 24),
@@ -415,50 +434,58 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String title,
     required String subtitle,
     Widget? trailing,
+    VoidCallback? onTap,
   }) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: Colors.grey[700], size: 20),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ],
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 16),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: AppLayout.scaleWidth(context, 40),
+              height: AppLayout.scaleWidth(context, 40),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF5C7C6F),
+                size: AppLayout.scaleWidth(context, 20),
+              ),
             ),
-          ),
-          if (trailing != null) trailing,
-        ],
+            SizedBox(width: AppLayout.scaleWidth(context, 12)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 15),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 4)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (trailing != null) trailing,
+          ],
+        ),
       ),
     );
   }
@@ -468,35 +495,55 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required String title,
     Widget? trailing,
     VoidCallback? onTap,
+    String? subtitle,
   }) {
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
-            ),
-          ],
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 16),
         ),
         child: Row(
           children: [
-            Icon(icon, color: Colors.grey[700], size: 20),
-            const SizedBox(width: 16),
+            Container(
+              width: AppLayout.scaleWidth(context, 40),
+              height: AppLayout.scaleWidth(context, 40),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE8F5E9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(
+                icon,
+                color: const Color(0xFF5C7C6F),
+                size: AppLayout.scaleWidth(context, 20),
+              ),
+            ),
+            SizedBox(width: AppLayout.scaleWidth(context, 12)),
             Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 15),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  if (subtitle != null) ...[
+                    SizedBox(height: AppLayout.scaleHeight(context, 4)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 12),
+                        color: Colors.black54,
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
             if (trailing != null) trailing,

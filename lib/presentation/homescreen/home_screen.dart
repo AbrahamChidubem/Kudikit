@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
+import 'package:kudipay/presentation/transfer/transfer_reciept_screen.dart';
 import 'package:kudipay/provider/provider.dart';
-
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -30,7 +30,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         if (previous?.value != null && previous!.value! && !isConnected) {
           // Connection lost
           ConnectivitySnackBar.showNoInternet(context);
-        } else if (previous?.value != null && !previous!.value! && isConnected) {
+        } else if (previous?.value != null &&
+            !previous!.value! &&
+            isConnected) {
           // Connection restored
           ConnectivitySnackBar.showConnectionRestored(context);
         }
@@ -45,7 +47,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // The name comes from the BVN/NIN verification!
     final firstName = userInfo?.firstName ?? 'User';
-        
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
       body: SafeArea(
@@ -55,7 +57,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (!connectivityState.isConnected)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
                 color: Colors.red.shade700,
                 child: Row(
                   children: [
@@ -79,7 +82,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ],
                 ),
               ),
-            
+
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
@@ -137,7 +140,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     vertical: 2,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                    color: const Color(0xFF4CAF50)
+                                        .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Text(
@@ -241,7 +245,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   const SizedBox(width: 4),
                                   Text(
                                     connectivityState.isConnected
-                                        ? (connectivityState.connectionType ?? 'Online')
+                                        ? (connectivityState.connectionType ??
+                                            'Online')
                                         : 'Offline',
                                     style: const TextStyle(
                                       fontSize: 10,
@@ -256,7 +261,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Row(
                             children: [
                               Text(
-                                _isBalanceVisible ? '₦135,780.00' : '₦**********',
+                                _isBalanceVisible
+                                    ? '₦135,780.00'
+                                    : '₦**********',
                                 style: const TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.bold,
@@ -336,7 +343,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             icon: Icons.send_outlined,
                             label: 'Transfer',
                             onTap: () {
-                              _handleQuickAction(context, 'Transfer');
+                              _handleQuickAction(context, 'Transfer',
+                                  navigateTo: const TransferRecipientScreen());
                             },
                             isEnabled: connectivityState.isConnected,
                           ),
@@ -464,7 +472,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     // Navigate to all transactions
                                   }
                                 : () {
-                                    ConnectivitySnackBar.showNoInternet(context);
+                                    ConnectivitySnackBar.showNoInternet(
+                                        context);
                                   },
                             child: Text(
                               'View All',
@@ -555,7 +564,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     Widget? navigateTo,
   }) {
     final isConnected = ref.read(currentConnectivityProvider);
-    
+
     if (!isConnected) {
       // Show no internet dialog for critical actions
       showDialog(
