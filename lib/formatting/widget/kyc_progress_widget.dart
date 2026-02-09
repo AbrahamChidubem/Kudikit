@@ -5,7 +5,7 @@ import 'package:kudipay/presentation/Identity/chooseID.dart';
 // import 'package:kudipay/presentation/Identity/upload_ID.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
 import 'package:kudipay/presentation/selfie/selfie_instruction.dart';
-import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 
 
 class KycProgressWidget extends ConsumerWidget {

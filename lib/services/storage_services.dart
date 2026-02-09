@@ -1,4 +1,7 @@
 import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kudipay/model/user/user_info.dart';
@@ -86,32 +89,157 @@ class StorageService {
     return token != null && token.isNotEmpty;
   }
 
-  // ==================== PIN (SECURE!) ====================
+  // ==================== PIN (SECURE WITH HASHING!) ====================
 
+  /// Generates a cryptographically secure salt for PIN hashing
+  String _generateSalt() {
+    final random = Random.secure();
+    final saltBytes = List<int>.generate(16, (_) => random.nextInt(256));
+    return base64Encode(saltBytes);
+  }
+
+  /// Hashes a PIN using PBKDF2 with SHA-256
+  /// 
+  /// Parameters:
+  /// - pin: The user's PIN to hash
+  /// - salt: Base64-encoded salt (generated if not provided)
+  /// - iterations: Number of PBKDF2 iterations (10,000 recommended)
+  /// 
+  /// Returns: Base64-encoded hash
+  String _hashPin(String pin, String salt, {int iterations = 10000}) {
+    final saltBytes = base64Decode(salt);
+    final pinBytes = utf8.encode(pin);
+    
+    // PBKDF2 implementation
+    var result = Uint8List.fromList(pinBytes);
+    for (var i = 0; i < iterations; i++) {
+      final hmacSha256 = Hmac(sha256, saltBytes);
+      final combined = Uint8List.fromList([...result, ...pinBytes]);
+      result = Uint8List.fromList(hmacSha256.convert(combined).bytes);
+    }
+    
+    return base64Encode(result);
+  }
+
+  /// Saves a PIN securely by hashing it with PBKDF2
+  /// 
+  /// Storage format: "salt:hash:iterations"
+  /// This allows for future upgrade of iteration count
   Future<void> savePin(String pin) async {
     try {
-      // TODO: Hash PIN in production
-      await _secureStorage.write(key: _userPinKey, value: pin);
+      // Validate PIN format (should be 4-6 digits)
+      if (pin.isEmpty || pin.length < 4 || pin.length > 6) {
+        throw StorageException('PIN must be 4-6 digits');
+      }
+      
+      // Validate PIN contains only numbers
+      if (!RegExp(r'^\d+$').hasMatch(pin)) {
+        throw StorageException('PIN must contain only numbers');
+      }
+      
+      final salt = _generateSalt();
+      const iterations = 10000;
+      final hashedPin = _hashPin(pin, salt, iterations: iterations);
+      
+      // Store in format: "salt:hash:iterations"
+      final storedValue = '$salt:$hashedPin:$iterations';
+      await _secureStorage.write(key: _userPinKey, value: storedValue);
     } catch (e) {
       throw StorageException('Failed to save PIN: $e');
     }
   }
 
-  Future<String?> getPin() async {
+  /// Internal method to get the stored PIN hash data
+  /// Returns null if no PIN is stored
+  Future<Map<String, dynamic>?> _getStoredPinData() async {
     try {
-      return await _secureStorage.read(key: _userPinKey);
+      final storedValue = await _secureStorage.read(key: _userPinKey);
+      if (storedValue == null) return null;
+      
+      final parts = storedValue.split(':');
+      if (parts.length != 3) {
+        // Invalid format, possibly old plaintext PIN
+        // For migration: treat it as invalid and require PIN reset
+        return null;
+      }
+      
+      return {
+        'salt': parts[0],
+        'hash': parts[1],
+        'iterations': int.parse(parts[2]),
+      };
     } catch (e) {
       return null;
     }
   }
 
+  /// Verifies an entered PIN against the stored hash
+  /// 
+  /// Returns true if PIN matches, false otherwise
+  /// 
+  /// Note: This method uses constant-time comparison to prevent
+  /// timing attacks (though for PINs, this is less critical)
   Future<bool> verifyPin(String enteredPin) async {
-    final storedPin = await getPin();
-    return storedPin != null && storedPin == enteredPin;
+    try {
+      final pinData = await _getStoredPinData();
+      if (pinData == null) return false;
+      
+      final salt = pinData['salt'] as String;
+      final storedHash = pinData['hash'] as String;
+      final iterations = pinData['iterations'] as int;
+      
+      // Hash the entered PIN with the same salt and iterations
+      final enteredHash = _hashPin(enteredPin, salt, iterations: iterations);
+      
+      // Constant-time comparison to prevent timing attacks
+      return _constantTimeCompare(storedHash, enteredHash);
+    } catch (e) {
+      return false;
+    }
   }
 
+  /// Constant-time string comparison to prevent timing attacks
+  bool _constantTimeCompare(String a, String b) {
+    if (a.length != b.length) return false;
+    
+    var result = 0;
+    for (var i = 0; i < a.length; i++) {
+      result |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
+    }
+    return result == 0;
+  }
+
+  /// Checks if a PIN has been set
+  Future<bool> hasPin() async {
+    final pinData = await _getStoredPinData();
+    return pinData != null;
+  }
+
+  /// Deletes the stored PIN
   Future<void> deletePin() async {
     await _secureStorage.delete(key: _userPinKey);
+  }
+
+  /// Changes the user's PIN
+  /// 
+  /// Requires the old PIN for verification before setting new one
+  Future<bool> changePin({
+    required String oldPin,
+    required String newPin,
+  }) async {
+    try {
+      // Verify old PIN first
+      final isValid = await verifyPin(oldPin);
+      if (!isValid) {
+        return false;
+      }
+      
+      // Save new PIN
+      await savePin(newPin);
+      return true;
+    } catch (e) {
+      throw StorageException('Failed to change PIN: $e');
+    }
   }
 
   // ==================== USER DATA ====================

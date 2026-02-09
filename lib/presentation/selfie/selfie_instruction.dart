@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/selfie/selfie_capture_screen.dart';
 
 class SelfieInstructionsScreen extends ConsumerWidget {
@@ -13,18 +14,18 @@ class SelfieInstructionsScreen extends ConsumerWidget {
         backgroundColor: const Color(0xFFF5F5F0),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16.0),
+            padding: AppLayout.pagePadding(context),
             child: Center(
               child: Stack(
                 children: [
-                  const SizedBox(
-                    width: 50,
-                    height: 50,
+                  SizedBox(
+                    width: AppLayout.scaleWidth(context, 50),
+                    height: AppLayout.scaleWidth(context, 50),
                     child: CircularProgressIndicator(
                       value: 0.36,
                       strokeWidth: 3,
@@ -38,7 +39,7 @@ class SelfieInstructionsScreen extends ConsumerWidget {
                       child: Text(
                         '36%',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: AppLayout.fontSize(context, 12),
                           fontWeight: FontWeight.w600,
                           color: Colors.grey[700],
                         ),
@@ -52,43 +53,44 @@ class SelfieInstructionsScreen extends ConsumerWidget {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: AppLayout.pagePadding(context),
         child: Column(
           children: [
-            const SizedBox(height: 20),
-            const Text(
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+            Text(
               'Photo Capture',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: AppLayout.fontSize(context, 28),
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
             Text(
               'We\'ll match your face with your NIN/BVN photo to verify your identity',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 14,
+                fontSize: AppLayout.fontSize(context, 14),
                 color: Colors.grey[600],
                 height: 1.5,
               ),
             ),
-            const SizedBox(height: 60),
+            SizedBox(height: AppLayout.scaleHeight(context, 60)),
             // Face Detection Icon
             Container(
-              width: 200,
-              height: 200,
+              width: AppLayout.scaleWidth(context, 200),
+              height: AppLayout.scaleWidth(context, 200),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
               ),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   Icon(
                     Icons.person,
-                    size: 100,
+                    size: AppLayout.scaleWidth(context, 28),
                     color: Colors.grey[400],
                   ),
                   // Corner brackets
@@ -115,31 +117,31 @@ class SelfieInstructionsScreen extends ConsumerWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: AppLayout.scaleHeight(context, 40)),
             // Instructions Box
             Container(
-              padding: const EdgeInsets.all(20),
+              padding: AppLayout.pagePadding(context),
               decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(12),
-              ),
+                  color: const Color(0xFFE8F5E9),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 12))),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     'Please ensure the following',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: AppLayout.fontSize(context, 16),
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
                   _buildInstruction('Ensure your face is well-lit'),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppLayout.scaleHeight(context, 12)),
                   _buildInstruction(
                       'Your entire face is clearly visible within the frame'),
-                  const SizedBox(height: 12),
+                  SizedBox(height: AppLayout.scaleHeight(context, 12)),
                   _buildInstruction(
                       'Take off glasses, hats, masks, or anything covering your face'),
                 ],
@@ -149,7 +151,7 @@ class SelfieInstructionsScreen extends ConsumerWidget {
             // Next Button
             SizedBox(
               width: double.infinity,
-              height: 56,
+              height: AppLayout.scaleWidth(context, 50),
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -162,14 +164,15 @@ class SelfieInstructionsScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF389165),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
+                    borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 28)),
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
+                child: Text(
                   'Next',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppLayout.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),

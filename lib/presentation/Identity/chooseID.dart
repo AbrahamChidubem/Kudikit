@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
-import 'package:kudipay/provider/id_verification_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class IdVerificationScreen extends ConsumerStatefulWidget {

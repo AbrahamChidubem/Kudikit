@@ -4,7 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/id&document/document_data.dart';
 import 'package:kudipay/presentation/Identity/confirm_info.dart';
-import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'dart:io';
 import 'package:kudipay/provider/provider.dart';
 

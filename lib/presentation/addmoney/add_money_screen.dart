@@ -7,9 +7,9 @@ import 'package:kudipay/presentation/addmoney/cash_deposit.dart';
 import 'package:kudipay/presentation/addmoney/top_up_with_card.dart';
 import 'package:kudipay/presentation/bankdeposit/select_bank.dart';
 import 'package:kudipay/presentation/bankdeposit/ussd_code_display_screen.dart';
-import 'package:kudipay/presentation/bankussd/bank_ussd_screen.dart';
-import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
-import 'package:kudipay/provider/provider.dart';
+
+import 'package:kudipay/provider/funding/funding_provider.dart';
+
 
 class AddMoneyScreen extends ConsumerStatefulWidget {
   const AddMoneyScreen({Key? key}) : super(key: key);

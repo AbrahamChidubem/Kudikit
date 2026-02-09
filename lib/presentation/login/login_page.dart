@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
-import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/api_services.dart';
 
@@ -67,26 +68,38 @@ class _LoginPageState extends ConsumerState<LoginPage> {
             if (!isOnline)
               Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding: EdgeInsets.symmetric(
+                  vertical: AppLayout.scaleHeight(context, 8),
+                  horizontal: AppLayout.scaleWidth(context, 16),
+                ),
                 color: Colors.red.shade700,
                 child: Row(
                   children: [
-                    const Icon(Icons.wifi_off, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    const Expanded(
+                    Icon(
+                      Icons.wifi_off,
+                      color: Colors.white,
+                      size: AppLayout.scaleWidth(context, 20),
+                    ),
+                    SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                    Expanded(
                       child: Text(
                         'No internet - Login requires connection',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: AppLayout.fontSize(context, 14),
+                        ),
                       ),
                     ),
                     TextButton(
                       onPressed: () {
                         ref.read(connectivityStateProvider.notifier).refresh();
                       },
-                      child: const Text(
+                      child: Text(
                         'Retry',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: AppLayout.fontSize(context, 14),
+                        ),
                       ),
                     ),
                   ],
@@ -98,8 +111,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 children: [
                   // Top Section
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 24, vertical: 16),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.scaleWidth(context, 24),
+                      vertical: AppLayout.scaleHeight(context, 16),
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -107,19 +122,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         Row(
                           children: [
                             Container(
-                              width: 8,
-                              height: 8,
+                              width: AppLayout.scaleWidth(context, 8),
+                              height: AppLayout.scaleWidth(context, 8),
                               decoration: BoxDecoration(
                                 color: isOnline ? Colors.green : Colors.red,
                                 shape: BoxShape.circle,
                               ),
                             ),
-                            const SizedBox(width: 8),
+                            SizedBox(width: AppLayout.scaleWidth(context, 8)),
                             Text(
                               isOnline ? 'Online' : 'Offline',
                               style: TextStyle(
                                 color: isOnline ? Colors.green : Colors.red,
-                                fontSize: 12,
+                                fontSize: AppLayout.fontSize(context, 12),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -145,7 +160,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               color: isOnline
                                   ? const Color(0xFF5C7C6F)
                                   : Colors.grey,
-                              fontSize: 14,
+                              fontSize: AppLayout.fontSize(context, 14),
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -154,20 +169,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
                   // Profile Image
                   Container(
-                    width: 80,
-                    height: 80,
+                    width: AppLayout.scaleWidth(context, 80),
+                    height: AppLayout.scaleWidth(context, 80),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.1),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          blurRadius: AppLayout.scaleWidth(context, 10),
+                          offset: Offset(0, AppLayout.scaleHeight(context, 4)),
                         ),
                       ],
                     ),
@@ -178,10 +193,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
                             color: const Color(0xFFE8F5E9),
-                            child: const Icon(
+                            child: Icon(
                               Icons.person,
-                              size: 40,
-                              color: Color(0xFF4CAF50),
+                              size: AppLayout.scaleWidth(context, 40),
+                              color: const Color(0xFF4CAF50),
                             ),
                           );
                         },
@@ -189,7 +204,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
                   // Phone Number with Dropdown
                   Row(
@@ -197,22 +212,22 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     children: [
                       Text(
                         widget.phoneNumber ?? '08124608695',
-                        style: const TextStyle(
-                          fontSize: 20,
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 20),
                           fontWeight: FontWeight.w600,
                           color: Colors.black87,
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: AppLayout.scaleWidth(context, 8)),
                       Icon(
                         Icons.keyboard_arrow_down,
                         color: Colors.grey[600],
-                        size: 24,
+                        size: AppLayout.scaleWidth(context, 24),
                       ),
                     ],
                   ),
 
-                  const SizedBox(height: 60),
+                  SizedBox(height: AppLayout.scaleHeight(context, 60)),
 
                   // PIN Input Section
                   Text(
@@ -220,22 +235,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         ? 'Enter 6 digits PIN to login'
                         : 'Internet required to login',
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppLayout.fontSize(context, 14),
                       color: isOnline ? Colors.black54 : Colors.red,
                       fontWeight: FontWeight.w400,
                     ),
                   ),
 
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
                   // PIN Dots
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: List.generate(6, (index) {
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 6),
-                        width: 12,
-                        height: 12,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: AppLayout.scaleWidth(context, 6),
+                        ),
+                        width: AppLayout.scaleWidth(context, 12),
+                        height: AppLayout.scaleWidth(context, 12),
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: _pinFilled[index]
@@ -248,7 +265,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     }),
                   ),
 
-                  const SizedBox(height: 24),
+                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
                   // Forgot PIN
                   TextButton(
@@ -381,15 +398,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget _buildNumberButton(int number, bool isEnabled) {
     return InkWell(
       onTap: isEnabled ? () => _onNumberTap(number.toString()) : null,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(
+        AppLayout.scaleWidth(context, 12),
+      ),
       child: Container(
-        width: 70,
-        height: 50,
+        width: AppLayout.scaleWidth(context, 70),
+        height: AppLayout.scaleHeight(context, 50),
         alignment: Alignment.center,
         child: Text(
           '$number',
           style: TextStyle(
-            fontSize: 28,
+            fontSize: AppLayout.fontSize(context, 28),
             fontWeight: FontWeight.w400,
             color: isEnabled ? Colors.black87 : Colors.grey,
           ),
@@ -414,14 +433,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   );
                 }
               : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            AppLayout.scaleWidth(context, 12),
+          ),
           child: Container(
-            width: 70,
-            height: 50,
+            width: AppLayout.scaleWidth(context, 70),
+            height: AppLayout.scaleHeight(context, 50),
             alignment: Alignment.center,
             child: Icon(
               Icons.fingerprint,
-              size: 32,
+              size: AppLayout.scaleWidth(context, 32),
               color: isEnabled ? Colors.grey[600] : Colors.grey[400],
             ),
           ),
@@ -433,14 +454,16 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         // Delete Button
         InkWell(
           onTap: isEnabled ? _onDeleteTap : null,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            AppLayout.scaleWidth(context, 12),
+          ),
           child: Container(
-            width: 70,
-            height: 50,
+            width: AppLayout.scaleWidth(context, 70),
+            height: AppLayout.scaleHeight(context, 50),
             alignment: Alignment.center,
             child: Icon(
               Icons.backspace_outlined,
-              size: 28,
+              size: AppLayout.scaleWidth(context, 28),
               color: isEnabled ? Colors.grey[600] : Colors.grey[400],
             ),
           ),

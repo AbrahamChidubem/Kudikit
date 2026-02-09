@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/usecases/passcode_state.dart';
 import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/passcode/numeric_keypad.dart';
@@ -27,46 +28,48 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding: const EdgeInsets.all(32),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
+        ),
+        contentPadding: EdgeInsets.all(AppLayout.scaleWidth(context, 32)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 80,
-              height: 80,
+              width: AppLayout.scaleWidth(context, 80),
+              height: AppLayout.scaleWidth(context, 80),
               decoration: BoxDecoration(
                 color: Colors.green.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.check_circle,
                 color: Colors.green,
-                size: 50,
+                size: AppLayout.scaleWidth(context, 50),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+            Text(
               'Success!',
               style: TextStyle(
-                fontSize: 24,
+                fontSize: AppLayout.fontSize(context, 24),
                 fontWeight: FontWeight.bold,
                 color: Colors.black,
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
             Text(
               'Passcode confirmed successfully!',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontSize: 15,
+                fontSize: AppLayout.fontSize(context, 15),
                 color: Colors.grey[600],
               ),
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
             SizedBox(
               width: double.infinity,
-              height: 48,
+              height: AppLayout.scaleHeight(context, 48),
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(dialogContext);
@@ -82,14 +85,16 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4CAF50),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(
+                      AppLayout.scaleWidth(context, 12),
+                    ),
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
+                child: Text(
                   'Continue to Home',
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: AppLayout.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
@@ -126,47 +131,46 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
         children: [
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: AppLayout.pagePadding(context),
               child: Column(
                 children: [
-                  const SizedBox(height: 40),
+                  SizedBox(height: AppLayout.scaleHeight(context, 40)),
                   // Title
-                  const Text(
+                  Text(
                     'Confirm your passcode',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: AppLayout.fontSize(context, 28),
                       fontWeight: FontWeight.bold,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
                   // Subtitle
                   Text(
                     'Create a passcode to sign in your account securely. Please, don\'t share your passcode with anyone.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 14,
+                      fontSize: AppLayout.fontSize(context, 14),
                       color: Colors.grey[600],
                       height: 1.5,
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  SizedBox(height: AppLayout.scaleHeight(context, 60)),
                   // Passcode Dots Indicator
                   PasscodeDotsIndicator(
                     length: 4,
                     filledCount: passcodeState.enteredPasscode.length,
                     showError: passcodeState.showError,
-                    // isLoading: passcodeState.isLoading,
                   ),
-                  const SizedBox(height: 16),
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
                   // Error Message
                   AnimatedOpacity(
                     opacity: passcodeState.showError ? 1.0 : 0.0,
                     duration: const Duration(milliseconds: 300),
-                    child: const Text(
+                    child: Text(
                       'Passcode doesn\'t match, try again.',
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: AppLayout.fontSize(context, 14),
                         color: Colors.red,
                         fontWeight: FontWeight.w500,
                       ),
@@ -188,7 +192,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
                       ),
                     ),
                   ),
-                  const SizedBox(height: 40),
+                  SizedBox(height: AppLayout.scaleHeight(context, 40)),
                 ],
               ),
             ),

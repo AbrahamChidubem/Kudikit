@@ -4,7 +4,8 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/email/change_email_screen.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
-import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/presentation/teir/upgrade_teir_screen.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
@@ -245,6 +246,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ),
                   TextButton(
                     onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const UpgradeTierScreen(),
+                        ),
+                      );
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Upgrade tier feature coming soon'),

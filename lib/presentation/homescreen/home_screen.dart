@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
 import 'package:kudipay/presentation/transfer/transfer_reciept_screen.dart';
@@ -57,26 +58,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             if (!connectivityState.isConnected)
               Container(
                 width: double.infinity,
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                padding: EdgeInsets.symmetric(
+                  vertical: AppLayout.scaleHeight(context, 8),
+                  horizontal: AppLayout.scaleWidth(context, 16),
+                ),
                 color: Colors.red.shade700,
                 child: Row(
                   children: [
-                    const Icon(Icons.wifi_off, color: Colors.white, size: 20),
-                    const SizedBox(width: 8),
-                    const Expanded(
+                    Icon(
+                      Icons.wifi_off,
+                      color: Colors.white,
+                      size: AppLayout.scaleWidth(context, 20),
+                    ),
+                    SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                    Expanded(
                       child: Text(
                         'No internet connection',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: AppLayout.fontSize(context, 14),
+                        ),
                       ),
                     ),
                     TextButton(
                       onPressed: () {
                         ref.read(connectivityStateProvider.notifier).refresh();
                       },
-                      child: const Text(
+                      child: Text(
                         'Retry',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: AppLayout.fontSize(context, 14),
+                        ),
                       ),
                     ),
                   ],
@@ -90,36 +103,40 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   children: [
                     // Header Section
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: AppLayout.pagePadding(context),
                       child: Row(
                         children: [
                           // Profile Image
                           Container(
-                            width: 45,
-                            height: 45,
+                            width: AppLayout.scaleWidth(context, 45),
+                            height: AppLayout.scaleWidth(context, 45),
                             decoration: BoxDecoration(
                               color: Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                AppLayout.scaleWidth(context, 12),
+                              ),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(
+                                AppLayout.scaleWidth(context, 12),
+                              ),
                               child: Image.asset(
                                 'assets/images/img_placeholder.png',
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
                                     color: const Color(0xFF4CAF50),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.person,
                                       color: Colors.white,
-                                      size: 24,
+                                      size: AppLayout.scaleWidth(context, 24),
                                     ),
                                   );
                                 },
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: AppLayout.scaleWidth(context, 12)),
 
                           // Greeting
                           Expanded(
@@ -128,27 +145,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               children: [
                                 Text(
                                   'Hi, $firstName 👋',
-                                  style: const TextStyle(
-                                    fontSize: 16,
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 16),
                                     fontWeight: FontWeight.w600,
                                     color: Colors.black87,
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 2,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppLayout.scaleWidth(context, 8),
+                                    vertical: AppLayout.scaleHeight(context, 2),
                                   ),
                                   decoration: BoxDecoration(
                                     color: const Color(0xFF4CAF50)
                                         .withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(
+                                      AppLayout.scaleWidth(context, 8),
+                                    ),
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     'Tier 1',
                                     style: TextStyle(
-                                      fontSize: 11,
-                                      color: Color(0xFF4CAF50),
+                                      fontSize: AppLayout.fontSize(context, 11),
+                                      color: const Color(0xFF4CAF50),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -162,6 +181,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             onPressed: () {},
                             icon: const Icon(Icons.headphones_outlined),
                             color: Colors.grey[700],
+                            iconSize: AppLayout.scaleWidth(context, 24),
                           ),
                           Stack(
                             children: [
@@ -169,14 +189,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 onPressed: () {},
                                 icon: const Icon(Icons.notifications_outlined),
                                 color: Colors.grey[700],
+                                iconSize: AppLayout.scaleWidth(context, 24),
                               ),
                               // Small connectivity indicator dot
                               Positioned(
-                                right: 8,
-                                top: 8,
+                                right: AppLayout.scaleWidth(context, 8),
+                                top: AppLayout.scaleHeight(context, 8),
                                 child: Container(
-                                  width: 8,
-                                  height: 8,
+                                  width: AppLayout.scaleWidth(context, 8),
+                                  height: AppLayout.scaleWidth(context, 8),
                                   decoration: BoxDecoration(
                                     color: connectivityState.isConnected
                                         ? Colors.green
@@ -195,12 +216,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 8),
+                    SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
                     // Balance Card
                     Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 16),
-                      padding: const EdgeInsets.all(20),
+                      margin: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 16),
+                      ),
+                      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
@@ -210,12 +233,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             Color(0xFF40916C),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(
+                          AppLayout.scaleWidth(context, 20),
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFF52B788).withOpacity(0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                            blurRadius: AppLayout.scaleWidth(context, 20),
+                            offset: Offset(0, AppLayout.scaleHeight(context, 8)),
                           ),
                         ],
                       ),
@@ -225,10 +250,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
+                              Text(
                                 'Available Balance',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: AppLayout.fontSize(context, 13),
                                   color: Colors.white70,
                                 ),
                               ),
@@ -240,16 +265,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         ? Icons.wifi
                                         : Icons.wifi_off,
                                     color: Colors.white70,
-                                    size: 14,
+                                    size: AppLayout.scaleWidth(context, 14),
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: AppLayout.scaleWidth(context, 4)),
                                   Text(
                                     connectivityState.isConnected
                                         ? (connectivityState.connectionType ??
                                             'Online')
                                         : 'Offline',
-                                    style: const TextStyle(
-                                      fontSize: 10,
+                                    style: TextStyle(
+                                      fontSize: AppLayout.fontSize(context, 10),
                                       color: Colors.white70,
                                     ),
                                   ),
@@ -257,20 +282,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: AppLayout.scaleHeight(context, 8)),
                           Row(
                             children: [
                               Text(
                                 _isBalanceVisible
                                     ? '₦135,780.00'
                                     : '₦**********',
-                                style: const TextStyle(
-                                  fontSize: 32,
+                                style: TextStyle(
+                                  fontSize: AppLayout.fontSize(context, 32),
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: AppLayout.scaleWidth(context, 12)),
                               InkWell(
                                 onTap: () {
                                   setState(() {
@@ -282,12 +307,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       ? Icons.visibility_outlined
                                       : Icons.visibility_off_outlined,
                                   color: Colors.white70,
-                                  size: 20,
+                                  size: AppLayout.scaleWidth(context, 20),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: AppLayout.scaleHeight(context, 16)),
                           Row(
                             children: [
                               Text(
@@ -295,35 +320,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ? 'Last updated 2 minutes ago'
                                     : 'Offline - Last sync 2 minutes ago',
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: AppLayout.fontSize(context, 11),
                                   color: Colors.white.withOpacity(0.7),
                                 ),
                               ),
                             ],
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: AppLayout.scaleHeight(context, 8)),
                           Row(
                             children: [
                               Text(
                                 '8124608695',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: AppLayout.fontSize(context, 12),
                                   color: Colors.white.withOpacity(0.9),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Michael Asuquo Taluwalase',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.white.withOpacity(0.9),
+                              SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                              Flexible(
+                                child: Text(
+                                  'Michael Asuquo Taluwalase',
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 12),
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: 4),
+                              SizedBox(width: AppLayout.scaleWidth(context, 4)),
                               Icon(
                                 Icons.copy,
-                                size: 14,
+                                size: AppLayout.scaleWidth(context, 14),
                                 color: Colors.white.withOpacity(0.7),
                               ),
                             ],
@@ -332,11 +360,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 20),
+                    SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
                     // Quick Actions with connectivity-aware buttons
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 16),
+                      ),
                       child: Row(
                         children: [
                           _buildQuickAction(
@@ -348,7 +378,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             },
                             isEnabled: connectivityState.isConnected,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           _buildQuickAction(
                             icon: Icons.add_circle_outline,
                             label: 'Top Up',
@@ -361,7 +391,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             },
                             isEnabled: connectivityState.isConnected,
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           _buildQuickAction(
                             icon: Icons.account_balance_wallet_outlined,
                             label: 'Cash out',
@@ -374,25 +404,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
                     // Bill & Utilities
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 16),
+                      ),
                       child: Text(
                         'Bill & Utilities',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: AppLayout.fontSize(context, 14),
                           fontWeight: FontWeight.w600,
                           color: Colors.grey[800],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
                     // Bill Services Grid
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 16),
+                      ),
                       child: Column(
                         children: [
                           Row(
@@ -624,17 +658,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         opacity: isEnabled ? 1.0 : 0.5,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            AppLayout.scaleWidth(context, 12),
+          ),
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(
+              vertical: AppLayout.scaleHeight(context, 16),
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                AppLayout.scaleWidth(context, 12),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+                  blurRadius: AppLayout.scaleWidth(context, 10),
+                  offset: Offset(0, AppLayout.scaleHeight(context, 2)),
                 ),
               ],
             ),
@@ -642,14 +682,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 Icon(
                   icon,
-                  size: 24,
+                  size: AppLayout.scaleWidth(context, 24),
                   color: isEnabled ? Colors.grey[700] : Colors.grey[400],
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppLayout.scaleHeight(context, 8)),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 12,
+                    fontSize: AppLayout.fontSize(context, 12),
                     fontWeight: FontWeight.w500,
                     color: isEnabled ? Colors.black87 : Colors.grey[400],
                   ),
@@ -678,17 +718,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               // Handle service action
             }
           },
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(
+            AppLayout.scaleWidth(context, 12),
+          ),
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(
+                AppLayout.scaleWidth(context, 12),
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
+                  blurRadius: AppLayout.scaleWidth(context, 10),
+                  offset: Offset(0, AppLayout.scaleHeight(context, 2)),
                 ),
               ],
             ),
@@ -696,14 +740,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               children: [
                 Icon(
                   icon,
-                  size: 24,
+                  size: AppLayout.scaleWidth(context, 24),
                   color: isEnabled ? Colors.grey[700] : Colors.grey[400],
                 ),
-                const SizedBox(height: 6),
+                SizedBox(height: AppLayout.scaleHeight(context, 6)),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: AppLayout.fontSize(context, 11),
                     fontWeight: FontWeight.w500,
                     color: isEnabled ? Colors.black87 : Colors.grey[400],
                   ),
@@ -724,53 +768,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required bool isSuccess,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(12),
+      margin: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 16),
+        vertical: AppLayout.scaleHeight(context, 4),
+      ),
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(
+          AppLayout.scaleWidth(context, 12),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            blurRadius: AppLayout.scaleWidth(context, 10),
+            offset: Offset(0, AppLayout.scaleHeight(context, 2)),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 8)),
             decoration: BoxDecoration(
               color: const Color(0xFF4CAF50).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(
+                AppLayout.scaleWidth(context, 8),
+              ),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.arrow_upward,
-              color: Color(0xFF4CAF50),
-              size: 16,
+              color: const Color(0xFF4CAF50),
+              size: AppLayout.scaleWidth(context, 16),
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: AppLayout.scaleWidth(context, 12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 13,
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13),
                     fontWeight: FontWeight.w500,
                     color: Colors.black87,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 2),
+                SizedBox(height: AppLayout.scaleHeight(context, 2)),
                 Text(
                   date,
                   style: TextStyle(
-                    fontSize: 11,
+                    fontSize: AppLayout.fontSize(context, 11),
                     color: Colors.grey[600],
                   ),
                 ),
@@ -782,24 +833,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Text(
                 amount,
-                style: const TextStyle(
-                  fontSize: 14,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
                   fontWeight: FontWeight.bold,
                   color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 2),
+              SizedBox(height: AppLayout.scaleHeight(context, 2)),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 8),
+                  vertical: AppLayout.scaleHeight(context, 2),
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFF4CAF50).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(
+                    AppLayout.scaleWidth(context, 8),
+                  ),
                 ),
-                child: const Text(
+                child: Text(
                   'Successful',
                   style: TextStyle(
-                    fontSize: 9,
-                    color: Color(0xFF4CAF50),
+                    fontSize: AppLayout.fontSize(context, 9),
+                    color: const Color(0xFF4CAF50),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
