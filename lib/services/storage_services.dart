@@ -8,14 +8,14 @@ import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/model/user/user_model.dart';
 
 /// ✅ IMPROVED & SECURE StorageService for KudiPay
-/// 
+///
 /// WHAT WAS WRONG WITH YOUR ORIGINAL:
 /// ❌ Stored PIN in SharedPreferences (INSECURE!)
 /// ❌ Had duplicate methods (_tokenKey vs _authTokenKey)
 /// ❌ No consistent error handling
 /// ❌ No biometric support
 /// ❌ No session validation
-/// 
+///
 /// WHAT'S FIXED:
 /// ✅ All sensitive data in FlutterSecureStorage (encrypted)
 /// ✅ Clear separation: secure vs non-secure storage
@@ -48,6 +48,9 @@ class StorageService {
   static const String _userModelKey = 'user_model';
   static const String _isAuthKey = 'is_authenticated';
   static const String _lastLoginKey = 'last_login';
+  static const String _currentTierKey = 'current_tier';
+  static const String _lastTierUpgradeKey = 'last_tier_upgrade';
+  static const String _completedRequirementsKey = 'completed_requirements';
 
   // ==================== AUTH TOKEN ====================
 
@@ -99,17 +102,17 @@ class StorageService {
   }
 
   /// Hashes a PIN using PBKDF2 with SHA-256
-  /// 
+  ///
   /// Parameters:
   /// - pin: The user's PIN to hash
   /// - salt: Base64-encoded salt (generated if not provided)
   /// - iterations: Number of PBKDF2 iterations (10,000 recommended)
-  /// 
+  ///
   /// Returns: Base64-encoded hash
   String _hashPin(String pin, String salt, {int iterations = 10000}) {
     final saltBytes = base64Decode(salt);
     final pinBytes = utf8.encode(pin);
-    
+
     // PBKDF2 implementation
     var result = Uint8List.fromList(pinBytes);
     for (var i = 0; i < iterations; i++) {
@@ -117,12 +120,12 @@ class StorageService {
       final combined = Uint8List.fromList([...result, ...pinBytes]);
       result = Uint8List.fromList(hmacSha256.convert(combined).bytes);
     }
-    
+
     return base64Encode(result);
   }
 
   /// Saves a PIN securely by hashing it with PBKDF2
-  /// 
+  ///
   /// Storage format: "salt:hash:iterations"
   /// This allows for future upgrade of iteration count
   Future<void> savePin(String pin) async {
@@ -131,16 +134,16 @@ class StorageService {
       if (pin.isEmpty || pin.length < 4 || pin.length > 6) {
         throw StorageException('PIN must be 4-6 digits');
       }
-      
+
       // Validate PIN contains only numbers
       if (!RegExp(r'^\d+$').hasMatch(pin)) {
         throw StorageException('PIN must contain only numbers');
       }
-      
+
       final salt = _generateSalt();
       const iterations = 10000;
       final hashedPin = _hashPin(pin, salt, iterations: iterations);
-      
+
       // Store in format: "salt:hash:iterations"
       final storedValue = '$salt:$hashedPin:$iterations';
       await _secureStorage.write(key: _userPinKey, value: storedValue);
@@ -155,14 +158,14 @@ class StorageService {
     try {
       final storedValue = await _secureStorage.read(key: _userPinKey);
       if (storedValue == null) return null;
-      
+
       final parts = storedValue.split(':');
       if (parts.length != 3) {
         // Invalid format, possibly old plaintext PIN
         // For migration: treat it as invalid and require PIN reset
         return null;
       }
-      
+
       return {
         'salt': parts[0],
         'hash': parts[1],
@@ -174,23 +177,23 @@ class StorageService {
   }
 
   /// Verifies an entered PIN against the stored hash
-  /// 
+  ///
   /// Returns true if PIN matches, false otherwise
-  /// 
+  ///
   /// Note: This method uses constant-time comparison to prevent
   /// timing attacks (though for PINs, this is less critical)
   Future<bool> verifyPin(String enteredPin) async {
     try {
       final pinData = await _getStoredPinData();
       if (pinData == null) return false;
-      
+
       final salt = pinData['salt'] as String;
       final storedHash = pinData['hash'] as String;
       final iterations = pinData['iterations'] as int;
-      
+
       // Hash the entered PIN with the same salt and iterations
       final enteredHash = _hashPin(enteredPin, salt, iterations: iterations);
-      
+
       // Constant-time comparison to prevent timing attacks
       return _constantTimeCompare(storedHash, enteredHash);
     } catch (e) {
@@ -201,7 +204,7 @@ class StorageService {
   /// Constant-time string comparison to prevent timing attacks
   bool _constantTimeCompare(String a, String b) {
     if (a.length != b.length) return false;
-    
+
     var result = 0;
     for (var i = 0; i < a.length; i++) {
       result |= a.codeUnitAt(i) ^ b.codeUnitAt(i);
@@ -221,7 +224,7 @@ class StorageService {
   }
 
   /// Changes the user's PIN
-  /// 
+  ///
   /// Requires the old PIN for verification before setting new one
   Future<bool> changePin({
     required String oldPin,
@@ -233,7 +236,7 @@ class StorageService {
       if (!isValid) {
         return false;
       }
-      
+
       // Save new PIN
       await savePin(newPin);
       return true;
@@ -339,6 +342,106 @@ class StorageService {
     await _secureStorage.deleteAll();
     final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+  }
+
+// ==================== TIER MANAGEMENT ====================
+
+  /// Save current user tier
+  Future<void> saveCurrentTier(dynamic tierLevel) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String tierValue;
+
+      // Handle both TierLevel enum and string
+      if (tierLevel is String) {
+        tierValue = tierLevel;
+      } else {
+        // Assume it's TierLevel enum
+        tierValue = tierLevel.toString().split('.').last;
+      }
+
+      await prefs.setString(_currentTierKey, tierValue);
+    } catch (e) {
+      throw StorageException('Failed to save tier: $e');
+    }
+  }
+
+  /// Get current user tier
+  Future<dynamic> getCurrentTier() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final tierString = prefs.getString(_currentTierKey);
+
+      if (tierString == null) {
+        // Default to basic tier
+        return 'basic';
+      }
+
+      return tierString;
+    } catch (e) {
+      return 'basic'; // Default tier on error
+    }
+  }
+
+  /// Save last tier upgrade date
+  Future<void> saveLastTierUpgradeDate(DateTime date) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_lastTierUpgradeKey, date.toIso8601String());
+    } catch (e) {
+      throw StorageException('Failed to save tier upgrade date: $e');
+    }
+  }
+
+  /// Get last tier upgrade date
+  Future<DateTime?> getLastTierUpgradeDate() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final dateString = prefs.getString(_lastTierUpgradeKey);
+      return dateString != null ? DateTime.parse(dateString) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /// Save completed requirements
+  Future<void> saveCompletedRequirements(Map<String, bool> requirements) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          _completedRequirementsKey, jsonEncode(requirements));
+    } catch (e) {
+      throw StorageException('Failed to save completed requirements: $e');
+    }
+  }
+
+  /// Get completed requirements
+  Future<Map<String, bool>> getCompletedRequirements() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final requirementsString = prefs.getString(_completedRequirementsKey);
+
+      if (requirementsString == null) {
+        return {};
+      }
+
+      final Map<String, dynamic> decoded = jsonDecode(requirementsString);
+      return decoded.map((key, value) => MapEntry(key, value as bool));
+    } catch (e) {
+      return {};
+    }
+  }
+
+  /// Clear all tier data
+  Future<void> clearTierData() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_currentTierKey);
+      await prefs.remove(_lastTierUpgradeKey);
+      await prefs.remove(_completedRequirementsKey);
+    } catch (e) {
+      throw StorageException('Failed to clear tier data: $e');
+    }
   }
 
   // ==================== HELPERS ====================

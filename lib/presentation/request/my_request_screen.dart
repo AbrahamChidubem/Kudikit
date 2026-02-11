@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/request_detail_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
 import 'package:provider/provider.dart';
 import '../../model/request/request_model.dart';
+
 
 
 class MyRequestsScreen extends StatefulWidget {
@@ -45,14 +47,17 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
             backgroundColor: const Color(0xFFE8F5E9),
             elevation: 0,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              icon: Icon(Icons.arrow_back, 
+                color: Colors.black,
+                size: AppLayout.scaleWidth(context, 24),
+              ),
               onPressed: () => Navigator.pop(context),
             ),
             title: Text(
               'My Request',
               style: GoogleFonts.openSans(
                 color: Colors.black,
-                fontSize: 18,
+                fontSize: AppLayout.fontSize(context, 18),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -61,7 +66,9 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
             children: [
               // Summary Cards
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 16),
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -71,7 +78,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
                         color: const Color(0xFFE8F5E9),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    SizedBox(width: AppLayout.scaleWidth(context, 12)),
                     Expanded(
                       child: _SummaryCard(
                         title: 'Waiting On',
@@ -82,7 +89,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
               // Tabs
               Container(
@@ -95,7 +102,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
                   indicatorWeight: 3,
                   isScrollable: true,
                   labelStyle: GoogleFonts.openSans(
-                    fontSize: 14,
+                    fontSize: AppLayout.fontSize(context, 14),
                     fontWeight: FontWeight.w600,
                   ),
                   tabs: [
@@ -103,21 +110,23 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
                       child: Row(
                         children: [
                           const Text('Received'),
-                          const SizedBox(width: 6),
+                          SizedBox(width: AppLayout.scaleWidth(context, 6)),
                           Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 2,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppLayout.scaleWidth(context, 8),
+                              vertical: AppLayout.scaleHeight(context, 2),
                             ),
                             decoration: BoxDecoration(
                               color: const Color(0xFF2E7D32),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(
+                                AppLayout.scaleWidth(context, 10),
+                              ),
                             ),
                             child: Text(
                               '${provider.receivedRequests.length}',
                               style: GoogleFonts.openSans(
                                 color: Colors.white,
-                                fontSize: 12,
+                                fontSize: AppLayout.fontSize(context, 12),
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -151,7 +160,10 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
               Navigator.pop(context);
             },
             backgroundColor: const Color(0xFF2E7D32),
-            child: const Icon(Icons.add, color: Colors.white),
+            child: Icon(Icons.add, 
+              color: Colors.white,
+              size: AppLayout.scaleWidth(context, 24),
+            ),
           ),
         );
       },
@@ -168,7 +180,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     return Container(
       color: const Color(0xFFE8F5E9),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         itemCount: requests.length,
         itemBuilder: (context, index) {
           final request = requests[index];
@@ -198,7 +210,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     return Container(
       color: const Color(0xFFE8F5E9),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         itemCount: requests.length,
         itemBuilder: (context, index) {
           final request = requests[index];
@@ -230,7 +242,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     return Container(
       color: const Color(0xFFE8F5E9),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         itemCount: requests.length,
         itemBuilder: (context, index) {
           return _RequestCard(request: requests[index]);
@@ -251,7 +263,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     return Container(
       color: const Color(0xFFE8F5E9),
       child: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         itemCount: requests.length,
         itemBuilder: (context, index) {
           return _RequestCard(request: requests[index]);
@@ -265,12 +277,15 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.inbox_outlined, size: 64, color: Colors.grey[300]),
-          const SizedBox(height: 16),
+          Icon(Icons.inbox_outlined, 
+            size: AppLayout.scaleWidth(context, 64), 
+            color: Colors.grey[300],
+          ),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
           Text(
             message,
             style: GoogleFonts.openSans(
-              fontSize: 16,
+              fontSize: AppLayout.fontSize(context, 16),
               color: Colors.grey[600],
             ),
           ),
@@ -294,10 +309,10 @@ class _SummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -305,15 +320,15 @@ class _SummaryCard extends StatelessWidget {
           Text(
             title,
             style: GoogleFonts.openSans(
-              fontSize: 13,
+              fontSize: AppLayout.fontSize(context, 13),
               color: Colors.grey[700],
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: AppLayout.scaleHeight(context, 4)),
           Text(
             '₦${NumberFormat('#,###').format(amount)}',
             style: GoogleFonts.openSans(
-              fontSize: 18,
+              fontSize: AppLayout.fontSize(context, 18),
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -337,36 +352,38 @@ class _RequestCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 12)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         ),
         child: Column(
           children: [
             ListTile(
-              contentPadding: const EdgeInsets.all(16),
+              contentPadding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
               leading: CircleAvatar(
+                radius: AppLayout.scaleWidth(context, 20),
                 backgroundColor: _getAvatarColor(),
                 child: Text(
                   request.requesterName.substring(0, 2).toUpperCase(),
                   style: GoogleFonts.openSans(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
+                    fontSize: AppLayout.fontSize(context, 14),
                   ),
                 ),
               ),
               title: Text(
                 request.requesterName,
                 style: GoogleFonts.openSans(
-                  fontSize: 15,
+                  fontSize: AppLayout.fontSize(context, 15),
                   fontWeight: FontWeight.w600,
                 ),
               ),
               subtitle: Text(
                 _getTimeAgo(request.createdAt),
                 style: GoogleFonts.openSans(
-                  fontSize: 13,
+                  fontSize: AppLayout.fontSize(context, 13),
                   color: Colors.grey[600],
                 ),
               ),
@@ -377,24 +394,26 @@ class _RequestCard extends StatelessWidget {
                   Text(
                     '₦${NumberFormat('#,###.00').format(request.amount)}',
                     style: GoogleFonts.openSans(
-                      fontSize: 15,
+                      fontSize: AppLayout.fontSize(context, 15),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppLayout.scaleHeight(context, 4)),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.scaleWidth(context, 8),
+                      vertical: AppLayout.scaleHeight(context, 4),
                     ),
                     decoration: BoxDecoration(
                       color: request.statusColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 8),
+                      ),
                     ),
                     child: Text(
                       request.statusText,
                       style: GoogleFonts.openSans(
-                        fontSize: 11,
+                        fontSize: AppLayout.fontSize(context, 11),
                         fontWeight: FontWeight.w600,
                         color: request.statusColor,
                       ),

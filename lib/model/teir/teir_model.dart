@@ -55,6 +55,37 @@ class UpgradeTier {
     required this.maxBalance,
   });
 
+  static UpgradeTier basicTier() {
+    return UpgradeTier(
+      level: TierLevel.basic,
+      name: 'Basic Tribe',
+      displayName: 'Basic Tribe',
+      tierNumber: 1,
+      color: const Color(0xFF4CAF50),
+      icon: Icons.account_circle,
+      requirements: [
+        TierRequirement(
+          title: 'Email Verification',
+          isCompleted: true,
+          icon: Icons.email,
+        ),
+        TierRequirement(
+          title: 'Phone Verification',
+          isCompleted: true,
+          icon: Icons.phone,
+        ),
+      ],
+      benefits: [
+        TierBenefit(title: 'Daily Send Limit', value: '₦50,000'),
+        TierBenefit(title: 'Daily Receive Limit', value: '₦200,000'),
+        TierBenefit(title: 'Maximum Balance', value: '₦300,000'),
+      ],
+      dailySendLimit: 50000,
+      dailyReceiveLimit: 200000,
+      maxBalance: 300000,
+    );
+  }
+
   static UpgradeTier proTier() {
     return UpgradeTier(
       level: TierLevel.pro,
@@ -66,12 +97,12 @@ class UpgradeTier {
       requirements: [
         TierRequirement(
           title: 'NIN / BVN',
-          isCompleted: true,
+          isCompleted: false,
           icon: Icons.credit_card,
         ),
         TierRequirement(
           title: 'Face verification',
-          isCompleted: true,
+          isCompleted: false,
           icon: Icons.face,
         ),
         TierRequirement(
@@ -102,17 +133,17 @@ class UpgradeTier {
       requirements: [
         TierRequirement(
           title: 'NIN / BVN',
-          isCompleted: true,
+          isCompleted: false,
           icon: Icons.credit_card,
         ),
         TierRequirement(
           title: 'Face verification',
-          isCompleted: true,
+          isCompleted: false,
           icon: Icons.face,
         ),
         TierRequirement(
           title: 'Valid ID Card (Front & Back)',
-          isCompleted: true,
+          isCompleted: false,
           icon: Icons.badge,
         ),
         TierRequirement(

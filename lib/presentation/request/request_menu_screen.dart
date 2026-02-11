@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/my_request_screen.dart';
 import 'package:kudipay/presentation/request/request_money_screen.dart';
+
 
 
 class RequestMenuScreen extends StatelessWidget {
@@ -15,20 +17,23 @@ class RequestMenuScreen extends StatelessWidget {
         backgroundColor: const Color(0xFFE8F5E9),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: Icon(Icons.arrow_back, 
+            color: Colors.black,
+            size: AppLayout.scaleWidth(context, 24),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
           'Request Menu',
           style: GoogleFonts.openSans(
             color: Colors.black,
-            fontSize: 18,
+            fontSize: AppLayout.fontSize(context, 18),
             fontWeight: FontWeight.w600,
           ),
         ),
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         child: Column(
           children: [
             _MenuCard(
@@ -46,7 +51,7 @@ class RequestMenuScreen extends StatelessWidget {
                 );
               },
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
             _MenuCard(
               icon: Icons.receipt_long,
               title: 'My Request',
@@ -90,36 +95,36 @@ class _MenuCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              blurRadius: AppLayout.scaleWidth(context, 10),
+              offset: Offset(0, AppLayout.scaleHeight(context, 4)),
             ),
           ],
         ),
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: AppLayout.scaleWidth(context, 56),
+              height: AppLayout.scaleWidth(context, 56),
               decoration: BoxDecoration(
                 color: color,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               ),
               child: Icon(
                 icon,
                 color: iconColor,
-                size: 28,
+                size: AppLayout.scaleWidth(context, 28),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: AppLayout.scaleWidth(context, 16)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,16 +132,16 @@ class _MenuCard extends StatelessWidget {
                   Text(
                     title,
                     style: GoogleFonts.openSans(
-                      fontSize: 16,
+                      fontSize: AppLayout.fontSize(context, 16),
                       fontWeight: FontWeight.w600,
                       color: Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppLayout.scaleHeight(context, 4)),
                   Text(
                     subtitle,
                     style: GoogleFonts.openSans(
-                      fontSize: 13,
+                      fontSize: AppLayout.fontSize(context, 13),
                       color: Colors.grey[600],
                     ),
                   ),
@@ -145,7 +150,7 @@ class _MenuCard extends StatelessWidget {
             ),
             Icon(
               Icons.arrow_forward_ios,
-              size: 16,
+              size: AppLayout.scaleWidth(context, 16),
               color: Colors.grey[400],
             ),
           ],

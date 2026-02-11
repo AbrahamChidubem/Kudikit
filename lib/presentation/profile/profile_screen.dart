@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/email/change_email_screen.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
@@ -7,6 +8,7 @@ import 'package:kudipay/presentation/notification/notification_preference_screen
 import 'package:kudipay/presentation/teir/upgrade_teir_screen.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/tier/tier_provider.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -20,9 +22,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   bool useFaceIdForTransaction = false;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context,) {
     final user = ref.watch(currentUserProvider);
     final userInfo = ref.watch(userInfoProvider);
+    final tierState = ref.watch(tierProvider);
+    final currentTierObject = tierState.getTierObject();
+    final canUpgrade = tierState.canUpgrade();
     // The name comes from the BVN/NIN verification!
     final firstName = userInfo?.firstName ?? 'User';
     if (user == null) {
@@ -154,9 +159,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                             color: const Color(0xFF4CAF50),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: const Text(
-                            'Tier 1',
-                            style: TextStyle(
+                          child: Text(
+                            'Tier ${currentTierObject.tierNumber}',
+                            style: const TextStyle(
                               fontSize: 11,
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
@@ -207,8 +212,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       color: const Color(0xFF4CAF50).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: const Icon(
-                      Icons.shield_outlined,
+                    child: Icon(
+                      currentTierObject.icon,
                       color: Color(0xFF4CAF50),
                       size: 24,
                     ),
@@ -218,8 +223,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Basic Tribe (Tier 1)',
+                        Text(
+                          'Tier ${currentTierObject.tierNumber}',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -228,14 +233,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          'Single Transaction Max: ₦50,000',
+                          'Single Transaction Max: ₦${_formatAmount(currentTierObject.dailySendLimit)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
                           ),
                         ),
                         Text(
-                          'Max Balance: ₦300,000',
+                          'Max Balance: ₦${_formatAmount(currentTierObject.dailyReceiveLimit)}',
                           style: TextStyle(
                             fontSize: 12,
                             color: Colors.grey[600],
@@ -249,7 +254,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const UpgradeTierScreen(),
+                          builder: (context) => UpgradeTierScreen(tier: currentTierObject,),
                         ),
                       );
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -671,4 +676,44 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       ),
     );
   }
+}
+
+Widget _buildLimitItem(String label, String value) {
+  return Container(
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: Colors.white.withOpacity(0.2),
+      borderRadius: BorderRadius.circular(12),
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.openSans(
+            fontSize: 12,
+            color: Colors.white.withOpacity(0.9),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: GoogleFonts.openSans(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+String _formatAmount(double amount) {
+  if (amount >= 1000000) {
+    return '${(amount / 1000000).toStringAsFixed(1)}M';
+  } else if (amount >= 1000) {
+    return '${(amount / 1000).toStringAsFixed(0)}K';
+  }
+  return amount.toStringAsFixed(0);
 }

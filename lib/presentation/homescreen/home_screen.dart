@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
@@ -39,6 +40,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       });
     });
+  }
+
+  void _copyAccountNumber() {
+    Clipboard.setData(const ClipboardData(text: '8124608695 Michael Asuquo Toluwalase'));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('Account details copied!'),
+        backgroundColor: const Color(0xFF4CAF50),
+        duration: const Duration(seconds: 2),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+    );
   }
 
   @override
@@ -257,42 +271,68 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   color: Colors.white70,
                                 ),
                               ),
-                              // Connection status indicator on balance card
-                              Row(
-                                children: [
-                                  Icon(
-                                    connectivityState.isConnected
-                                        ? Icons.wifi
-                                        : Icons.wifi_off,
-                                    color: Colors.white70,
-                                    size: AppLayout.scaleWidth(context, 14),
+                              // Add Money Button
+                              InkWell(
+                                onTap: () {
+                                  if (connectivityState.isConnected) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => const AddMoneyScreen(),
+                                      ),
+                                    );
+                                  } else {
+                                    ConnectivitySnackBar.showNoInternet(context);
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: AppLayout.scaleWidth(context, 12),
+                                    vertical: AppLayout.scaleHeight(context, 6),
                                   ),
-                                  SizedBox(width: AppLayout.scaleWidth(context, 4)),
-                                  Text(
-                                    connectivityState.isConnected
-                                        ? (connectivityState.connectionType ??
-                                            'Online')
-                                        : 'Offline',
-                                    style: TextStyle(
-                                      fontSize: AppLayout.fontSize(context, 10),
-                                      color: Colors.white70,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(
+                                      AppLayout.scaleWidth(context, 16),
                                     ),
                                   ),
-                                ],
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.add,
+                                        color: const Color(0xFF4CAF50),
+                                        size: AppLayout.scaleWidth(context, 16),
+                                      ),
+                                      SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                                      Text(
+                                        'Add money',
+                                        style: TextStyle(
+                                          fontSize: AppLayout.fontSize(context, 12),
+                                          color: const Color(0xFF4CAF50),
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
                             ],
                           ),
                           SizedBox(height: AppLayout.scaleHeight(context, 8)),
                           Row(
                             children: [
-                              Text(
-                                _isBalanceVisible
-                                    ? '₦135,780.00'
-                                    : '₦**********',
-                                style: TextStyle(
-                                  fontSize: AppLayout.fontSize(context, 32),
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                              Flexible(
+                                child: Text(
+                                  _isBalanceVisible
+                                      ? '₦135,780.00'
+                                      : '₦**********',
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 32),
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               SizedBox(width: AppLayout.scaleWidth(context, 12)),
@@ -315,46 +355,60 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           SizedBox(height: AppLayout.scaleHeight(context, 16)),
                           Row(
                             children: [
-                              Text(
-                                connectivityState.isConnected
-                                    ? 'Last updated 2 minutes ago'
-                                    : 'Offline - Last sync 2 minutes ago',
-                                style: TextStyle(
-                                  fontSize: AppLayout.fontSize(context, 11),
-                                  color: Colors.white.withOpacity(0.7),
+                              Flexible(
+                                child: Text(
+                                  connectivityState.isConnected
+                                      ? 'Last updated 2 minutes ago'
+                                      : 'Offline - Last sync 2 minutes ago',
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 11),
+                                    color: Colors.white.withOpacity(0.7),
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
                           ),
                           SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                          Row(
-                            children: [
-                              Text(
-                                '8124608695',
-                                style: TextStyle(
-                                  fontSize: AppLayout.fontSize(context, 12),
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(width: AppLayout.scaleWidth(context, 8)),
-                              Flexible(
-                                child: Text(
-                                  'Michael Asuquo Taluwalase',
+                          InkWell(
+                            onTap: _copyAccountNumber,
+                            child: Row(
+                              children: [
+                                Text(
+                                  '8124608695',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 12),
                                     color: Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w500,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                              SizedBox(width: AppLayout.scaleWidth(context, 4)),
-                              Icon(
-                                Icons.copy,
-                                size: AppLayout.scaleWidth(context, 14),
-                                color: Colors.white.withOpacity(0.7),
-                              ),
-                            ],
+                                SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                                Text(
+                                  '|',
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 12),
+                                    color: Colors.white.withOpacity(0.5),
+                                  ),
+                                ),
+                                SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                                Flexible(
+                                  child: Text(
+                                    'Michael Asuquo Toluwalase',
+                                    style: TextStyle(
+                                      fontSize: AppLayout.fontSize(context, 12),
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                                Icon(
+                                  Icons.copy,
+                                  size: AppLayout.scaleWidth(context, 14),
+                                  color: Colors.white.withOpacity(0.7),
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
@@ -381,11 +435,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           _buildQuickAction(
                             icon: Icons.add_circle_outline,
-                            label: 'Top Up',
+                            label: 'Request',
                             onTap: () {
                               _handleQuickAction(
                                 context,
-                                'Top Up',
+                                'Request',
                                 navigateTo: const AddMoneyScreen(),
                               );
                             },
