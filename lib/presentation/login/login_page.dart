@@ -107,47 +107,188 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               ),
 
             Expanded(
-              child: Column(
-                children: [
-                  // Top Section
-                  Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppLayout.scaleWidth(context, 24),
-                      vertical: AppLayout.scaleHeight(context, 16),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: SingleChildScrollView(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: MediaQuery.of(context).size.height -
+                        MediaQuery.of(context).padding.top -
+                        (isOnline ? 0 : 48), // Adjust for connectivity banner
+                  ),
+                  child: IntrinsicHeight(
+                    child: Column(
                       children: [
-                        // Connectivity indicator
+                        // Top Section
+                        Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: AppLayout.scaleWidth(context, 24),
+                            vertical: AppLayout.scaleHeight(context, 16),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              // Connectivity indicator
+                              Row(
+                                children: [
+                                  Container(
+                                    width: AppLayout.scaleWidth(context, 8),
+                                    height: AppLayout.scaleWidth(context, 8),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          isOnline ? Colors.green : Colors.red,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                                  SizedBox(
+                                      width: AppLayout.scaleWidth(context, 8)),
+                                  Text(
+                                    isOnline ? 'Online' : 'Offline',
+                                    style: TextStyle(
+                                      color:
+                                          isOnline ? Colors.green : Colors.red,
+                                      fontSize: AppLayout.fontSize(context, 12),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              TextButton(
+                                onPressed: isOnline
+                                    ? () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                const SignUpScreen(),
+                                          ),
+                                        );
+                                      }
+                                    : () {
+                                        ConnectivitySnackBar.showNoInternet(
+                                            context);
+                                      },
+                                child: Text(
+                                  'Switch account',
+                                  style: TextStyle(
+                                    color: isOnline
+                                        ? const Color(0xFF5C7C6F)
+                                        : Colors.grey,
+                                    fontSize: AppLayout.fontSize(context, 14),
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 10)),
+
+                        // Profile Image
+                        Container(
+                          width: AppLayout.scaleWidth(context, 80),
+                          height: AppLayout.scaleWidth(context, 80),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: AppLayout.scaleWidth(context, 10),
+                                offset: Offset(
+                                    0, AppLayout.scaleHeight(context, 4)),
+                              ),
+                            ],
+                          ),
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/img_placeholder.png',
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: const Color(0xFFE8F5E9),
+                                  child: Icon(
+                                    Icons.person,
+                                    size: AppLayout.scaleWidth(context, 40),
+                                    color: const Color(0xFF4CAF50),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 10)),
+
+                        // Phone Number with Dropdown
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Container(
-                              width: AppLayout.scaleWidth(context, 8),
-                              height: AppLayout.scaleWidth(context, 8),
-                              decoration: BoxDecoration(
-                                color: isOnline ? Colors.green : Colors.red,
-                                shape: BoxShape.circle,
+                            Text(
+                              widget.phoneNumber ?? '08124608695',
+                              style: TextStyle(
+                                fontSize: AppLayout.fontSize(context, 20),
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
                             ),
                             SizedBox(width: AppLayout.scaleWidth(context, 8)),
-                            Text(
-                              isOnline ? 'Online' : 'Offline',
-                              style: TextStyle(
-                                color: isOnline ? Colors.green : Colors.red,
-                                fontSize: AppLayout.fontSize(context, 12),
-                                fontWeight: FontWeight.w500,
-                              ),
+                            Icon(
+                              Icons.keyboard_arrow_down,
+                              color: Colors.grey[600],
+                              size: AppLayout.scaleWidth(context, 24),
                             ),
                           ],
                         ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 30)),
+
+                        // PIN Input Section
+                        Text(
+                          isOnline
+                              ? 'Enter 6 digits PIN to login'
+                              : 'Internet required to login',
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 14),
+                            color: isOnline ? Colors.black54 : Colors.red,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+                        // PIN Dots
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: List.generate(6, (index) {
+                            return Container(
+                              margin: EdgeInsets.symmetric(
+                                horizontal: AppLayout.scaleWidth(context, 6),
+                              ),
+                              width: AppLayout.scaleWidth(context, 12),
+                              height: AppLayout.scaleWidth(context, 12),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _pinFilled[index]
+                                    ? (isOnline
+                                        ? const Color(0xFF5C7C6F)
+                                        : Colors.grey)
+                                    : const Color(0xFFD1D9D5),
+                              ),
+                            );
+                          }),
+                        ),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+                        // Forgot PIN
                         TextButton(
                           onPressed: isOnline
                               ? () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SignUpScreen(),
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                          'Forgot PIN feature coming soon'),
+                                      backgroundColor: Color(0xFF4CAF50),
                                     ),
                                   );
                                 }
@@ -155,229 +296,107 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   ConnectivitySnackBar.showNoInternet(context);
                                 },
                           child: Text(
-                            'Switch account',
+                            'Forgot PIN',
                             style: TextStyle(
                               color: isOnline
                                   ? const Color(0xFF5C7C6F)
                                   : Colors.grey,
-                              fontSize: AppLayout.fontSize(context, 14),
-                              fontWeight: FontWeight.w500,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
 
-                  SizedBox(height: AppLayout.scaleHeight(context, 20)),
+                        const Spacer(),
 
-                  // Profile Image
-                  Container(
-                    width: AppLayout.scaleWidth(context, 80),
-                    height: AppLayout.scaleWidth(context, 80),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: AppLayout.scaleWidth(context, 10),
-                          offset: Offset(0, AppLayout.scaleHeight(context, 4)),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: Image.asset(
-                        'assets/images/img_placeholder.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: const Color(0xFFE8F5E9),
-                            child: Icon(
-                              Icons.person,
-                              size: AppLayout.scaleWidth(context, 40),
-                              color: const Color(0xFF4CAF50),
+                        // Number Pad
+                        Opacity(
+                          opacity: isOnline ? 1.0 : 0.5,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 60),
+                            child: Column(
+                              children: [
+                                _buildNumberRow([1, 2, 3], isOnline),
+                                const SizedBox(height: 24),
+                                _buildNumberRow([4, 5, 6], isOnline),
+                                const SizedBox(height: 24),
+                                _buildNumberRow([7, 8, 9], isOnline),
+                                const SizedBox(height: 24),
+                                _buildBottomRow(isOnline),
+                              ],
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-                  // Phone Number with Dropdown
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.phoneNumber ?? '08124608695',
-                        style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 20),
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
+                          ),
                         ),
-                      ),
-                      SizedBox(width: AppLayout.scaleWidth(context, 8)),
-                      Icon(
-                        Icons.keyboard_arrow_down,
-                        color: Colors.grey[600],
-                        size: AppLayout.scaleWidth(context, 24),
-                      ),
-                    ],
-                  ),
 
-                  SizedBox(height: AppLayout.scaleHeight(context, 60)),
+                        SizedBox(height: AppLayout.scaleHeight(context, 15)),
 
-                  // PIN Input Section
-                  Text(
-                    isOnline
-                        ? 'Enter 6 digits PIN to login'
-                        : 'Internet required to login',
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 14),
-                      color: isOnline ? Colors.black54 : Colors.red,
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-                  // PIN Dots
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(6, (index) {
-                      return Container(
-                        margin: EdgeInsets.symmetric(
-                          horizontal: AppLayout.scaleWidth(context, 6),
-                        ),
-                        width: AppLayout.scaleWidth(context, 12),
-                        height: AppLayout.scaleWidth(context, 12),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: _pinFilled[index]
-                              ? (isOnline
-                                  ? const Color(0xFF5C7C6F)
-                                  : Colors.grey)
-                              : const Color(0xFFD1D9D5),
-                        ),
-                      );
-                    }),
-                  ),
-
-                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
-                  // Forgot PIN
-                  TextButton(
-                    onPressed: isOnline
-                        ? () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Forgot PIN feature coming soon'),
-                                backgroundColor: Color(0xFF4CAF50),
+                        // Footer - CBN and NDIC
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 16),
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 4,
+                            children: [
+                              Container(
+                                width: 24,
+                                height: 24,
+                                padding: const EdgeInsets.all(2),
+                                child: Image.asset(
+                                  'assets/images/cbn.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.account_balance,
+                                        size: 16, color: Color(0xFF2C2C2C));
+                                  },
+                                ),
                               ),
-                            );
-                          }
-                        : () {
-                            ConnectivitySnackBar.showNoInternet(context);
-                          },
-                    child: Text(
-                      'Forgot PIN',
-                      style: TextStyle(
-                        color: isOnline ? const Color(0xFF5C7C6F) : Colors.grey,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-
-                  const Spacer(),
-
-                  // Number Pad
-                  Opacity(
-                    opacity: isOnline ? 1.0 : 0.5,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 60),
-                      child: Column(
-                        children: [
-                          _buildNumberRow([1, 2, 3], isOnline),
-                          const SizedBox(height: 32),
-                          _buildNumberRow([4, 5, 6], isOnline),
-                          const SizedBox(height: 32),
-                          _buildNumberRow([7, 8, 9], isOnline),
-                          const SizedBox(height: 32),
-                          _buildBottomRow(isOnline),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Footer - CBN and NDIC
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 20, horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 32,
-                          height: 32,
-                          padding: const EdgeInsets.all(4),
-                          child: Image.asset(
-                            'assets/images/cbn.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.account_balance,
-                                  size: 20, color: Color(0xFF2C2C2C));
-                            },
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'Licensed by the ',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const Text(
-                          'CBN',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        const Text(
-                          'and insured by the',
-                          style: TextStyle(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w400,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Container(
-                          height: 24,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Image.asset(
-                            'assets/images/ndicc.png',
-                            fit: BoxFit.contain,
-                            errorBuilder: (context, error, stackTrace) {
-                              return const Icon(Icons.account_balance,
-                                  size: 20, color: Color(0xFF2C2C2C));
-                            },
+                              const Text(
+                                'Licensed by the ',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              const Text(
+                                'CBN',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const Text(
+                                'and insured by the',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                              Container(
+                                height: 20,
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 4),
+                                child: Image.asset(
+                                  'assets/images/ndicc.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.account_balance,
+                                        size: 16, color: Color(0xFF2C2C2C));
+                                  },
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ],

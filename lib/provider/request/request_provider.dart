@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../model/request/request_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RequestProvider extends ChangeNotifier {
   // Current request being created
@@ -301,3 +302,8 @@ class RequestProvider extends ChangeNotifier {
     }
   }
 }
+
+// Riverpod Provider
+final requestProvider = ChangeNotifierProvider<RequestProvider>((ref) {
+  return RequestProvider();
+});

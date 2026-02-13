@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/select_reciept_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
 import 'package:provider/provider.dart';
@@ -110,21 +111,22 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFE8F5E9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8F5E9),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Request Money',
-          style: GoogleFonts.openSans(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'Request Money',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: AppLayout.fontSize(context, 18),
+          fontWeight: FontWeight.w600,
         ),
       ),
+      centerTitle: true,
+    ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Container(

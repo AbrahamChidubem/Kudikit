@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
-import 'package:kudipay/presentation/transfer/transfer_reciept_screen.dart';
+import 'package:kudipay/presentation/request/request_menu_screen.dart';
+import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/tier/tier_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -43,7 +45,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _copyAccountNumber() {
-    Clipboard.setData(const ClipboardData(text: '8124608695 Michael Asuquo Toluwalase'));
+    Clipboard.setData(
+        const ClipboardData(text: '8124608695 Michael Asuquo Toluwalase'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Account details copied!'),
@@ -59,7 +62,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider);
     final connectivityState = ref.watch(connectivityStateProvider);
-
+    final tierState = ref.watch(tierProvider);
+    final currentTierObject = tierState.getTierObject();
     // The name comes from the BVN/NIN verification!
     final firstName = userInfo?.firstName ?? 'User';
 
@@ -167,7 +171,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                                 Container(
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: AppLayout.scaleWidth(context, 8),
+                                    horizontal:
+                                        AppLayout.scaleWidth(context, 8),
                                     vertical: AppLayout.scaleHeight(context, 2),
                                   ),
                                   decoration: BoxDecoration(
@@ -178,7 +183,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    'Tier 1',
+                                    'Tier ${currentTierObject.tierNumber}',
                                     style: TextStyle(
                                       fontSize: AppLayout.fontSize(context, 11),
                                       color: const Color(0xFF4CAF50),
@@ -237,7 +242,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       margin: EdgeInsets.symmetric(
                         horizontal: AppLayout.scaleWidth(context, 16),
                       ),
-                      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
+                      padding:
+                          EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           begin: Alignment.topLeft,
@@ -254,7 +260,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           BoxShadow(
                             color: const Color(0xFF52B788).withOpacity(0.3),
                             blurRadius: AppLayout.scaleWidth(context, 20),
-                            offset: Offset(0, AppLayout.scaleHeight(context, 8)),
+                            offset:
+                                Offset(0, AppLayout.scaleHeight(context, 8)),
                           ),
                         ],
                       ),
@@ -278,16 +285,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const AddMoneyScreen(),
+                                        builder: (context) =>
+                                            const AddMoneyScreen(),
                                       ),
                                     );
                                   } else {
-                                    ConnectivitySnackBar.showNoInternet(context);
+                                    ConnectivitySnackBar.showNoInternet(
+                                        context);
                                   }
                                 },
                                 child: Container(
                                   padding: EdgeInsets.symmetric(
-                                    horizontal: AppLayout.scaleWidth(context, 12),
+                                    horizontal:
+                                        AppLayout.scaleWidth(context, 12),
                                     vertical: AppLayout.scaleHeight(context, 6),
                                   ),
                                   decoration: BoxDecoration(
@@ -304,11 +314,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         color: const Color(0xFF4CAF50),
                                         size: AppLayout.scaleWidth(context, 16),
                                       ),
-                                      SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                                      SizedBox(
+                                          width:
+                                              AppLayout.scaleWidth(context, 4)),
                                       Text(
                                         'Add money',
                                         style: TextStyle(
-                                          fontSize: AppLayout.fontSize(context, 12),
+                                          fontSize:
+                                              AppLayout.fontSize(context, 12),
                                           color: const Color(0xFF4CAF50),
                                           fontWeight: FontWeight.w600,
                                         ),
@@ -335,7 +348,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              SizedBox(width: AppLayout.scaleWidth(context, 12)),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               InkWell(
                                 onTap: () {
                                   setState(() {
@@ -382,7 +396,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                                SizedBox(
+                                    width: AppLayout.scaleWidth(context, 4)),
                                 Text(
                                   '|',
                                   style: TextStyle(
@@ -390,7 +405,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     color: Colors.white.withOpacity(0.5),
                                   ),
                                 ),
-                                SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                                SizedBox(
+                                    width: AppLayout.scaleWidth(context, 4)),
                                 Flexible(
                                   child: Text(
                                     'Michael Asuquo Toluwalase',
@@ -401,7 +417,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                                SizedBox(
+                                    width: AppLayout.scaleWidth(context, 8)),
                                 Icon(
                                   Icons.copy,
                                   size: AppLayout.scaleWidth(context, 14),
@@ -428,7 +445,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             label: 'Transfer',
                             onTap: () {
                               _handleQuickAction(context, 'Transfer',
-                                  navigateTo: const TransferRecipientScreen());
+                                  navigateTo: const TransferMenuScreen());
                             },
                             isEnabled: connectivityState.isConnected,
                           ),
@@ -440,7 +457,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _handleQuickAction(
                                 context,
                                 'Request',
-                                navigateTo: const AddMoneyScreen(),
+                                navigateTo: const RequestMenuScreen(),
                               );
                             },
                             isEnabled: connectivityState.isConnected,

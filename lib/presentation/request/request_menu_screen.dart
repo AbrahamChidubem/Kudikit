@@ -12,26 +12,24 @@ class RequestMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5E9),
+      backgroundColor: const Color(0xFFF5F9F5),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8F5E9),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, 
-            color: Colors.black,
-            size: AppLayout.scaleWidth(context, 24),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Request Menu',
-          style: GoogleFonts.openSans(
-            color: Colors.black,
-            fontSize: AppLayout.fontSize(context, 18),
-            fontWeight: FontWeight.w600,
-          ),
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'Request Menu',
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: AppLayout.fontSize(context, 18),
+          fontWeight: FontWeight.w600,
         ),
       ),
+      centerTitle: true,
+    ),
       body: Padding(
         padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         child: Column(

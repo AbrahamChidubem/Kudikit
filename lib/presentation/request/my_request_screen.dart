@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/request_detail_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
-import 'package:provider/provider.dart';
 import '../../model/request/request_model.dart';
 
-
-
-class MyRequestsScreen extends StatefulWidget {
+class MyRequestsScreen extends ConsumerStatefulWidget {
   const MyRequestsScreen({super.key});
 
   @override
-  State<MyRequestsScreen> createState() => _MyRequestsScreenState();
+  ConsumerState<MyRequestsScreen> createState() => _MyRequestsScreenState();
 }
 
-class _MyRequestsScreenState extends State<MyRequestsScreen>
+class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
@@ -27,7 +25,7 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
     
     // Load mock data
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RequestProvider>(context, listen: false).loadMockData();
+      ref.read(requestProvider).loadMockData();
     });
   }
 
@@ -39,134 +37,132 @@ class _MyRequestsScreenState extends State<MyRequestsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RequestProvider>(
-      builder: (context, provider, child) {
-        return Scaffold(
-          backgroundColor: const Color(0xFFE8F5E9),
-          appBar: AppBar(
-            backgroundColor: const Color(0xFFE8F5E9),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, 
-                color: Colors.black,
-                size: AppLayout.scaleWidth(context, 24),
-              ),
-              onPressed: () => Navigator.pop(context),
+    final provider = ref.watch(requestProvider);
+    
+    return Scaffold(
+      backgroundColor: const Color(0xFFE8F5E9),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFE8F5E9),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, 
+            color: Colors.black,
+            size: AppLayout.scaleWidth(context, 24),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'My Request',
+          style: GoogleFonts.openSans(
+            color: Colors.black,
+            fontSize: AppLayout.fontSize(context, 18),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Summary Cards
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppLayout.scaleWidth(context, 16),
             ),
-            title: Text(
-              'My Request',
-              style: GoogleFonts.openSans(
-                color: Colors.black,
-                fontSize: AppLayout.fontSize(context, 18),
+            child: Row(
+              children: [
+                Expanded(
+                  child: _SummaryCard(
+                    title: 'To Receive',
+                    amount: provider.totalToReceive,
+                    color: const Color(0xFFE8F5E9),
+                  ),
+                ),
+                SizedBox(width: AppLayout.scaleWidth(context, 12)),
+                Expanded(
+                  child: _SummaryCard(
+                    title: 'Waiting On',
+                    amount: provider.totalWaitingOn,
+                    color: const Color(0xFFE3F2FD),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+          // Tabs
+          Container(
+            color: Colors.white,
+            child: TabBar(
+              controller: _tabController,
+              labelColor: const Color(0xFF2E7D32),
+              unselectedLabelColor: Colors.grey[600],
+              indicatorColor: const Color(0xFF2E7D32),
+              indicatorWeight: 3,
+              isScrollable: true,
+              labelStyle: GoogleFonts.openSans(
+                fontSize: AppLayout.fontSize(context, 14),
                 fontWeight: FontWeight.w600,
               ),
-            ),
-          ),
-          body: Column(
-            children: [
-              // Summary Cards
-              Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppLayout.scaleWidth(context, 16),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: _SummaryCard(
-                        title: 'To Receive',
-                        amount: provider.totalToReceive,
-                        color: const Color(0xFFE8F5E9),
-                      ),
-                    ),
-                    SizedBox(width: AppLayout.scaleWidth(context, 12)),
-                    Expanded(
-                      child: _SummaryCard(
-                        title: 'Waiting On',
-                        amount: provider.totalWaitingOn,
-                        color: const Color(0xFFE3F2FD),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-              // Tabs
-              Container(
-                color: Colors.white,
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: const Color(0xFF2E7D32),
-                  unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: const Color(0xFF2E7D32),
-                  indicatorWeight: 3,
-                  isScrollable: true,
-                  labelStyle: GoogleFonts.openSans(
-                    fontSize: AppLayout.fontSize(context, 14),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  tabs: [
-                    Tab(
-                      child: Row(
-                        children: [
-                          const Text('Received'),
-                          SizedBox(width: AppLayout.scaleWidth(context, 6)),
-                          Container(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: AppLayout.scaleWidth(context, 8),
-                              vertical: AppLayout.scaleHeight(context, 2),
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF2E7D32),
-                              borderRadius: BorderRadius.circular(
-                                AppLayout.scaleWidth(context, 10),
-                              ),
-                            ),
-                            child: Text(
-                              '${provider.receivedRequests.length}',
-                              style: GoogleFonts.openSans(
-                                color: Colors.white,
-                                fontSize: AppLayout.fontSize(context, 12),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
+              tabs: [
+                Tab(
+                  child: Row(
+                    children: [
+                      const Text('Received'),
+                      SizedBox(width: AppLayout.scaleWidth(context, 6)),
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: AppLayout.scaleWidth(context, 8),
+                          vertical: AppLayout.scaleHeight(context, 2),
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2E7D32),
+                          borderRadius: BorderRadius.circular(
+                            AppLayout.scaleWidth(context, 10),
                           ),
-                        ],
+                        ),
+                        child: Text(
+                          '${provider.receivedRequests.length}',
+                          style: GoogleFonts.openSans(
+                            color: Colors.white,
+                            fontSize: AppLayout.fontSize(context, 12),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
-                    ),
-                    const Tab(text: 'Sent'),
-                    const Tab(text: 'Paid'),
-                    const Tab(text: 'Expired'),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-
-              // Tab Content
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    _buildReceivedTab(provider),
-                    _buildSentTab(provider),
-                    _buildPaidTab(provider),
-                    _buildExpiredTab(provider),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            backgroundColor: const Color(0xFF2E7D32),
-            child: Icon(Icons.add, 
-              color: Colors.white,
-              size: AppLayout.scaleWidth(context, 24),
+                const Tab(text: 'Sent'),
+                const Tab(text: 'Paid'),
+                const Tab(text: 'Expired'),
+              ],
             ),
           ),
-        );
-      },
+
+          // Tab Content
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                _buildReceivedTab(provider),
+                _buildSentTab(provider),
+                _buildPaidTab(provider),
+                _buildExpiredTab(provider),
+              ],
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pop(context);
+        },
+        backgroundColor: const Color(0xFF2E7D32),
+        child: Icon(Icons.add, 
+          color: Colors.white,
+          size: AppLayout.scaleWidth(context, 24),
+        ),
+      ),
     );
   }
 

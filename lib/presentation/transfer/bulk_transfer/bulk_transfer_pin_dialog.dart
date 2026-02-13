@@ -1,0 +1,268 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_success.dart';
+import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
+
+class BulkTransferPinDialog extends ConsumerStatefulWidget {
+  const BulkTransferPinDialog({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<BulkTransferPinDialog> createState() =>
+      _BulkTransferPinDialogState();
+}
+
+class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
+  String _pin = '';
+  final int _pinLength = 6;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+            // Handle bar
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+            // Title and Close button
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppLayout.scaleWidth(context, 20),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const SizedBox(width: 24), // Balance for close button
+                  Text(
+                    'Enter Transaction PIN',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 18),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Icon(
+                      Icons.close,
+                      size: AppLayout.scaleWidth(context, 24),
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            SizedBox(height: AppLayout.scaleHeight(context, 32)),
+
+            // PIN Dots
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_pinLength, (index) {
+                return Container(
+                  margin: EdgeInsets.symmetric(
+                    horizontal: AppLayout.scaleWidth(context, 6),
+                  ),
+                  width: AppLayout.scaleWidth(context, 12),
+                  height: AppLayout.scaleWidth(context, 12),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: index < _pin.length
+                        ? const Color(0xFF389165)
+                        : const Color(0xFFE0E0E0),
+                  ),
+                );
+              }),
+            ),
+
+            SizedBox(height: AppLayout.scaleHeight(context, 40)),
+
+            // Numeric Keypad
+            _buildNumericKeypad(context),
+
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNumericKeypad(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 40),
+      ),
+      child: Column(
+        children: [
+          _buildKeypadRow(context, ['1', '2', '3']),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          _buildKeypadRow(context, ['4', '5', '6']),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          _buildKeypadRow(context, ['7', '8', '9']),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          _buildKeypadRow(context, ['', '0', 'delete']),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildKeypadRow(BuildContext context, List<String> numbers) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: numbers.map((number) {
+        if (number.isEmpty) {
+          return SizedBox(
+            width: AppLayout.scaleWidth(context, 70),
+            height: AppLayout.scaleWidth(context, 70),
+          );
+        }
+
+        if (number == 'delete') {
+          return GestureDetector(
+            onTap: _deletePin,
+            child: Container(
+              width: AppLayout.scaleWidth(context, 70),
+              height: AppLayout.scaleWidth(context, 70),
+              alignment: Alignment.center,
+              child: Icon(
+                Icons.arrow_back,
+                color: Colors.red[400],
+                size: AppLayout.scaleWidth(context, 28),
+              ),
+            ),
+          );
+        }
+
+        return GestureDetector(
+          onTap: () => _addPin(number),
+          child: Container(
+            width: AppLayout.scaleWidth(context, 70),
+            height: AppLayout.scaleWidth(context, 70),
+            alignment: Alignment.center,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.transparent,
+            ),
+            child: Text(
+              number,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 28),
+                fontWeight: FontWeight.w500,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _addPin(String digit) {
+    if (_pin.length < _pinLength) {
+      setState(() {
+        _pin += digit;
+      });
+
+      if (_pin.length == _pinLength) {
+        _verifyPin();
+      }
+    }
+  }
+
+  void _deletePin() {
+    if (_pin.isNotEmpty) {
+      setState(() {
+        _pin = _pin.substring(0, _pin.length - 1);
+      });
+    }
+  }
+
+  Future<void> _verifyPin() async {
+    // Show loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(
+          color: Color(0xFF389165),
+        ),
+      ),
+    );
+
+    // Simulate PIN verification
+    await Future.delayed(const Duration(seconds: 1));
+
+    // Close loading dialog
+    if (mounted) {
+      Navigator.pop(context);
+    }
+
+    // TODO: Verify PIN with backend
+    final pinCorrect = true; // Simulate success
+
+    if (pinCorrect) {
+      // Execute bulk transfer
+      await ref.read(bulkTransferProvider.notifier).executeBulkTransfer();
+
+      // Close PIN dialog
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      // Show success dialog
+      if (mounted) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        _showSuccessDialog();
+      }
+    // ignore: dead_code
+    } else {
+      // Show error and reset PIN
+      setState(() {
+        _pin = '';
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Incorrect PIN. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showSuccessDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      builder: (context) => const BulkTransferSuccessDialog(),
+    );
+  }
+}

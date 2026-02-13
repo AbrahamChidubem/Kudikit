@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/presentation/transfer/transfer_success_dialogue.dart';
+import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class PinEntryBottomSheet extends ConsumerStatefulWidget {
