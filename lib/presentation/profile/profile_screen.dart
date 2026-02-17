@@ -42,7 +42,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
@@ -50,7 +50,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           style: TextStyle(
             color: Colors.black,
             fontSize: 18,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
@@ -271,7 +271,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         vertical: 6,
                       ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(28),
                       ),
                     ),
                     child: const Text(

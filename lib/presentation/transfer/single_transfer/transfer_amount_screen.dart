@@ -268,7 +268,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
             controller: _amountController,
             focusNode: _amountFocus,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
+            inputFormatters: [    
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
             style: TextStyle(
@@ -282,18 +282,12 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                 color: Colors.black26,
                 fontSize: AppLayout.fontSize(context, 24),
               ),
-              prefixIcon: Padding(
-                padding: EdgeInsets.only(
-                  left: 12,
-                  top: 10,
-                ),
-                child: Text(
-                  '₦',
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 24),
-                    fontWeight: FontWeight.w600,
-                    color: hasInsufficientBalance ? Colors.red : Colors.black87,
-                  ),
+              prefixIcon: Text(
+                '₦',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 24),
+                  fontWeight: FontWeight.w600,
+                  color: hasInsufficientBalance ? Colors.red : Colors.black87,
                 ),
               ),
               prefixIconConstraints: const BoxConstraints(minWidth: 0),

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/features/onboarding/domain/entities/onboarding_content.dart';
-import 'package:kudipay/features/onboarding/data/datasources/onboarding_services.dart';
+import 'package:kudipay/presentation/onboarding/onboarding_content.dart';
+
 import 'package:kudipay/presentation/intro/intro_view.dart';
+import 'package:kudipay/services/onboarding_services.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {

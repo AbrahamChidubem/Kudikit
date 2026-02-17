@@ -100,12 +100,12 @@ class KycProgressWidget extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF389165),
-            const Color(0xFF4DB6AC),
+            Color(0xFF389165),
+            Color(0xFF4DB6AC),
           ],
         ),
         borderRadius: BorderRadius.circular(16),

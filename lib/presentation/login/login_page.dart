@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
+import 'package:kudipay/presentation/linkdevice/link_device_screen.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
@@ -158,7 +159,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           context,
                                           MaterialPageRoute(
                                             builder: (context) =>
-                                                const SignUpScreen(),
+                                                const LinkDeviceScreen(),
                                           ),
                                         );
                                       }
@@ -167,7 +168,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                             context);
                                       },
                                 child: Text(
-                                  'Switch account',
+                                  'Link new device',
                                   style: TextStyle(
                                     color: isOnline
                                         ? const Color(0xFF5C7C6F)
@@ -224,7 +225,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
-                              widget.phoneNumber ?? '08124608695',
+                              widget.phoneNumber ?? '08104532643',
                               style: TextStyle(
                                 fontSize: AppLayout.fontSize(context, 20),
                                 fontWeight: FontWeight.w600,
@@ -307,7 +308,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           ),
                         ),
 
-                        const Spacer(),
+                        // const Spacer(),
 
                         // Number Pad
                         Opacity(

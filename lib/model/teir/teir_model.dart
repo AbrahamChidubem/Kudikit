@@ -62,7 +62,7 @@ class UpgradeTier {
       displayName: 'Basic Tribe',
       tierNumber: 1,
       color: const Color(0xFF4CAF50),
-      icon: Icons.account_circle,
+      icon: Icons.shield_rounded,
       requirements: [
         TierRequirement(
           title: 'Email Verification',
@@ -86,7 +86,7 @@ class UpgradeTier {
     );
   }
 
-  static UpgradeTier proTier() {
+  static UpgradeTier proTier() {                        
     return UpgradeTier(
       level: TierLevel.pro,
       name: 'Pro Tribe',

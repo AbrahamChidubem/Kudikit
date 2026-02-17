@@ -5,7 +5,6 @@ import 'package:intl/intl.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transaction_detail.dart';
 import 'package:kudipay/provider/provider.dart';
 
-
 class TransactionSuccessBottomSheet extends ConsumerStatefulWidget {
   const TransactionSuccessBottomSheet({Key? key}) : super(key: key);
 
@@ -36,7 +35,33 @@ class _TransactionSuccessBottomSheetState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(p2pTransferProvider);
+    
+    // Comprehensive null checks
+    if (state.transactionResult == null) {
+      return _buildErrorState(
+        context,
+        'Transaction data is not available',
+      );
+    }
+
     final result = state.transactionResult!;
+    
+    if (state.transferData.recipient == null) {
+      return _buildErrorState(
+        context,
+        'Recipient information is missing',
+      );
+    }
+
+    final recipient = state.transferData.recipient!;
+
+    // Validate required fields
+    if (result.amount == null) {
+      return _buildErrorState(
+        context,
+        'Transaction amount is missing',
+      );
+    }
 
     return Container(
       decoration: const BoxDecoration(
@@ -59,8 +84,8 @@ class _TransactionSuccessBottomSheetState
                 Container(
                   width: AppLayout.scaleWidth(context, 64),
                   height: AppLayout.scaleWidth(context, 64),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF4CAF50),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF4CAF50),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -84,9 +109,9 @@ class _TransactionSuccessBottomSheetState
 
                 SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-                // Success message
+                // Success message with safe name handling
                 Text(
-                  'Transfer to ${state.transferData.recipient!.name.toUpperCase()} is successfully completed',
+                  'Transfer to ${_getRecipientName(recipient.name)} is successfully completed',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 14),
@@ -98,16 +123,18 @@ class _TransactionSuccessBottomSheetState
                 SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
                 // Transaction details summary
-                _buildDetailRow(
-                  context,
-                  'Transaction Type',
-                  result.transactionType,
-                ),
-                _buildDetailRow(
-                  context,
-                  'Paying Bank',
-                  '${result.payingBank}\n(${result.payingBankAccount})',
-                ),
+                if (result.transactionType != null)
+                  _buildDetailRow(
+                    context,
+                    'Transaction Type',
+                    result.transactionType!,
+                  ),
+                if (result.payingBank != null || result.payingBankAccount != null)
+                  _buildDetailRow(
+                    context,
+                    'Paying Bank',
+                    _formatBankInfo(result.payingBank, result.payingBankAccount),
+                  ),
 
                 SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
@@ -152,16 +179,7 @@ class _TransactionSuccessBottomSheetState
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const TransactionDetailsScreen(),
-                            ),
-                          );
-                        },
+                        onPressed: () => _navigateToDetails(context),
                         style: OutlinedButton.styleFrom(
                           padding: EdgeInsets.symmetric(
                             vertical: AppLayout.scaleHeight(context, 14),
@@ -187,17 +205,7 @@ class _TransactionSuccessBottomSheetState
                     SizedBox(width: AppLayout.scaleWidth(context, 12)),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: () {
-                          // Save to favourites if toggled
-                          if (_addToFavourite) {
-                            // TODO: Implement save to favourites
-                          }
-
-                          // Navigate back to home or reset flow
-                          ref.read(p2pTransferProvider.notifier).reset();
-                          Navigator.of(context)
-                              .popUntil((route) => route.isFirst);
-                        },
+                        onPressed: () => _handleDone(context),
                         style: ElevatedButton.styleFrom(
                           padding: EdgeInsets.symmetric(
                             vertical: AppLayout.scaleHeight(context, 14),
@@ -224,6 +232,98 @@ class _TransactionSuccessBottomSheetState
                 SizedBox(height: AppLayout.scaleHeight(context, 16)),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Error state widget
+  Widget _buildErrorState(BuildContext context, String message) {
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: AppLayout.scaleHeight(context, 16)),
+              
+              // Error icon
+              Container(
+                width: AppLayout.scaleWidth(context, 64),
+                height: AppLayout.scaleWidth(context, 64),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF44336),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.error_outline,
+                  color: Colors.white,
+                  size: AppLayout.scaleWidth(context, 36),
+                ),
+              ),
+              
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+              
+              Text(
+                'Error',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 24),
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black87,
+                ),
+              ),
+              
+              SizedBox(height: AppLayout.scaleHeight(context, 16)),
+              
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
+                  color: Colors.black54,
+                  height: 1.4,
+                ),
+              ),
+              
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+              
+              ElevatedButton(
+                onPressed: () {
+                  ref.read(p2pTransferProvider.notifier).reset();
+                  Navigator.of(context).popUntil((route) => route.isFirst);
+                },
+                style: ElevatedButton.styleFrom(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppLayout.scaleWidth(context, 32),
+                    vertical: AppLayout.scaleHeight(context, 14),
+                  ),
+                  backgroundColor: const Color(0xFF389165),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Go Home',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 15),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              
+              SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            ],
           ),
         ),
       ),
@@ -261,5 +361,66 @@ class _TransactionSuccessBottomSheetState
         ],
       ),
     );
+  }
+
+  // Helper method to safely get recipient name
+  String _getRecipientName(String? name) {
+    if (name == null || name.isEmpty) {
+      return 'RECIPIENT';
+    }
+    return name.toUpperCase();
+  }
+
+  // Helper method to format bank info
+  String _formatBankInfo(String? bankName, String? accountNumber) {
+    if (bankName != null && accountNumber != null) {
+      return '$bankName\n($accountNumber)';
+    } else if (bankName != null) {
+      return bankName;
+    } else if (accountNumber != null) {
+      return accountNumber;
+    }
+    return 'N/A';
+  }
+
+  // Navigate to details with error handling
+  void _navigateToDetails(BuildContext context) {
+    try {
+      Navigator.pop(context);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const TransactionDetailsScreen(),
+        ),
+      );
+    } catch (e) {
+      // Handle navigation error
+      debugPrint('Navigation error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to navigate to details'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // Handle done button with error handling
+  void _handleDone(BuildContext context) {
+    try {
+      // Save to favourites if toggled
+      if (_addToFavourite) {
+        // TODO: Implement save to favourites
+        debugPrint('Saving to favourites...');
+      }
+
+      // Navigate back to home or reset flow
+      ref.read(p2pTransferProvider.notifier).reset();
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    } catch (e) {
+      // Handle error gracefully
+      debugPrint('Error in done handler: $e');
+      Navigator.of(context).pop();
+    }
   }
 }
