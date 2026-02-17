@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 
 enum RequestStatus {
   pending,
@@ -12,6 +13,12 @@ enum DeliveryMethod {
   inAppNotification,
   sms,
   email,
+}
+
+// ✅ Defined here so it's accessible across all files
+enum ContactStatus {
+  onApp,
+  invite,
 }
 
 class MoneyRequest {
@@ -194,20 +201,27 @@ class Contact {
   final String name;
   final String phone;
   final String? avatar;
+  final ContactStatus status;     // ✅ proper named param, no duplicate
+  final Color avatarColor;        // ✅ added missing field
   final bool isInvited;
   final bool isVerified;
 
-  Contact({
+  const Contact({
     required this.id,
     required this.name,
     required this.phone,
+    required this.status,
+    required this.avatarColor,
     this.avatar,
     this.isInvited = false,
     this.isVerified = true,
   });
 
+  // ✅ phoneNumber getter — widgets using contact.phoneNumber will work
+  String get phoneNumber => phone;
+
   String get initials {
-    final parts = name.split(' ');
+    final parts = name.trim().split(' ');
     if (parts.length >= 2) {
       return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     }
@@ -219,6 +233,8 @@ class Contact {
     String? name,
     String? phone,
     String? avatar,
+    ContactStatus? status,
+    Color? avatarColor,
     bool? isInvited,
     bool? isVerified,
   }) {
@@ -227,8 +243,64 @@ class Contact {
       name: name ?? this.name,
       phone: phone ?? this.phone,
       avatar: avatar ?? this.avatar,
+      status: status ?? this.status,
+      avatarColor: avatarColor ?? this.avatarColor,
       isInvited: isInvited ?? this.isInvited,
       isVerified: isVerified ?? this.isVerified,
     );
   }
+}
+
+// Sample data matching the design
+class ContactData {
+  static final List<Contact> allContacts = [
+    const Contact(
+      id: '1',
+      name: 'Kemi Alabi',
+      phone: '+234 8124608695',
+      status: ContactStatus.onApp,
+      avatarColor: AppColors.avatarTeal,
+    ),
+    const Contact(
+      id: '2',
+      name: 'Asuquo Michael',
+      phone: '+234 8124608695',
+      status: ContactStatus.onApp,
+      avatarColor: AppColors.avatarDark,
+    ),
+    const Contact(
+      id: '3',
+      name: 'Ameachi Uche',
+      phone: '+234 8124608695',
+      status: ContactStatus.invite,
+      avatarColor: AppColors.avatarBlue,
+    ),
+    const Contact(
+      id: '4',
+      name: 'Paul Adegoke',
+      phone: '+234 8124608695',
+      status: ContactStatus.invite,
+      avatarColor: AppColors.avatarLightBlue,
+    ),
+    const Contact(
+      id: '5',
+      name: 'Tega Ibrahim',
+      phone: '+234 8124608695',
+      status: ContactStatus.onApp,
+      avatarColor: AppColors.avatarRed,
+    ),
+    const Contact(
+      id: '6',
+      name: 'Victor Obisi',
+      phone: '+234 8124608695',
+      status: ContactStatus.onApp,
+      avatarColor: AppColors.avatarOrange,
+    ),
+  ];
+
+  static final List<Contact> recentContacts = [
+    allContacts[0], // Kemi Alabi
+    allContacts[1], // Asuquo Michael
+    allContacts[5], // Victor Obisi
+  ];
 }

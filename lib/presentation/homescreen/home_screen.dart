@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
-import 'package:kudipay/presentation/request/request_menu_screen.dart';
+// import 'package:kudipay/presentation/request/request_menu_screen.dart';
+import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
@@ -457,7 +458,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _handleQuickAction(
                                 context,
                                 'Request',
-                                navigateTo: const RequestMenuScreen(),
+                                navigateTo: const RequestMoneyMainScreen()
                               );
                             },
                             isEnabled: connectivityState.isConnected,

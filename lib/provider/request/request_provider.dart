@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import '../../model/request/request_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -109,9 +110,9 @@ class RequestProvider extends ChangeNotifier {
 
     final request = MoneyRequest(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      requesterId: 'current_user_id', // Replace with actual user ID
-      requesterName: 'Current User', // Replace with actual user name
-      requesterPhone: '+234 8124608695', // Replace with actual phone
+      requesterId: 'current_user_id',
+      requesterName: 'Current User',
+      requesterPhone: '+234 8124608695',
       amount: _amount!,
       reason: _reason,
       category: _category,
@@ -141,37 +142,47 @@ class RequestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Load mock data
+  // ✅ Fixed: all Contact() calls now include required `status` and `avatarColor`
   void loadMockData() {
     _allContacts.addAll([
       Contact(
         id: '1',
         name: 'Kemi Alabi',
         phone: '+234 8124608695',
+        status: ContactStatus.onApp,
+        avatarColor: AppColors.avatarTeal,
         isVerified: true,
       ),
       Contact(
         id: '2',
         name: 'Asuquo Michael',
         phone: '+234 8124608695',
+        status: ContactStatus.onApp,
+        avatarColor: AppColors.avatarDark,
         isVerified: true,
       ),
       Contact(
         id: '3',
         name: 'Victor Obisi',
         phone: '+234 8124608695',
+        status: ContactStatus.onApp,
+        avatarColor: AppColors.avatarOrange,
         isVerified: true,
       ),
       Contact(
         id: '4',
         name: 'Tega Ibrahim',
         phone: '+234 8124608695',
+        status: ContactStatus.onApp,
+        avatarColor: AppColors.avatarRed,
         isVerified: true,
       ),
       Contact(
         id: '5',
         name: 'Ameachi Uche',
         phone: '+234 8124608695',
+        status: ContactStatus.invite,
+        avatarColor: AppColors.avatarBlue,
         isInvited: true,
         isVerified: false,
       ),
@@ -179,6 +190,8 @@ class RequestProvider extends ChangeNotifier {
         id: '6',
         name: 'Paul Adegoke',
         phone: '+234 8124608695',
+        status: ContactStatus.invite,
+        avatarColor: AppColors.avatarLightBlue,
         isInvited: true,
         isVerified: false,
       ),
@@ -265,7 +278,9 @@ class RequestProvider extends ChangeNotifier {
 
   double get totalWaitingOn {
     return _sentRequests
-        .where((r) => r.status == RequestStatus.pending || r.status == RequestStatus.partial)
+        .where((r) =>
+            r.status == RequestStatus.pending ||
+            r.status == RequestStatus.partial)
         .fold(0.0, (sum, r) => sum + r.remainingAmount);
   }
 
@@ -297,7 +312,8 @@ class RequestProvider extends ChangeNotifier {
   Future<void> declineRequest(MoneyRequest request) async {
     final index = _receivedRequests.indexWhere((r) => r.id == request.id);
     if (index != -1) {
-      _receivedRequests[index] = request.copyWith(status: RequestStatus.declined);
+      _receivedRequests[index] =
+          request.copyWith(status: RequestStatus.declined);
       notifyListeners();
     }
   }
