@@ -4,6 +4,7 @@ import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/formatting/widget/contact_list_item.dart';
 import 'package:kudipay/formatting/widget/recipient_tab.dart';
 import 'package:kudipay/model/request/request_model.dart';
+import 'package:kudipay/presentation/request/request_money_screen.dart';
 
 class RequestMoneyMainScreen extends StatefulWidget {
   const RequestMoneyMainScreen({super.key});
@@ -69,7 +70,7 @@ class _RequestMoneyMainScreenState extends State<RequestMoneyMainScreen>
             : ContactData.recentContacts)
         .where((c) => _selectedContactIds.contains(c.id))
         .toList();
-
+Navigator.push(context, MaterialPageRoute(builder: ((context) => RequestMoneyScreen())));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
