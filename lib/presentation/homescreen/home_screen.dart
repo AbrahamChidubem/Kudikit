@@ -390,7 +390,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Row(
                               children: [
                                 Text(
-                                  '8124608695',
+                                  '8104532643',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 12),
                                     color: Colors.white.withOpacity(0.9),
@@ -410,7 +410,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     width: AppLayout.scaleWidth(context, 4)),
                                 Flexible(
                                   child: Text(
-                                    'Michael Asuquo Toluwalase',
+                                    'John Doe Byran',
                                     style: TextStyle(
                                       fontSize: AppLayout.fontSize(context, 12),
                                       color: Colors.white.withOpacity(0.9),

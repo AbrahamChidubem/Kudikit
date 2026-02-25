@@ -27,10 +27,28 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final _termsAcceptedProvider = StateProvider<bool>((ref) => false);
   final _formKey = GlobalKey<FormState>();
 
+  // Passcode criteria state
+  bool _hasMinLength = false;
+  bool _hasUppercase = false;
+  bool _hasLowercase = false;
+  bool _hasNumber = false;
+  bool _hasSpecialChar = false;
+  bool _passcodeFieldTouched = false;
+
+  void _updatePasscodeCriteria(String value) {
+    setState(() {
+      _passcodeFieldTouched = value.isNotEmpty;
+      _hasMinLength = value.length >= 8 && value.length <= 12;
+      _hasUppercase = value.contains(RegExp(r'[A-Z]'));
+      _hasLowercase = value.contains(RegExp(r'[a-z]'));
+      _hasNumber = value.contains(RegExp(r'[0-9]'));
+      _hasSpecialChar = value.contains(RegExp(r'[!@#$%^&*]'));
+    });
+  }
+
   @override
   void initState() {
     super.initState();
-    // Setup connectivity listener
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
     });
@@ -58,7 +76,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Future<void> handleSignUp() async {
-    // Check connectivity first
     final isConnected = ref.read(currentConnectivityProvider);
     if (!isConnected) {
       await NoInternetDialog.show(context);
@@ -71,8 +88,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (!termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content:
-              Text('Please accept the Terms & Conditions and Privacy Policy'),
+          content: Text('Please accept the Terms & Conditions and Privacy Policy'),
           backgroundColor: Colors.red,
         ),
       );
@@ -115,7 +131,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       );
     } catch (e) {
       if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Signup failed: ${e.toString()}'),
@@ -146,7 +161,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          // Connectivity indicator
           if (!isOnline)
             Padding(
               padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
@@ -188,7 +202,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       ),
       body: Column(
         children: [
-          // Connectivity banner
           if (!isOnline)
             Container(
               width: double.infinity,
@@ -216,7 +229,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 ],
               ),
             ),
-          
           Expanded(
             child: SingleChildScrollView(
               child: SafeArea(
@@ -288,7 +300,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         ),
                         SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-                        /// PIN
+                        /// Passcode
                         _buildLabel(context, 'Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
@@ -296,11 +308,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           controller: pinController,
                           obscureText: !ref.watch(pinVisibilityProvider),
                           enabled: !isLoading && isOnline,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(8),
-                          ],
+                          onChanged: _updatePasscodeCriteria,
                           suffixIcon: IconButton(
                             icon: Icon(
                               ref.watch(pinVisibilityProvider)
@@ -315,39 +323,34 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Your passcode must be 6-8 digits and not sequential';
+                              return 'Please enter a passcode';
                             }
-
-                            if (value.length < 6 || value.length > 8) {
-                              return 'passcode must be 6–8 digits';
+                            if (!_hasMinLength) {
+                              return 'Passcode must be 8–12 characters';
                             }
-
-                            bool isSequential(String s) {
-                              bool asc = true;
-                              bool desc = true;
-
-                              for (int i = 0; i < s.length - 1; i++) {
-                                if (s.codeUnitAt(i + 1) != s.codeUnitAt(i) + 1) {
-                                  asc = false;
-                                }
-                                if (s.codeUnitAt(i + 1) != s.codeUnitAt(i) - 1) {
-                                  desc = false;
-                                }
-                              }
-                              return asc || desc;
+                            if (!_hasUppercase) {
+                              return 'Must contain at least one uppercase letter';
                             }
-
-                            if (isSequential(value)) {
-                              return 'Sequential numbers are not allowed';
+                            if (!_hasLowercase) {
+                              return 'Must contain at least one lowercase letter';
                             }
-
+                            if (!_hasNumber) {
+                              return 'Must contain at least one number';
+                            }
+                            if (!_hasSpecialChar) {
+                              return 'Must contain at least one special character (!@#\$%^&*)';
+                            }
                             return null;
                           },
                         ),
 
+                        // Passcode criteria checklist — always shown below passcode field
+                        SizedBox(height: AppLayout.scaleHeight(context, 10)),
+                        _buildPasscodeCriteria(context),
+
                         SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
-                        /// Confirm PIN
+                        /// Confirm Passcode
                         _buildLabel(context, 'Confirm Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
@@ -355,11 +358,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           controller: confirmPinController,
                           obscureText: !ref.watch(confirmPinVisibilityProvider),
                           enabled: !isLoading && isOnline,
-                          keyboardType: TextInputType.number,
-                          inputFormatters: [
-                            FilteringTextInputFormatter.digitsOnly,
-                            LengthLimitingTextInputFormatter(8),
-                          ],
                           suffixIcon: IconButton(
                             icon: Icon(
                               ref.watch(confirmPinVisibilityProvider)
@@ -368,8 +366,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               size: AppLayout.scaleWidth(context, 20),
                             ),
                             onPressed: () {
-                              ref.read(confirmPinVisibilityProvider.notifier).state =
-                                  !ref
+                              ref
+                                  .read(confirmPinVisibilityProvider.notifier)
+                                  .state = !ref
                                       .read(confirmPinVisibilityProvider.notifier)
                                       .state;
                             },
@@ -378,11 +377,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return 'Please confirm your passcode';
                             }
-
                             if (value != pinController.text) {
-                              return 'passcode does not match';
+                              return 'Passcode does not match';
                             }
-
                             return null;
                           },
                         ),
@@ -506,7 +503,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                 style: TextStyle(
                                   fontSize: AppLayout.fontSize(context, 14),
                                   fontWeight: FontWeight.bold,
-                                  color: isOnline 
+                                  color: isOnline
                                       ? const Color(0xFF389165)
                                       : Colors.grey,
                                 ),
@@ -564,7 +561,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               const SizedBox(width: 8),
                               Container(
                                 height: 24,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
                                 child: Image.asset(
                                   'assets/images/ndicc.png',
                                   fit: BoxFit.contain,
@@ -581,6 +579,66 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                     ),
                   ),
                 ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Passcode criteria checklist widget
+  Widget _buildPasscodeCriteria(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildCriteriaRow(context, 'Minimum 8–12 characters', _hasMinLength),
+        _buildCriteriaRow(context, 'At least one uppercase letter', _hasUppercase),
+        _buildCriteriaRow(context, 'At least one lowercase letter', _hasLowercase),
+        _buildCriteriaRow(context, 'At least one number', _hasNumber),
+        _buildCriteriaRow(
+            context, 'At least one special character (!@#\$%^&*)', _hasSpecialChar),
+      ],
+    );
+  }
+
+  Widget _buildCriteriaRow(
+      BuildContext context, String label, bool isMet) {
+    final Color activeColor = const Color(0xFF389165);
+    final Color inactiveColor = Colors.grey[400]!;
+    final bool show = _passcodeFieldTouched;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 5)),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            transitionBuilder: (child, animation) =>
+                ScaleTransition(scale: animation, child: child),
+            child: show && isMet
+                ? Icon(
+                    Icons.check_circle,
+                    key: const ValueKey(true),
+                    size: AppLayout.scaleWidth(context, 15),
+                    color: activeColor,
+                  )
+                : Icon(
+                    Icons.radio_button_unchecked,
+                    key: const ValueKey(false),
+                    size: AppLayout.scaleWidth(context, 15),
+                    color: inactiveColor,
+                  ),
+          ),
+          SizedBox(width: AppLayout.scaleWidth(context, 6)),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 12),
+                color: show && isMet ? Colors.black87 : Colors.grey[600],
+                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -610,6 +668,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     String? Function(String?)? validator,
     bool enabled = true,
     Widget? suffixIcon,
+    ValueChanged<String>? onChanged,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -629,6 +688,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         keyboardType: keyboardType,
         inputFormatters: inputFormatters,
         enabled: enabled,
+        onChanged: onChanged,
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 15),
           fontWeight: FontWeight.w500,

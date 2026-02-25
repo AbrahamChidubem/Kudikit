@@ -28,7 +28,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F5),
       appBar: _buildAppBar(context),
-      body: Stack(
+      body: Column(
         children: [
           state.isLoading
               ? const Center(
@@ -37,6 +37,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
                   ),
                 )
               : _buildBody(context, state),
+          
           _buildButton(context),
         ],
       ),
@@ -184,7 +185,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(
-            width: double.infinity,
+            width: AppLayout.scaleWidth(context, 320),
             height: AppLayout.scaleHeight(context, 56),
             child: ElevatedButton(
               onPressed: () {

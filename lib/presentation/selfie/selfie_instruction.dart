@@ -8,30 +8,36 @@ class SelfieInstructionsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+  
+
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
       appBar: AppBar(
         backgroundColor: const Color(0xFFF5F5F0),
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: Colors.black,
+            size: AppLayout.scaleWidth(context, 18),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
           Padding(
-            padding: AppLayout.pagePadding(context),
+            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
             child: Center(
               child: Stack(
                 children: [
                   SizedBox(
-                    width: AppLayout.scaleWidth(context, 50),
-                    height: AppLayout.scaleWidth(context, 50),
+                    width: AppLayout.scaleWidth(context, 30),
+                    height: AppLayout.scaleWidth(context, 30),
                     child: CircularProgressIndicator(
                       value: 0.36,
-                      strokeWidth: 3,
-                      backgroundColor: Color(0xFFE0E0E0),
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF4DB6AC)),
+                      strokeWidth: AppLayout.scaleWidth(context, 2),
+                      backgroundColor: const Color(0xFFE0E0E0),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF4DB6AC)),
                     ),
                   ),
                   Positioned.fill(
@@ -40,7 +46,7 @@ class SelfieInstructionsScreen extends ConsumerWidget {
                         '36%',
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 12),
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w400,
                           color: Colors.grey[700],
                         ),
                       ),

@@ -30,7 +30,7 @@ class _GetVerificationCodeScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F5),
       appBar: _buildAppBar(context),
-      body: Stack(
+      body: Column(
         children: [
           _buildBody(context, state),
           _buildButton(context, state),

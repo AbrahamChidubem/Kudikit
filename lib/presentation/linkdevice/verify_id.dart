@@ -48,9 +48,10 @@ class _VerifyIdentityScreenState extends ConsumerState<VerifyIdentityScreen> {
     int completed = 0;
     if (_isIdUploaded) completed++;
     if (_isSelfieUploaded) completed++;
-    
+
     setState(() {
-      _progressPercentage = 48 + (completed * 26); // 48% + 52% split between 2 tasks
+      _progressPercentage =
+          48 + (completed * 26); // 48% + 52% split between 2 tasks
     });
   }
 
@@ -59,12 +60,8 @@ class _VerifyIdentityScreenState extends ConsumerState<VerifyIdentityScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F5),
       appBar: _buildAppBar(context),
-      body: Stack(
-        children: [
-          _buildBody(context),
-          _buildButton(context),
-        ],
-      ),
+      body: _buildBody(context),
+      bottomNavigationBar: _buildButton(context),
     );
   }
 

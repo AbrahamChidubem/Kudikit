@@ -21,6 +21,8 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
   CameraController? _cameraController;
   bool _isCameraInitialized = false;
   final ImagePicker _picker = ImagePicker();
+  bool _successDialogShown = false;
+  bool _errorDialogShown = false;
 
   @override
   void initState() {
@@ -41,7 +43,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
 
     try {
       final cameras = await availableCameras();
-      
+
       if (cameras.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -64,7 +66,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
       );
 
       await _cameraController!.initialize();
-      
+
       if (mounted) {
         setState(() {
           _isCameraInitialized = true;
@@ -150,13 +152,15 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
   Widget build(BuildContext context) {
     final selfieState = ref.watch(selfieStateProvider);
 
-    if (selfieState.validationPassed) {
+    if (selfieState.validationPassed && !_successDialogShown) {
+      _successDialogShown = true; // SET FLAG BEFORE showing
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showSuccessDialog();
       });
     }
 
-    if (selfieState.error != null) {
+    if (selfieState.error != null && !_errorDialogShown) {
+      _errorDialogShown = true; // SET FLAG BEFORE showing
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _showErrorDialog(selfieState.error!);
       });
@@ -192,25 +196,31 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon:
-                         Icon(Icons.close, color: Colors.white, size: AppLayout.scaleWidth(context, 30)),
+                    icon: Icon(Icons.close,
+                        color: Colors.white,
+                        size: AppLayout.scaleWidth(context, 30)),
                     onPressed: () => Navigator.pop(context),
                   ),
                   if (selfieState.faceDetected)
                     Container(
-                      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+                      padding:
+                          EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
                       decoration: BoxDecoration(
                         color: Colors.green,
-                        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
+                        borderRadius: BorderRadius.circular(
+                            AppLayout.scaleWidth(context, 20)),
                       ),
-                      child:Row(
+                      child: Row(
                         children: [
                           Icon(Icons.check_circle,
-                              color: Colors.white, size: AppLayout.scaleWidth(context, 16)),
+                              color: Colors.white,
+                              size: AppLayout.scaleWidth(context, 16)),
                           SizedBox(height: AppLayout.scaleWidth(context, 6)),
                           Text(
                             'Face Detected',
-                            style: TextStyle(color: Colors.white, fontSize: AppLayout.fontSize(context, 12)),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: AppLayout.fontSize(context, 12)),
                           ),
                         ],
                       ),
@@ -228,10 +238,10 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.6),
-                  borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8))
-                ),
-                child:  Text(
+                    color: Colors.black.withOpacity(0.6),
+                    borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 8))),
+                child: Text(
                   'Position your face within the frame',
                   style: TextStyle(
                     color: Colors.white,
@@ -257,8 +267,9 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                       border: Border.all(color: Colors.white, width: 4),
                     ),
                     child: selfieState.isLoading
-                        ?  Padding(
-                            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
+                        ? Padding(
+                            padding: EdgeInsets.all(
+                                AppLayout.scaleWidth(context, 12)),
                             child: const CircularProgressIndicator(
                               strokeWidth: 3,
                               valueColor:
@@ -266,7 +277,8 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                             ),
                           )
                         : Container(
-                            margin: EdgeInsets.all(AppLayout.scaleWidth(context, 6)),
+                            margin: EdgeInsets.all(
+                                AppLayout.scaleWidth(context, 6)),
                             decoration: const BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
@@ -275,9 +287,11 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                   ),
                 ),
                 SizedBox(height: AppLayout.scaleHeight(context, 12)),
-                 Text(
+                Text(
                   'Tap to capture',
-                  style: TextStyle(color: Colors.white, fontSize: AppLayout.fontSize(context, 14)),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: AppLayout.fontSize(context, 14)),
                 ),
               ],
             ),
@@ -285,7 +299,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
           if (selfieState.isLoading)
             Container(
               color: Colors.black.withOpacity(0.7),
-              child:  Center(
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -293,10 +307,12 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                       valueColor:
                           AlwaysStoppedAnimation<Color>(Color(0xFF4DB6AC)),
                     ),
-                   SizedBox(height: AppLayout.scaleHeight(context, 16)),
+                    SizedBox(height: AppLayout.scaleHeight(context, 16)),
                     Text(
                       'Validating your photo...',
-                      style: TextStyle(color: Colors.white, fontSize: AppLayout.fontSize(context, 16)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontSize: AppLayout.fontSize(context, 16)),
                     ),
                   ],
                 ),
@@ -312,7 +328,9 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 20))),
+        shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppLayout.scaleWidth(context, 20))),
         contentPadding: EdgeInsets.all(AppLayout.scaleWidth(context, 32)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -324,48 +342,58 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                 color: Colors.green.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child:
-                   Icon(Icons.check_circle, color: Colors.green, size: AppLayout.scaleWidth(context, 50)),
+              child: Icon(Icons.check_circle,
+                  color: Colors.green, size: AppLayout.scaleWidth(context, 50)),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
-             Text(
+            Text(
               'Photo Verified!',
-              style: TextStyle(fontSize: AppLayout.fontSize(context, 24), fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 24),
+                  fontWeight: FontWeight.bold),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 12)),
             Text(
               'Your photo has been successfully validated and uploaded.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: AppLayout.fontSize(context, 14), color: Colors.grey[600]),
+              style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
+                  color: Colors.grey[600]),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () async {
+                onPressed: ()
+                    // async
+                    {
                   // ✅ Update auth state
-                  await ref.read(authProvider.notifier).updateKycStatus(
-                        isSelfieVerified: true,
-                      );
+                  // await ref.read(authProvider.notifier).updateKycStatus(
+                  //       isSelfieVerified: true,
+                  //     );
 
-                  if (context.mounted) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const IdVerificationScreen()),
-                    );
-                  }
+                  // if (context.mounted) {
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const IdVerificationScreen()),
+                  );
+                  // }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4DB6AC),
                   padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                    borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 12)),
                   ),
                 ),
-                child:  Text(
+                child: Text(
                   'Continue',
-                  style: TextStyle(color: Colors.white, fontSize: AppLayout.fontSize(context, 16)),
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: AppLayout.fontSize(context, 16)),
                 ),
               ),
             ),
@@ -379,8 +407,10 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16))),
-        title:  Row(
+        shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppLayout.scaleWidth(context, 16))),
+        title: Row(
           children: [
             const Icon(Icons.error_outline, color: Colors.red),
             SizedBox(height: AppLayout.scaleWidth(context, 12)),
@@ -392,6 +422,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
           TextButton(
             onPressed: () {
               Navigator.pop(context);
+              _errorDialogShown = false; // RESET FLAG so it can show again
               ref.read(selfieStateProvider.notifier).reset();
             },
             child: const Text('Try Again'),

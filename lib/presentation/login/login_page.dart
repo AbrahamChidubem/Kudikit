@@ -160,6 +160,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                           MaterialPageRoute(
                                             builder: (context) =>
                                                 const LinkDeviceScreen(),
+                                                // const SignUpScreen(),
                                           ),
                                         );
                                       }
