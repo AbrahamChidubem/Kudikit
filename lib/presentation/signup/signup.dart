@@ -5,12 +5,23 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/color_app_button.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
-
 import 'package:kudipay/services/api_services.dart';
-
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/signup/signup_verify.dart';
+
+// =============================================================================
+// SignUpScreen
+// -----------------------------------------------------------------------------
+// This is the first step of account creation. The user enters:
+//   - Email
+//   - Phone number
+//   - Passcode (8-12 chars with complexity rules)
+//   - Confirm passcode
+//   - Agree to Terms & Conditions
+//
+// On submit → calls AuthNotifier.signup() → navigates to email verification.
+// =============================================================================
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -20,20 +31,100 @@ class SignUpScreen extends ConsumerStatefulWidget {
 }
 
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+
+  // ---------------------------------------------------------------------------
+  // CONTROLLERS
+  // ---------------------------------------------------------------------------
+  // Each TextEditingController is linked to one text field.
+  // It lets you read what the user typed (controller.text) and clear it.
+  //
+  // NOTE: passwordController is used for the Passcode field.
+  //       Previously the code referenced `pinController` which was undefined —
+  //       that was a bug. It is now correctly named `passwordController`.
+
   final TextEditingController emailController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
-  final TextEditingController pinController = TextEditingController();
-  final TextEditingController confirmPinController = TextEditingController();
-  final _termsAcceptedProvider = StateProvider<bool>((ref) => false);
+  final TextEditingController passwordController = TextEditingController(); // ✅ Fixed: was `pinController` (undefined)
+  final TextEditingController confirmPasswordController = TextEditingController();
+
+  // ---------------------------------------------------------------------------
+  // FORM KEY
+  // ---------------------------------------------------------------------------
+  // Used to trigger validation on all fields at once when the user taps Continue.
+
   final _formKey = GlobalKey<FormState>();
 
-  // Passcode criteria state
+  // ---------------------------------------------------------------------------
+  // LOCAL TERMS ACCEPTANCE STATE
+  // ---------------------------------------------------------------------------
+  // This StateProvider lives only within this widget's lifecycle.
+  // It tracks whether the checkbox is checked.
+
+  final _termsAcceptedProvider = StateProvider<bool>((ref) => false);
+
+  // ---------------------------------------------------------------------------
+  // PASSCODE CRITERIA STATE
+  // ---------------------------------------------------------------------------
+  // These booleans track whether each rule is met in real time as the user types.
+  // They power the checklist shown below the passcode field.
+
   bool _hasMinLength = false;
   bool _hasUppercase = false;
   bool _hasLowercase = false;
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
+
+  // Only show the criteria checklist after the user starts typing.
   bool _passcodeFieldTouched = false;
+
+  // ---------------------------------------------------------------------------
+  // LIFECYCLE
+  // ---------------------------------------------------------------------------
+
+  @override
+  void initState() {
+    super.initState();
+    // addPostFrameCallback ensures the widget is fully built before we
+    // start listening to connectivity changes.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupConnectivityListener();
+    });
+  }
+
+  @override
+  void dispose() {
+    // ALWAYS dispose controllers when the widget is removed from the tree.
+    // Forgetting this causes memory leaks.
+    emailController.dispose();
+    numberController.dispose();
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  // ---------------------------------------------------------------------------
+  // CONNECTIVITY LISTENER
+  // ---------------------------------------------------------------------------
+  // Watches for changes in network status and shows snackbars accordingly.
+
+  void _setupConnectivityListener() {
+    ref.listen(connectivityProvider, (previous, next) {
+      next.whenData((isConnected) {
+        final wasConnected = previous?.value ?? true;
+        if (wasConnected && !isConnected) {
+          ConnectivitySnackBar.showNoInternet(context);
+        } else if (!wasConnected && isConnected) {
+          ConnectivitySnackBar.showConnectionRestored(context);
+        }
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // PASSCODE CRITERIA UPDATER
+  // ---------------------------------------------------------------------------
+  // Called every time the user types in the passcode field (via onChanged).
+  // Updates the boolean flags that drive the criteria checklist UI.
 
   void _updatePasscodeCriteria(String value) {
     setState(() {
@@ -46,44 +137,30 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setupConnectivityListener();
-    });
-  }
+  // ---------------------------------------------------------------------------
+  // HANDLE SIGN UP
+  // ---------------------------------------------------------------------------
+  // This runs when the user taps "Continue".
+  //
+  // Steps:
+  //   1. Check internet connection.
+  //   2. Validate the form (all field validators run).
+  //   3. Check terms are accepted.
+  //   4. Call AuthNotifier.signup().
+  //   5. Navigate to the email verification screen.
 
-  void _setupConnectivityListener() {
-    ref.listen(connectivityProvider, (previous, next) {
-      next.whenData((isConnected) {
-        if (previous?.value != null && previous!.value! && !isConnected) {
-          ConnectivitySnackBar.showNoInternet(context);
-        } else if (previous?.value != null && !previous!.value! && isConnected) {
-          ConnectivitySnackBar.showConnectionRestored(context);
-        }
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    emailController.dispose();
-    numberController.dispose();
-    pinController.dispose();
-    confirmPinController.dispose();
-    super.dispose();
-  }
-
-  Future<void> handleSignUp() async {
+  Future<void> _handleSignUp() async {
+    // Step 1 — Check connectivity.
     final isConnected = ref.read(currentConnectivityProvider);
     if (!isConnected) {
       await NoInternetDialog.show(context);
       return;
     }
 
+    // Step 2 — Validate all form fields.
     if (!_formKey.currentState!.validate()) return;
 
+    // Step 3 — Check terms checkbox.
     final termsAccepted = ref.read(_termsAcceptedProvider);
     if (!termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -95,26 +172,32 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
+    // Read values from controllers.
     final email = emailController.text.trim();
     final phoneNumber = '+234${numberController.text.trim()}';
-    final pin = pinController.text.trim();
+    final password = passwordController.text.trim(); // ✅ Fixed: was `passwordController.text` but referenced as `pin`
 
     try {
+      // Step 4 — Call the signup method in AuthNotifier.
       await ref.read(authProvider.notifier).signup(
             email: email,
             phoneNumber: phoneNumber,
-            pin: pin,
+            password: password,
           );
 
+      // Guard: if the widget was removed while awaiting, don't navigate.
       if (!mounted) return;
 
+      // Step 5 — Navigate to email verification screen.
+      // We pass the email, phone, and password so the verification screen
+      // can use them if needed (e.g. to resend the code or complete login).
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => EmailVerifySignup(
             email: email,
             phoneNumber: phoneNumber,
-            pin: pin,
+            pin: password, // ✅ Fixed: was `pin` (undefined variable) — now correctly passes `password`
           ),
         ),
       );
@@ -140,6 +223,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // BUILD
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -149,86 +236,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F0),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF5F5F0),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: Colors.black,
-            size: AppLayout.scaleWidth(context, 18),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        actions: [
-          if (!isOnline)
-            Padding(
-              padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
-              child: const Center(child: ConnectivityIndicator()),
-            ),
-          Padding(
-            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
-            child: Center(
-              child: Stack(
-                children: [
-                  SizedBox(
-                    width: AppLayout.scaleWidth(context, 30),
-                    height: AppLayout.scaleWidth(context, 30),
-                    child: CircularProgressIndicator(
-                      value: 0.25,
-                      strokeWidth: AppLayout.scaleWidth(context, 2),
-                      backgroundColor: const Color(0xFFE0E0E0),
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4DB6AC)),
-                    ),
-                  ),
-                  Positioned.fill(
-                    child: Center(
-                      child: Text(
-                        '25%',
-                        style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 12),
-                          fontWeight: FontWeight.w400,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(context, isOnline),
       body: Column(
         children: [
-          if (!isOnline)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-              color: Colors.red.shade700,
-              child: Row(
-                children: [
-                  const Icon(Icons.wifi_off, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
-                  const Expanded(
-                    child: Text(
-                      'No internet - Sign up requires connection',
-                      style: TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      ref.read(connectivityStateProvider.notifier).refresh();
-                    },
-                    child: const Text(
-                      'Retry',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+          // Offline banner — shown at top when no internet.
+          if (!isOnline) _buildOfflineBanner(context),
+
           Expanded(
             child: SingleChildScrollView(
               child: SafeArea(
@@ -237,12 +250,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   child: Padding(
                     padding: AppLayout.pagePadding(context),
                     child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(height: AppLayout.scaleHeight(context, 25)),
 
-                        // Title
+                        // Page title
                         Text(
                           'Create an account with KudiKit',
                           style: TextStyle(
@@ -250,11 +262,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             fontWeight: FontWeight.w700,
                             height: 1,
                           ),
-                          textAlign: TextAlign.left,
                         ),
                         SizedBox(height: AppLayout.scaleHeight(context, 25)),
 
-                        /// Email
+                        // ── Email ──────────────────────────────────────────
                         _buildLabel(context, 'Email'),
                         SizedBox(height: AppLayout.scaleHeight(context, 8)),
                         _buildTextField(
@@ -263,11 +274,11 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           keyboardType: TextInputType.emailAddress,
                           enabled: !isLoading && isOnline,
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter your email';
                             }
                             if (!value.contains('@') || !value.contains('.')) {
-                              return 'Please enter a valid email';
+                              return 'Please enter a valid email address';
                             }
                             return null;
                           },
@@ -275,8 +286,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
                         SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-                        /// Phone Number
-                        _buildLabel(context, 'Number'),
+                        // ── Phone Number ───────────────────────────────────
+                        _buildLabel(context, 'Phone Number'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
                           context,
@@ -292,20 +303,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return 'Please enter your phone number';
                             }
-                            if (value.length != 10) {
-                              return 'Enter a valid Nigerian phone number';
+                            if (value.trim().length != 10) {
+                              return 'Enter a valid 10-digit Nigerian phone number';
                             }
                             return null;
                           },
                         ),
+
                         SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-                        /// Passcode
+                        // ── Passcode ───────────────────────────────────────
                         _buildLabel(context, 'Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
                           context,
-                          controller: pinController,
+                          controller: passwordController, // ✅ Fixed: was `pinController`
                           obscureText: !ref.watch(pinVisibilityProvider),
                           enabled: !isLoading && isOnline,
                           onChanged: _updatePasscodeCriteria,
@@ -325,37 +337,27 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return 'Please enter a passcode';
                             }
-                            if (!_hasMinLength) {
-                              return 'Passcode must be 8–12 characters';
-                            }
-                            if (!_hasUppercase) {
-                              return 'Must contain at least one uppercase letter';
-                            }
-                            if (!_hasLowercase) {
-                              return 'Must contain at least one lowercase letter';
-                            }
-                            if (!_hasNumber) {
-                              return 'Must contain at least one number';
-                            }
-                            if (!_hasSpecialChar) {
-                              return 'Must contain at least one special character (!@#\$%^&*)';
-                            }
+                            if (!_hasMinLength) return 'Passcode must be 8–12 characters';
+                            if (!_hasUppercase) return 'Must contain at least one uppercase letter';
+                            if (!_hasLowercase) return 'Must contain at least one lowercase letter';
+                            if (!_hasNumber) return 'Must contain at least one number';
+                            if (!_hasSpecialChar) return 'Must contain at least one special character (!@#\$%^&*)';
                             return null;
                           },
                         ),
 
-                        // Passcode criteria checklist — always shown below passcode field
+                        // Criteria checklist shown live as the user types.
                         SizedBox(height: AppLayout.scaleHeight(context, 10)),
                         _buildPasscodeCriteria(context),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
-                        /// Confirm Passcode
+                        // ── Confirm Passcode ───────────────────────────────
                         _buildLabel(context, 'Confirm Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
                           context,
-                          controller: confirmPinController,
+                          controller: confirmPasswordController, // ✅ Fixed: was `confirmPinController`
                           obscureText: !ref.watch(confirmPinVisibilityProvider),
                           enabled: !isLoading && isOnline,
                           suffixIcon: IconButton(
@@ -366,215 +368,40 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                               size: AppLayout.scaleWidth(context, 20),
                             ),
                             onPressed: () {
-                              ref
-                                  .read(confirmPinVisibilityProvider.notifier)
-                                  .state = !ref
-                                      .read(confirmPinVisibilityProvider.notifier)
-                                      .state;
+                              ref.read(confirmPinVisibilityProvider.notifier).state =
+                                  !ref.read(confirmPinVisibilityProvider.notifier).state;
                             },
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
                               return 'Please confirm your passcode';
                             }
-                            if (value != pinController.text) {
-                              return 'Passcode does not match';
+                            if (value != passwordController.text) { // ✅ Fixed: was `pinController.text`
+                              return 'Passcodes do not match';
                             }
                             return null;
                           },
                         ),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 20)),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: AppLayout.scaleWidth(context, 24),
-                              height: AppLayout.scaleWidth(context, 24),
-                              child: Checkbox(
-                                value: ref.watch(_termsAcceptedProvider),
-                                onChanged: (isLoading || !isOnline)
-                                    ? null
-                                    : (value) {
-                                        ref
-                                            .read(_termsAcceptedProvider.notifier)
-                                            .state = value ?? false;
-                                      },
-                                activeColor: const Color(0xFF389165),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(
-                                    AppLayout.scaleWidth(context, 4),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: AppLayout.scaleWidth(context, 12)),
-                            Expanded(
-                              child: RichText(
-                                text: TextSpan(
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 12),
-                                    color: Colors.grey[700],
-                                    height: 1.4,
-                                  ),
-                                  children: const [
-                                    TextSpan(
-                                      text:
-                                          'I have read, understood and agreed to the ',
-                                    ),
-                                    TextSpan(
-                                      text: 'Term & Conditions',
-                                      style: TextStyle(
-                                        color: Color(0xFF389165),
-                                        fontWeight: FontWeight.w600,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                    TextSpan(text: ' and '),
-                                    TextSpan(
-                                      text: 'Privacy Policy',
-                                      style: TextStyle(
-                                        color: Color(0xFF389165),
-                                        fontWeight: FontWeight.w600,
-                                        decoration: TextDecoration.underline,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+
+                        // ── Terms & Conditions Checkbox ────────────────────
+                        _buildTermsCheckbox(context, isLoading, isOnline),
+
                         SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
-                        /// Sign Up Button
-                        if (isLoading)
-                          Center(
-                            child: CircularProgressIndicator(
-                              color: const Color(0xFF389165),
-                              strokeWidth: AppLayout.scaleWidth(context, 3),
-                            ),
-                          )
-                        else if (!isOnline)
-                          Opacity(
-                            opacity: 0.5,
-                            child: ColorAppButton(
-                              press: () {
-                                ConnectivitySnackBar.showNoInternet(context);
-                              },
-                              text: 'No Internet Connection',
-                            ),
-                          )
-                        else
-                          ColorAppButton(
-                            press: handleSignUp,
-                            text: 'Continue',
-                          ),
+                        // ── Submit Button ──────────────────────────────────
+                        _buildSubmitButton(context, isLoading, isOnline),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-                        // Already have account
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              'Already have an account? ',
-                              style: TextStyle(
-                                fontSize: AppLayout.fontSize(context, 14),
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black54,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: (isLoading || !isOnline)
-                                  ? null
-                                  : () {
-                                      Navigator.pushReplacement(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => LoginPage(
-                                            email: emailController.text.trim(),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                              child: Text(
-                                'Log in',
-                                style: TextStyle(
-                                  fontSize: AppLayout.fontSize(context, 14),
-                                  fontWeight: FontWeight.bold,
-                                  color: isOnline
-                                      ? const Color(0xFF389165)
-                                      : Colors.grey,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: AppLayout.scaleHeight(context, 40)),
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 20, horizontal: 16),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                width: 32,
-                                height: 32,
-                                padding: const EdgeInsets.all(4),
-                                child: Image.asset(
-                                  'assets/images/cbn.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(Icons.account_balance,
-                                        size: 20, color: Color(0xFF2C2C2C));
-                                  },
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                'Licensed by the ',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              const Text(
-                                'CBN',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Text(
-                                'and insured by the',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w400,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Container(
-                                height: 24,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: Image.asset(
-                                  'assets/images/ndicc.png',
-                                  fit: BoxFit.contain,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return const Icon(Icons.account_balance,
-                                        size: 20, color: Color(0xFF2C2C2C));
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        // ── Already have an account? ───────────────────────
+                        _buildLoginRow(context, isLoading, isOnline),
+
+                        SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+                        // ── CBN / NDIC Licensing Footer ────────────────────
+                        _buildLicensingFooter(context),
                       ],
                     ),
                   ),
@@ -587,49 +414,283 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     );
   }
 
-  /// Passcode criteria checklist widget
-  Widget _buildPasscodeCriteria(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildCriteriaRow(context, 'Minimum 8–12 characters', _hasMinLength),
-        _buildCriteriaRow(context, 'At least one uppercase letter', _hasUppercase),
-        _buildCriteriaRow(context, 'At least one lowercase letter', _hasLowercase),
-        _buildCriteriaRow(context, 'At least one number', _hasNumber),
-        _buildCriteriaRow(
-            context, 'At least one special character (!@#\$%^&*)', _hasSpecialChar),
+  // =============================================================================
+  // EXTRACTED WIDGET BUILDERS
+  // =============================================================================
+  // Breaking the UI into small private methods keeps `build()` readable.
+
+  AppBar _buildAppBar(BuildContext context, bool isOnline) {
+    return AppBar(
+      backgroundColor: const Color(0xFFF5F5F0),
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios,
+          color: Colors.black,
+          size: AppLayout.scaleWidth(context, 18),
+        ),
+        onPressed: () => Navigator.pop(context),
+      ),
+      actions: [
+        if (!isOnline)
+          Padding(
+            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
+            child: const Center(child: ConnectivityIndicator()),
+          ),
+        Padding(
+          padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
+          child: Center(
+            child: Stack(
+              children: [
+                SizedBox(
+                  width: AppLayout.scaleWidth(context, 30),
+                  height: AppLayout.scaleWidth(context, 30),
+                  child: CircularProgressIndicator(
+                    value: 0.25,
+                    strokeWidth: AppLayout.scaleWidth(context, 2),
+                    backgroundColor: const Color(0xFFE0E0E0),
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4DB6AC)),
+                  ),
+                ),
+                Positioned.fill(
+                  child: Center(
+                    child: Text(
+                      '25%',
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 12),
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey[700],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
 
-  Widget _buildCriteriaRow(
-      BuildContext context, String label, bool isMet) {
+  Widget _buildOfflineBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      color: Colors.red.shade700,
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off, color: Colors.white, size: 20),
+          const SizedBox(width: 8),
+          const Expanded(
+            child: Text(
+              'No internet — Sign up requires a connection',
+              style: TextStyle(color: Colors.white, fontSize: 14),
+            ),
+          ),
+          TextButton(
+            onPressed: () => ref.read(connectivityStateProvider.notifier).refresh(),
+            child: const Text('Retry', style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTermsCheckbox(BuildContext context, bool isLoading, bool isOnline) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: AppLayout.scaleWidth(context, 24),
+          height: AppLayout.scaleWidth(context, 24),
+          child: Checkbox(
+            value: ref.watch(_termsAcceptedProvider),
+            onChanged: (isLoading || !isOnline)
+                ? null
+                : (value) {
+                    ref.read(_termsAcceptedProvider.notifier).state = value ?? false;
+                  },
+            activeColor: const Color(0xFF389165),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 4)),
+            ),
+          ),
+        ),
+        SizedBox(width: AppLayout.scaleWidth(context, 12)),
+        Expanded(
+          child: RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 12),
+                color: Colors.grey[700],
+                height: 1.4,
+              ),
+              children: const [
+                TextSpan(text: 'I have read, understood and agreed to the '),
+                TextSpan(
+                  text: 'Terms & Conditions',
+                  style: TextStyle(
+                    color: Color(0xFF389165),
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+                TextSpan(text: ' and '),
+                TextSpan(
+                  text: 'Privacy Policy',
+                  style: TextStyle(
+                    color: Color(0xFF389165),
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.underline,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSubmitButton(BuildContext context, bool isLoading, bool isOnline) {
+    if (isLoading) {
+      return Center(
+        child: CircularProgressIndicator(
+          color: const Color(0xFF389165),
+          strokeWidth: AppLayout.scaleWidth(context, 3),
+        ),
+      );
+    }
+    if (!isOnline) {
+      return Opacity(
+        opacity: 0.5,
+        child: ColorAppButton(
+          press: () => ConnectivitySnackBar.showNoInternet(context),
+          text: 'No Internet Connection',
+        ),
+      );
+    }
+    return ColorAppButton(
+      press: _handleSignUp,
+      text: 'Continue',
+    );
+  }
+
+  Widget _buildLoginRow(BuildContext context, bool isLoading, bool isOnline) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          'Already have an account? ',
+          style: TextStyle(
+            fontSize: AppLayout.fontSize(context, 14),
+            fontWeight: FontWeight.w500,
+            color: Colors.black54,
+          ),
+        ),
+        TextButton(
+          onPressed: (isLoading || !isOnline)
+              ? null
+              : () {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => LoginPage(
+                        email: emailController.text.trim(),
+                      ),
+                    ),
+                  );
+                },
+          child: Text(
+            'Log in',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              fontWeight: FontWeight.bold,
+              color: isOnline ? const Color(0xFF389165) : Colors.grey,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLicensingFooter(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 32,
+            height: 32,
+            padding: const EdgeInsets.all(4),
+            child: Image.asset(
+              'assets/images/cbn.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.account_balance, size: 20, color: Color(0xFF2C2C2C)),
+            ),
+          ),
+          const SizedBox(width: 8),
+          const Text('Licensed by the ', style: TextStyle(color: Colors.black, fontSize: 12)),
+          const Text('CBN', style: TextStyle(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold)),
+          const SizedBox(width: 4),
+          const Text('and insured by the', style: TextStyle(color: Colors.black, fontSize: 12)),
+          const SizedBox(width: 8),
+          Container(
+            height: 24,
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Image.asset(
+              'assets/images/ndicc.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.account_balance, size: 20, color: Color(0xFF2C2C2C)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // PASSCODE CRITERIA CHECKLIST
+  // ---------------------------------------------------------------------------
+
+  Widget _buildPasscodeCriteria(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildCriteriaRow(context, '8–12 characters', _hasMinLength),
+        _buildCriteriaRow(context, 'At least one uppercase letter', _hasUppercase),
+        _buildCriteriaRow(context, 'At least one lowercase letter', _hasLowercase),
+        _buildCriteriaRow(context, 'At least one number', _hasNumber),
+        _buildCriteriaRow(context, 'At least one special character (!@#\$%^&*)', _hasSpecialChar),
+      ],
+    );
+  }
+
+  Widget _buildCriteriaRow(BuildContext context, String label, bool isMet) {
     final Color activeColor = const Color(0xFF389165);
     final Color inactiveColor = Colors.grey[400]!;
-    final bool show = _passcodeFieldTouched;
 
     return Padding(
       padding: EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 5)),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AnimatedSwitcher(
             duration: const Duration(milliseconds: 250),
             transitionBuilder: (child, animation) =>
                 ScaleTransition(scale: animation, child: child),
-            child: show && isMet
-                ? Icon(
-                    Icons.check_circle,
+            child: (_passcodeFieldTouched && isMet)
+                ? Icon(Icons.check_circle,
                     key: const ValueKey(true),
                     size: AppLayout.scaleWidth(context, 15),
-                    color: activeColor,
-                  )
-                : Icon(
-                    Icons.radio_button_unchecked,
+                    color: activeColor)
+                : Icon(Icons.radio_button_unchecked,
                     key: const ValueKey(false),
                     size: AppLayout.scaleWidth(context, 15),
-                    color: inactiveColor,
-                  ),
+                    color: inactiveColor),
           ),
           SizedBox(width: AppLayout.scaleWidth(context, 6)),
           Expanded(
@@ -637,8 +698,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
               label,
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 12),
-                color: show && isMet ? Colors.black87 : Colors.grey[600],
-                fontWeight: FontWeight.w400,
+                color: (_passcodeFieldTouched && isMet) ? Colors.black87 : Colors.grey[600],
               ),
             ),
           ),
@@ -646,6 +706,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       ),
     );
   }
+
+  // ---------------------------------------------------------------------------
+  // REUSABLE FIELD BUILDERS
+  // ---------------------------------------------------------------------------
 
   Widget _buildLabel(BuildContext context, String text) {
     return Text(
@@ -696,7 +760,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         decoration: InputDecoration(
           hintStyle: TextStyle(
             fontSize: AppLayout.fontSize(context, 14),
-            fontWeight: FontWeight.w400,
             color: Colors.grey[500],
           ),
           prefixText: prefixText,

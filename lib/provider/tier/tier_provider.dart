@@ -85,22 +85,26 @@ class TierNotifier extends StateNotifier<TierState> {
 
   // Load tier from storage on initialization
   Future<void> _loadTierFromStorage() async {
-    try {
-      final tier = await _storageService.getCurrentTier();
-      final lastUpgraded = await _storageService.getLastTierUpgradeDate();
-      final requirements = await _storageService.getCompletedRequirements();
+  try {
+    final tierString = await _storageService.getCurrentTier();
+    final tier = TierLevel.values.firstWhere(
+      (e) => e.name == tierString,
+      orElse: () => TierLevel.basic,
+    );
+    final lastUpgraded = await _storageService.getLastTierUpgradeDate();
+    final requirements = await _storageService.getCompletedRequirements();
 
-      state = state.copyWith(
-        currentTier: tier,
-        lastUpgraded: lastUpgraded,
-        completedRequirements: requirements,
-      );
-    } catch (e) {
-      state = state.copyWith(
-        error: 'Failed to load tier: $e',
-      );
-    }
+    state = state.copyWith(
+      currentTier: tier,
+      lastUpgraded: lastUpgraded,
+      completedRequirements: requirements,
+    );
+  } catch (e) {
+    state = state.copyWith(
+      error: 'Failed to load tier: $e',
+    );
   }
+}
 
   // Upgrade to a new tier
   Future<bool> upgradeTier(TierLevel newTier) async {

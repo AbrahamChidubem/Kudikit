@@ -566,7 +566,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       await ref.read(authProvider.notifier).login(
             email: email,
-            pin: pin,
+            password: pin,
           );
 
       if (!mounted) return;
