@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
       title: 'KudiKit',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'OpenSans',
+        fontFamily: 'PolySans',
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFF389165),
         ),

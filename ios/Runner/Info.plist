@@ -48,6 +48,8 @@
 	<key>NSCameraUsageDescription</key>
 <string>This app needs camera access to capture selfies for verification.</string>
 <key>NSPhotoLibraryUsageDescription</key>
+<key>NSContactsUsageDescription</key>
+<string>KudiPay needs access to your contacts to help you send airtime and data faster.</string>
 <string>We need access to select documents</string>
 <key>NSAppTransportSecurity</key>
   <dict>

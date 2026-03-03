@@ -54,6 +54,10 @@ dependencies:
   csv: 
   permission_handler:
 
+  # Permissions & Contacts
+  flutter_contacts:   # ← NEW: read device phonebook with phone numbers
+
+
   # Utilities
   intl:
   flutter_lints: 
@@ -62,6 +66,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  permission_handler:
 
 flutter:
   uses-material-design: true
@@ -71,6 +76,6 @@ flutter:
     - assets/fonts/
 
   fonts:
-    - family: OpenSans
+    - family: Poly Sans
       fonts:
-        - asset: assets/fonts/OpenSans-Regular.ttf
+        - asset: assets/fonts/Polysanstrial-neutral.otf

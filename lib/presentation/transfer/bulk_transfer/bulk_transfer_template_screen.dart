@@ -250,7 +250,7 @@ class _TemplateCard extends StatelessWidget {
                 ),
               ),
 
-              SizedBox(width: AppLayout.scaleWidth(context, 12)),
+              SizedBox(width: AppLayout.scaleWidth(context, 11)),
 
               // Template Name
               Expanded(
@@ -270,28 +270,28 @@ class _TemplateCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.group_outlined,
-                          size: AppLayout.scaleWidth(context, 14),
+                          size: AppLayout.scaleWidth(context, 12),
                           color: Colors.grey[600],
                         ),
                         SizedBox(width: AppLayout.scaleWidth(context, 4)),
                         Text(
                           '${template.recipients.length} recipients',
                           style: TextStyle(
-                            fontSize: AppLayout.fontSize(context, 13),
+                            fontSize: AppLayout.fontSize(context, 11),
                             color: Colors.grey[600],
                           ),
                         ),
-                        SizedBox(width: AppLayout.scaleWidth(context, 12)),
+                        SizedBox(width: AppLayout.scaleWidth(context, 10)),
                         Icon(
                           Icons.access_time,
-                          size: AppLayout.scaleWidth(context, 14),
+                          size: AppLayout.scaleWidth(context, 12),
                           color: Colors.grey[600],
                         ),
                         SizedBox(width: AppLayout.scaleWidth(context, 4)),
                         Text(
                           'Last used ${_formatDate(template.createdAt)}',
                           style: TextStyle(
-                            fontSize: AppLayout.fontSize(context, 13),
+                            fontSize: AppLayout.fontSize(context, 11),
                             color: Colors.grey[600],
                           ),
                         ),
@@ -306,7 +306,7 @@ class _TemplateCard extends StatelessWidget {
                 icon: Icon(
                   Icons.delete_outline,
                   color: Colors.red[400],
-                  size: AppLayout.scaleWidth(context, 22),
+                  size: AppLayout.scaleWidth(context, 20),
                 ),
                 onPressed: onDelete,
                 padding: EdgeInsets.zero,

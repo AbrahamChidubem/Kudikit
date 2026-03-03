@@ -119,15 +119,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               width: logoSize,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Text(
-                  "Kudikit",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: fontSize,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 2,
-                  ),
+                child: Image.asset(
+                  'assets/images/kudikit_white_logo.png',
+                  width: logoSize,
+                  height: logoSize,
+                  fit: BoxFit.contain,
                 ),
               ),
             ),

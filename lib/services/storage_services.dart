@@ -384,6 +384,20 @@ class StorageService {
     }
   }
 
+Future<bool> changePin({required String oldPin, required String newPin}) async {
+  try {
+    // Verify old PIN first
+    final isValid = await verifyPin(oldPin);
+    if (!isValid) return false;
+
+    // Save new PIN
+    await savePin(newPin);
+    return true;
+  } catch (e) {
+    throw StorageException('Failed to change PIN: $e');
+  }
+}
+
   // ===========================================================================
   // AUTHENTICATION STATE
   // ===========================================================================

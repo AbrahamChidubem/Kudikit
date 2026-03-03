@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
+import 'package:kudipay/presentation/bill/airtime/airtime_amount_screen.dart';
+import 'package:kudipay/presentation/bill/airtime/airtime_phone_screen.dart';
+import 'package:kudipay/presentation/bill/data/data_phone_screen.dart';
 // import 'package:kudipay/presentation/request/request_menu_screen.dart';
 import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
@@ -455,11 +458,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             icon: Icons.add_circle_outline,
                             label: 'Request',
                             onTap: () {
-                              _handleQuickAction(
-                                context,
-                                'Request',
-                                navigateTo: const RequestMoneyMainScreen()
-                              );
+                              _handleQuickAction(context, 'Request',
+                                  navigateTo: const RequestMoneyMainScreen());
                             },
                             isEnabled: connectivityState.isConnected,
                           ),
@@ -506,24 +506,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _buildServiceCard(
                                 icon: Icons.phone_callback,
                                 label: 'Airtime',
+                                onTap: () {
+                                  _handleQuickAction(context, 'Airtime',
+                                      navigateTo: const AirtimePhoneScreen());
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                               const SizedBox(width: 12),
                               _buildServiceCard(
                                 icon: Icons.wifi,
                                 label: 'Data',
+                                onTap: () {
+                                  _handleQuickAction(context, 'Request',
+                                      navigateTo: const DataPhoneScreen());
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                               const SizedBox(width: 12),
                               _buildServiceCard(
                                 icon: Icons.tv,
                                 label: 'TV',
+                                onTap: () {
+                                  // _handleQuickAction(
+                                  //   context,
+                                  //   'Request',
+                                  //   navigateTo: const AirtimeAmountScreen()
+                                  // );
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                               const SizedBox(width: 12),
                               _buildServiceCard(
                                 icon: Icons.bolt_outlined,
                                 label: 'Electricity',
+                                onTap: () {
+                                  // _handleQuickAction(
+                                  //   context,
+                                  //   'Request',
+                                  //   navigateTo: const AirtimeAmountScreen()
+                                  // );
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                             ],
@@ -534,18 +556,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               _buildServiceCard(
                                 icon: Icons.school_outlined,
                                 label: 'Education',
+                                onTap: () {
+                                  // _handleQuickAction(
+                                  //   context,
+                                  //   'Request',
+                                  //   navigateTo: const AirtimeAmountScreen()
+                                  // );
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                               const SizedBox(width: 12),
                               _buildServiceCard(
                                 icon: Icons.sports_soccer_outlined,
                                 label: 'Betting',
+                                onTap: () {
+                                  // _handleQuickAction(
+                                  //   context,
+                                  //   'Request',
+                                  //   navigateTo: const AirtimeAmountScreen()
+                                  // );
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                               const SizedBox(width: 12),
                               _buildServiceCard(
                                 icon: Icons.savings_outlined,
                                 label: 'Savings',
+                                onTap: () {
+                                  // _handleQuickAction(
+                                  //   context,
+                                  //   'Request',
+                                  //   navigateTo: const AirtimeAmountScreen()
+                                  // );
+                                },
                                 isEnabled: connectivityState.isConnected,
                               ),
                               const SizedBox(width: 12),
@@ -778,18 +821,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required IconData icon,
     required String label,
     bool isEnabled = true,
+    required VoidCallback onTap,
   }) {
     return Expanded(
       child: Opacity(
         opacity: isEnabled ? 1.0 : 0.5,
         child: InkWell(
-          onTap: () {
-            if (!isEnabled) {
-              ConnectivitySnackBar.showNoInternet(context);
-            } else {
-              // Handle service action
-            }
-          },
+          onTap: onTap,
           borderRadius: BorderRadius.circular(
             AppLayout.scaleWidth(context, 12),
           ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/contact_picker_buttom_sheet.dart';
+import 'package:kudipay/provider/bill/bill_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'transfer_amount_screen.dart';
 import 'bank_selection_bottom_sheet.dart';
@@ -14,8 +16,10 @@ class TransferRecipientScreen extends ConsumerStatefulWidget {
 }
 
 class _TransferRecipientScreenState
-    extends ConsumerState<TransferRecipientScreen> with SingleTickerProviderStateMixin {
+    extends ConsumerState<TransferRecipientScreen>
+    with SingleTickerProviderStateMixin {
   final TextEditingController _accountController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
   late TabController _tabController;
   Bank? _selectedBank;
 
@@ -25,24 +29,44 @@ class _TransferRecipientScreenState
     _tabController = TabController(length: 2, vsync: this);
     _tabController.addListener(() {
       if (_tabController.index == 0) {
-        ref.read(p2pTransferProvider.notifier).setTransferType(TransferType.kudikit);
+        ref
+            .read(p2pTransferProvider.notifier)
+            .setTransferType(TransferType.kudikit);
       } else {
-        ref.read(p2pTransferProvider.notifier).setTransferType(TransferType.otherBank);
+        ref
+            .read(p2pTransferProvider.notifier)
+            .setTransferType(TransferType.otherBank);
       }
     });
   }
 
   @override
   void dispose() {
+    _phoneController.dispose();
     _accountController.dispose();
     _tabController.dispose();
     super.dispose();
   }
 
+  // ── Contact Picker ─────────────────────────────────────────────────────────
+  Future<void> _pickFromContacts() async {
+    FocusScope.of(context).unfocus();
+
+    final selected = await showContactPicker(context);
+
+    if (selected == null || !mounted) return;
+
+    _phoneController.text = selected.displayNumber;
+
+    ref
+        .read(dataProvider.notifier)
+        .setPhoneNumberWithNetwork(selected.normalizedNumber, selected.network);
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(p2pTransferProvider);
-
+    final isInputEmpty = _phoneController.text.isEmpty;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F5),
       appBar: _buildAppBar(context),
@@ -190,7 +214,8 @@ class _TransferRecipientScreenState
     );
   }
 
-  Widget _buildOtherBankInputCard(BuildContext context, P2PTransferState state) {
+  Widget _buildOtherBankInputCard(
+      BuildContext context, P2PTransferState state) {
     final hasRecipient = state.transferData.recipient != null;
     final hasError = state.error != null;
 
@@ -587,9 +612,7 @@ class _TransferRecipientScreenState
                   context,
                   icon: Icons.contacts_outlined,
                   label: 'Contacts',
-                  onTap: () {
-                    // TODO: Implement contacts picker
-                  },
+                  onTap: _pickFromContacts,
                 ),
               ),
             ],
@@ -719,7 +742,8 @@ class _TransferRecipientScreenState
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
           // Contact list
-          ...state.recentContacts.map((contact) => _buildContactItem(context, contact)),
+          ...state.recentContacts
+              .map((contact) => _buildContactItem(context, contact)),
         ],
       ),
     );
