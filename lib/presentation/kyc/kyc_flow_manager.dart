@@ -79,7 +79,7 @@ class KycFlowManager extends ConsumerWidget {
                       ref.read(connectivityStateProvider.notifier).refresh();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF389165),
+                      backgroundColor: const Color(0xFF069494),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(28),
                       ),
@@ -169,7 +169,7 @@ class KycFlowManager extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               CircularProgressIndicator(
-                color: Color(0xFF389165),
+                color: Color(0xFF069494),
               ),
               SizedBox(height: 16),
               Text(
@@ -223,7 +223,7 @@ class KycFlowManager extends ConsumerWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const CircularProgressIndicator(
-              color: Color(0xFF389165),
+              color: Color(0xFF069494),
             ),
             const SizedBox(height: 16),
             Text(
@@ -251,7 +251,7 @@ class KycFlowManager extends ConsumerWidget {
                   'Connected',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Colors.green,
+                    color: Color(0xFF069494),
                   ),
                 ),
               ],

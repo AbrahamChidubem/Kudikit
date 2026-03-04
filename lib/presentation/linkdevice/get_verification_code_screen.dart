@@ -39,7 +39,7 @@ class _GetVerificationCodeScreenState
               color: Colors.black26,
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                 ),
               ),
             ),
@@ -143,7 +143,7 @@ class _GetVerificationCodeScreenState
           color: isSelected ? const Color(0xFFE8F5E9) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF389165) : Colors.transparent,
+            color: isSelected ? const Color(0xFF069494) : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
@@ -162,13 +162,13 @@ class _GetVerificationCodeScreenState
               height: AppLayout.scaleWidth(context, 48),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF389165).withOpacity(0.1)
+                    ? const Color(0xFF069494).withOpacity(0.1)
                     : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF389165) : Colors.black54,
+                color: isSelected ? const Color(0xFF069494) : Colors.black54,
                 size: AppLayout.scaleWidth(context, 24),
               ),
             ),
@@ -203,7 +203,7 @@ class _GetVerificationCodeScreenState
             // Checkmark or arrow
             Icon(
               isSelected ? Icons.check_circle : Icons.arrow_forward_ios,
-              color: isSelected ? const Color(0xFF389165) : Colors.black26,
+              color: isSelected ? const Color(0xFF069494) : Colors.black26,
               size: AppLayout.scaleWidth(context, 20),
             ),
           ],
@@ -239,7 +239,7 @@ class _GetVerificationCodeScreenState
                   }
                 },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF389165),
+            backgroundColor: const Color(0xFF069494),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(28),
             ),

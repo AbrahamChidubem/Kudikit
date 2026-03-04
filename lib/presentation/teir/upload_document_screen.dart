@@ -85,7 +85,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
               children: [
                 ListTile(
                   leading: Icon(Icons.camera_alt, 
-                    color: const Color(0xFF2E7D32),
+                    color: const Color(0xFF069494),
                     size: AppLayout.scaleWidth(context, 24),
                   ),
                   title: Text(
@@ -102,7 +102,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                 ),
                 ListTile(
                   leading: Icon(Icons.photo_library, 
-                    color: const Color(0xFF2E7D32),
+                    color: const Color(0xFF069494),
                     size: AppLayout.scaleWidth(context, 24),
                   ),
                   title: Text(
@@ -309,7 +309,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
                               style: GoogleFonts.openSans(
                                 fontSize: AppLayout.fontSize(context, 14),
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF2E7D32),
+                                color: const Color(0xFF069494),
                               ),
                             ),
                           ),
@@ -348,7 +348,7 @@ class _UploadDocumentScreenState extends State<UploadDocumentScreen> {
           child: ElevatedButton(
             onPressed: _uploadedFile != null ? _submitDocument : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: const Color(0xFF069494),
               disabledBackgroundColor: Colors.grey[300],
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(

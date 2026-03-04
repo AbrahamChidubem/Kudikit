@@ -48,7 +48,7 @@ class _ScheduledTransferScreenState
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF389165),
+              primary: Color(0xFF069494),
               onPrimary: Colors.white,
               onSurface: Colors.black87,
             ),
@@ -74,7 +74,7 @@ class _ScheduledTransferScreenState
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF389165),
+              primary: Color(0xFF069494),
               onPrimary: Colors.white,
               onSurface: Colors.black87,
             ),
@@ -234,7 +234,7 @@ class _ScheduledTransferScreenState
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(
-                          color: Color(0xFF389165),
+                          color: Color(0xFF069494),
                           width: 2,
                         ),
                       ),
@@ -274,7 +274,7 @@ class _ScheduledTransferScreenState
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(
-                          color: Color(0xFF389165),
+                          color: Color(0xFF069494),
                           width: 2,
                         ),
                       ),
@@ -325,7 +325,7 @@ class _ScheduledTransferScreenState
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: const BorderSide(
-                          color: Color(0xFF389165),
+                          color: Color(0xFF069494),
                           width: 2,
                         ),
                       ),
@@ -382,7 +382,7 @@ class _ScheduledTransferScreenState
                         _sendReminder = value;
                       });
                     },
-                    activeColor: const Color(0xFF389165),
+                    activeColor: const Color(0xFF069494),
                   ),
                 ],
               ),
@@ -438,7 +438,7 @@ class _ScheduledTransferScreenState
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Payment scheduled successfully'),
-                          backgroundColor: Color(0xFF389165),
+                          backgroundColor: Color(0xFF069494),
                         ),
                       );
                       Navigator.pop(context);
@@ -446,7 +446,7 @@ class _ScheduledTransferScreenState
                   : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: canSchedule
-                    ? const Color(0xFF389165)
+                    ? const Color(0xFF069494)
                     : const Color(0xFFB2DFDB),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),

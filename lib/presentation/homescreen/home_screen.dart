@@ -54,7 +54,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Account details copied!'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF069494),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -147,7 +147,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 fit: BoxFit.cover,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    color: const Color(0xFF4CAF50),
+                                    color: const Color(0xFF069494),
                                     child: Icon(
                                       Icons.person,
                                       color: Colors.white,
@@ -180,7 +180,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     vertical: AppLayout.scaleHeight(context, 2),
                                   ),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF4CAF50)
+                                    color: const Color(0xFF069494)
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(
                                       AppLayout.scaleWidth(context, 8),
@@ -190,7 +190,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     'Tier ${currentTierObject.tierNumber}',
                                     style: TextStyle(
                                       fontSize: AppLayout.fontSize(context, 11),
-                                      color: const Color(0xFF4CAF50),
+                                      color: const Color(0xFF069494),
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -223,7 +223,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   height: AppLayout.scaleWidth(context, 8),
                                   decoration: BoxDecoration(
                                     color: connectivityState.isConnected
-                                        ? Colors.green
+                                        ? Color(0xFF069494)
                                         : Colors.red,
                                     shape: BoxShape.circle,
                                     border: Border.all(
@@ -253,8 +253,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                           colors: [
-                            Color(0xFF52B788),
-                            Color(0xFF40916C),
+                            Color(0xFF069494),
+                            Color(0xFF069494),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(
@@ -262,7 +262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF52B788).withOpacity(0.3),
+                            color: const Color(0xFF069494).withOpacity(0.3),
                             blurRadius: AppLayout.scaleWidth(context, 20),
                             offset:
                                 Offset(0, AppLayout.scaleHeight(context, 8)),
@@ -315,7 +315,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     children: [
                                       Icon(
                                         Icons.add,
-                                        color: const Color(0xFF4CAF50),
+                                        color: const Color(0xFF069494),
                                         size: AppLayout.scaleWidth(context, 16),
                                       ),
                                       SizedBox(
@@ -326,7 +326,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         style: TextStyle(
                                           fontSize:
                                               AppLayout.fontSize(context, 12),
-                                          color: const Color(0xFF4CAF50),
+                                          color: const Color(0xFF069494),
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
@@ -629,7 +629,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               style: TextStyle(
                                 fontSize: 12,
                                 color: connectivityState.isConnected
-                                    ? const Color(0xFF4CAF50)
+                                    ? const Color(0xFF069494)
                                     : Colors.grey,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -901,14 +901,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Container(
             padding: EdgeInsets.all(AppLayout.scaleWidth(context, 8)),
             decoration: BoxDecoration(
-              color: const Color(0xFF4CAF50).withOpacity(0.1),
+              color: const Color(0xFF069494).withOpacity(0.1),
               borderRadius: BorderRadius.circular(
                 AppLayout.scaleWidth(context, 8),
               ),
             ),
             child: Icon(
               Icons.arrow_upward,
-              color: const Color(0xFF4CAF50),
+              color: const Color(0xFF069494),
               size: AppLayout.scaleWidth(context, 16),
             ),
           ),
@@ -956,7 +956,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   vertical: AppLayout.scaleHeight(context, 2),
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF069494).withOpacity(0.1),
                   borderRadius: BorderRadius.circular(
                     AppLayout.scaleWidth(context, 8),
                   ),
@@ -965,7 +965,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   'Successful',
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 9),
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF069494),
                     fontWeight: FontWeight.w600,
                   ),
                 ),

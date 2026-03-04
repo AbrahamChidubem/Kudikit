@@ -66,7 +66,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 36),
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF389165),
+                  color: const Color(0xFF069494),
                 ),
               ),
 
@@ -96,7 +96,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                           vertical: AppLayout.scaleHeight(context, 14),
                         ),
                         side: const BorderSide(
-                          color: Color(0xFF389165),
+                          color: Color(0xFF069494),
                           width: 1.5,
                         ),
                         shape: RoundedRectangleBorder(
@@ -108,7 +108,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 15),
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF389165),
+                          color: const Color(0xFF069494),
                         ),
                       ),
                     ),
@@ -124,7 +124,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                         padding: EdgeInsets.symmetric(
                           vertical: AppLayout.scaleHeight(context, 14),
                         ),
-                        backgroundColor: const Color(0xFF389165),
+                        backgroundColor: const Color(0xFF069494),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),

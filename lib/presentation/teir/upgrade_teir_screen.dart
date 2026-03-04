@@ -146,7 +146,7 @@ class UpgradeTierScreen extends ConsumerWidget {
                                 ? Icons.check_circle
                                 : Icons.radio_button_unchecked,
                             color: requirement.isCompleted
-                                ? const Color(0xFF4CAF50)
+                                ? const Color(0xFF069494)
                                 : Colors.grey[400],
                             size: AppLayout.scaleWidth(context, 20),
                           ),
@@ -185,7 +185,7 @@ class UpgradeTierScreen extends ConsumerWidget {
                           Icon(
                             Icons.check_circle,
                             size: AppLayout.scaleWidth(context, 20),
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(0xFF069494),
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           Expanded(
@@ -237,7 +237,7 @@ class UpgradeTierScreen extends ConsumerWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: tierState.currentTier == tier.level
                         ? Colors.grey
-                        : const Color(0xFF2E7D32),
+                        : const Color(0xFF069494),
                     foregroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(
                       vertical: AppLayout.scaleHeight(context, 16),

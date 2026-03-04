@@ -50,7 +50,7 @@ class ContactListItem extends StatelessWidget {
                   if (contact.status == ContactStatus.onApp)
                     Icon(
                       Icons.check,
-                      color: AppColors.checkGreen,
+                      color: Color(0xFF069494),
                       size: 14,
                     ),
                   if (contact.status == ContactStatus.invite)
@@ -69,10 +69,10 @@ class ContactListItem extends StatelessWidget {
                 height: 22,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                  color: isSelected ? Color(0xFF069494) : Colors.transparent,
                   border: Border.all(
                     color: isSelected
-                        ? AppColors.primaryGreen
+                        ? Color(0xFF069494)
                         : AppColors.divider,
                     width: 1.5,
                   ),
@@ -136,7 +136,7 @@ class ContactListItemFull extends StatelessWidget {
                       if (contact.status == ContactStatus.onApp)
                         Icon(
                           Icons.check,
-                          color: AppColors.checkGreen,
+                          color: Color(0xFF069494),
                           size: 14,
                         ),
                       if (contact.status == ContactStatus.invite)
@@ -158,10 +158,10 @@ class ContactListItemFull extends StatelessWidget {
               height: 22,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? AppColors.primaryGreen : Colors.transparent,
+                color: isSelected ? Color(0xFF069494) : Colors.transparent,
                 border: Border.all(
                   color: isSelected
-                      ? AppColors.primaryGreen
+                      ? Color(0xFF069494)
                       : AppColors.divider,
                   width: 1.5,
                 ),
@@ -192,7 +192,7 @@ class _InviteBadge extends StatelessWidget {
         color: AppColors.inviteBadgeBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: AppColors.primaryGreen.withOpacity(0.3),
+          color: Color(0xFF069494).withOpacity(0.3),
           width: 0.5,
         ),
       ),

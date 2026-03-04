@@ -69,7 +69,7 @@ class _AddRecipientsManuallyScreenState
                       strokeWidth: AppLayout.scaleWidth(context, 2),
                       backgroundColor: const Color(0xFFE0E0E0),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4DB6AC)),
+                          Color(0xFF069494)),
                     ),
                   ),
                   Positioned.fill(
@@ -261,7 +261,7 @@ class _AddRecipientsManuallyScreenState
                 'Total: ${_currencyFormat.format(state.calculatedTotalAmount)} (${state.recipientCount} recipients × ${_currencyFormat.format(state.amountPerRecipient!)})',
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 12),
-                  color: const Color(0xFF389165),
+                  color: const Color(0xFF069494),
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -365,7 +365,7 @@ class _AddRecipientsManuallyScreenState
                     children: [
                       Icon(
                         Icons.add,
-                        color: const Color(0xFF389165),
+                        color: const Color(0xFF069494),
                         size: AppLayout.scaleWidth(context, 20),
                       ),
                       SizedBox(width: AppLayout.scaleWidth(context, 8)),
@@ -374,7 +374,7 @@ class _AddRecipientsManuallyScreenState
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 15),
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF389165),
+                          color: const Color(0xFF069494),
                         ),
                       ),
                     ],
@@ -532,7 +532,7 @@ class _AddRecipientsManuallyScreenState
                       .read(bulkTransferProvider.notifier)
                       .setScheduledTransfer(isScheduled: value);
                 },
-                activeColor: const Color(0xFF389165),
+                activeColor: const Color(0xFF069494),
               ),
             ],
           ),
@@ -745,7 +745,7 @@ class _AddRecipientsManuallyScreenState
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  isEnabled ? const Color(0xFF389165) : const Color(0xFFB8E6CC),
+                  isEnabled ? const Color(0xFF069494) : const Color(0xFFB8E6CC),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
               ),
@@ -778,10 +778,10 @@ class _AddRecipientsManuallyScreenState
           vertical: AppLayout.scaleHeight(context, 14),
         ),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF389165) : const Color(0xFFF5F9F5),
+          color: isSelected ? const Color(0xFF069494) : const Color(0xFFF5F9F5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF389165) : Colors.transparent,
+            color: isSelected ? const Color(0xFF069494) : Colors.transparent,
           ),
         ),
         child: Center(
@@ -910,13 +910,13 @@ class _RecipientCardState extends ConsumerState<_RecipientCard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isComplete ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+          color: isComplete ? const Color(0xFF069494) : Colors.grey[300]!,
           width: 1.5,
         ),
         boxShadow: isComplete
             ? [
                 BoxShadow(
-                  color: const Color(0xFF4CAF50).withOpacity(0.1),
+                  color: const Color(0xFF069494).withOpacity(0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -936,7 +936,7 @@ class _RecipientCardState extends ConsumerState<_RecipientCard> {
                   height: AppLayout.scaleWidth(context, 32),
                   decoration: BoxDecoration(
                     color:
-                        isComplete ? const Color(0xFF4CAF50) : Colors.grey[300],
+                        isComplete ? const Color(0xFF069494) : Colors.grey[300],
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -1210,10 +1210,10 @@ class _RecipientCardState extends ConsumerState<_RecipientCard> {
           vertical: AppLayout.scaleHeight(context, 14),
         ),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF389165) : const Color(0xFFF5F9F5),
+          color: isSelected ? const Color(0xFF069494) : const Color(0xFFF5F9F5),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF389165) : Colors.transparent,
+            color: isSelected ? const Color(0xFF069494) : Colors.transparent,
           ),
         ),
         child: Center(

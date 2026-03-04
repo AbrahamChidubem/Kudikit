@@ -155,7 +155,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification code sent to ${widget.email}'),
-            backgroundColor: Colors.green,
+            backgroundColor:Color(0xFF069494),
           ),
         );
       }
@@ -234,7 +234,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Account verified successfully!'),
-              backgroundColor: Colors.green,
+              backgroundColor: Color(0xFF069494),
             ),
           );
         }
@@ -284,18 +284,18 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
       height: 56,
       textStyle: const TextStyle(
         fontSize: 20,
-        color: Color(0xFF389165),
+        color: Color(0xFF069494),
         fontWeight: FontWeight.w600,
       ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(width: 0.5, color: Colors.teal),
+        border: Border.all(width: 0.5, color: const Color(0xFF069494)),
       ),
     );
 
     final focusedPinTheme = defaultPinTheme.copyDecorationWith(
-      border: Border.all(color: const Color(0xFF009985), width: 2),
+      border: Border.all(color: const Color(0xFF069494), width: 2),
       borderRadius: BorderRadius.circular(10),
     );
 
@@ -338,7 +338,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                       strokeWidth: AppLayout.scaleWidth(context, 2),
                       backgroundColor: const Color(0xFFE0E0E0),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4DB6AC)),
+                          Color(0xFF069494)),
                     ),
                   ),
                   Positioned.fill(
@@ -471,7 +471,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                       // Verify Button
                       if (isLoading)
                         const CircularProgressIndicator(
-                          color: Color(0xFF389165),
+                          color: Color(0xFF069494),
                         )
                       else if (!isOnline)
                         Opacity(
@@ -509,7 +509,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                               height: 16,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: Color(0xFF389165),
+                                color: Color(0xFF069494),
                               ),
                             )
                           else
@@ -526,7 +526,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   color: isOnline
-                                      ? const Color(0xFF389165)
+                                      ? const Color(0xFF069494)
                                       : Colors.grey,
                                 ),
                               ),
@@ -540,7 +540,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF389165),
+                            color: Color(0xFF069494),
                           ),
                         ),
                       )

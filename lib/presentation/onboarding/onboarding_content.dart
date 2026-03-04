@@ -48,6 +48,6 @@ final List<OnboardingContent> onboardingContents = [
         '',
     imagePath: 'assets/images/frame4.png', 
     subtext: '',
-    color:  Color(0xFF5aad82)
+    color:  Color(0xFF069494)
   ),
 ];

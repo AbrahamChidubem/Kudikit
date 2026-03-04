@@ -148,7 +148,7 @@ class _EnterNewEmailScreenState extends ConsumerState<EnterNewEmailScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Email changed successfully!'),
-                                    backgroundColor: Color(0xFF5C7C6F),
+                                    backgroundColor: Color(0xFF069494),
                                   ),
                                 );
                                 
@@ -167,7 +167,7 @@ class _EnterNewEmailScreenState extends ConsumerState<EnterNewEmailScreen> {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5C7C6F),
+                      backgroundColor: const Color(0xFF069494),
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(

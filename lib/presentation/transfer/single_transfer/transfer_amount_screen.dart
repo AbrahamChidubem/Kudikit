@@ -97,7 +97,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF389165),
+                  backgroundColor: const Color(0xFF069494),
                 ),
                 child: const Text('Go Back'),
               ),
@@ -193,7 +193,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
         children: [
           CircleAvatar(
             radius: AppLayout.scaleWidth(context, 20),
-            backgroundColor: const Color(0xFF389165),
+            backgroundColor: const Color(0xFF069494),
             child: Icon(
               Icons.person,
               color: Colors.white,
@@ -312,7 +312,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                 borderSide: BorderSide(
                   color: hasInsufficientBalance
                       ? Colors.red
-                      : const Color(0xFF389165),
+                      : const Color(0xFF069494),
                   width: 2,
                 ),
               ),
@@ -411,7 +411,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF389165)
+                          ? const Color(0xFF069494)
                           : Colors.grey[300]!,
                       width: isSelected ? 1.5 : 1,
                     ),
@@ -421,7 +421,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 13),
                       color: isSelected
-                          ? const Color(0xFF389165)
+                          ? const Color(0xFF069494)
                           : Colors.black54,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
@@ -481,7 +481,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                   width: 2,
                 ),
               ),
@@ -559,7 +559,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                   width: 2,
                 ),
               ),
@@ -608,7 +608,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF389165),
+                  backgroundColor: const Color(0xFF069494),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
                   ),
@@ -647,7 +647,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                 style: OutlinedButton.styleFrom(
                   side: BorderSide(
                     color:
-                        canSend ? const Color(0xFF389165) : Colors.grey[300]!,
+                        canSend ? const Color(0xFF069494) : Colors.grey[300]!,
                     width: 1.5,
                   ),
                   shape: RoundedRectangleBorder(
@@ -659,7 +659,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
-                    color: canSend ? const Color(0xFF389165) : Colors.grey,
+                    color: canSend ? const Color(0xFF069494) : Colors.grey,
                   ),
                 ),
               ),

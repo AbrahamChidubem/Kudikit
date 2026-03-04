@@ -80,7 +80,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) {
                           return Container(
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(0xFF069494),
                             child: const Icon(
                               Icons.person,
                               color: Colors.white,
@@ -116,7 +116,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                                color: const Color(0xFF069494).withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Row(
@@ -125,7 +125,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                                   const Icon(
                                     Icons.check_circle,
                                     size: 14,
-                                    color: Color(0xFF4CAF50),
+                                    color: Color(0xFF069494),
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
@@ -156,7 +156,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(0xFF069494),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
@@ -209,12 +209,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF4CAF50).withOpacity(0.1),
+                      color: const Color(0xFF069494).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Icon(
                       currentTierObject.icon,
-                      color: Color(0xFF4CAF50),
+                      color: Color(0xFF069494),
                       size: 24,
                     ),
                   ),
@@ -260,7 +260,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Upgrade tier feature coming soon'),
-                          backgroundColor: Color(0xFF4CAF50),
+                          backgroundColor: Color(0xFF069494),
                         ),
                       );
                     },
@@ -278,7 +278,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       'Upgrade Tier',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF4CAF50),
+                        color: Color(0xFF069494),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -615,7 +615,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF4CAF50),
+            activeColor: const Color(0xFF069494),
           ),
         ],
       ),

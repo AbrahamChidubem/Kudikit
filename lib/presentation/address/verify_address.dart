@@ -215,7 +215,7 @@ class AddressVerificationScreen extends ConsumerWidget {
                         }
                       : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:  const Color(0xFF389165),
+                    backgroundColor:  const Color(0xFF069494),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(
                           AppLayout.scaleWidth(context, 28)),

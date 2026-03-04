@@ -53,7 +53,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                       ),
                       child: Icon(
                         Icons.account_balance,
-                        color: const Color(0xFF389165),
+                        color: const Color(0xFF069494),
                         size: AppLayout.scaleWidth(context, 32),
                       ),
                     ),
@@ -99,7 +99,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                         children: [
                           Icon(
                             Icons.check_circle,
-                            color: const Color(0xFF4CAF50),
+                            color: const Color(0xFF069494),
                             size: AppLayout.scaleWidth(context, 16),
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 6)),
@@ -107,7 +107,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                             'successful',
                             style: TextStyle(
                               fontSize: AppLayout.fontSize(context, 13),
-                              color: const Color(0xFF4CAF50),
+                              color: const Color(0xFF069494),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -189,7 +189,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                           vertical: AppLayout.scaleHeight(context, 16),
                         ),
                         side: const BorderSide(
-                          color: Color(0xFF389165),
+                          color: Color(0xFF069494),
                           width: 1.5,
                         ),
                         shape: RoundedRectangleBorder(
@@ -201,7 +201,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 16),
                           fontWeight: FontWeight.w600,
-                          color: const Color(0xFF389165),
+                          color: const Color(0xFF069494),
                         ),
                       ),
                     ),
@@ -217,7 +217,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                         padding: EdgeInsets.symmetric(
                           vertical: AppLayout.scaleHeight(context, 16),
                         ),
-                        backgroundColor: const Color(0xFF389165),
+                        backgroundColor: const Color(0xFF069494),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(28),
                         ),
@@ -336,7 +336,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Share functionality to be implemented'),
-        backgroundColor: Color(0xFF389165),
+        backgroundColor: Color(0xFF069494),
       ),
     );
   }
@@ -346,7 +346,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Receipt download to be implemented'),
-        backgroundColor: Color(0xFF389165),
+        backgroundColor: Color(0xFF069494),
       ),
     );
   }

@@ -13,9 +13,9 @@ class RequestSentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5E9),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8F5E9),
+        backgroundColor: const Color(0xFFF9F9F9),
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.close, 
@@ -44,7 +44,7 @@ class RequestSentScreen extends StatelessWidget {
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: const BoxDecoration(
-                color: Color(0xFF2E7D32),
+                color: Color(0xFF069494),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -104,7 +104,7 @@ class RequestSentScreen extends StatelessWidget {
                           width: AppLayout.scaleWidth(context, 40),
                           height: AppLayout.scaleWidth(context, 40),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF2E7D32),
+                            color: const Color(0xFF069494),
                             borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
                           ),
                           child: Icon(
@@ -226,7 +226,7 @@ class RequestSentScreen extends StatelessWidget {
                   Navigator.popUntil(context, (route) => route.isFirst);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: const Color(0xFF069494),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(
                     vertical: AppLayout.scaleHeight(context, 16),
@@ -263,7 +263,7 @@ class RequestSentScreen extends StatelessWidget {
                   style: GoogleFonts.openSans(
                     fontSize: AppLayout.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF2E7D32),
+                    color: const Color(0xFF069494),
                   ),
                 ),
               ),

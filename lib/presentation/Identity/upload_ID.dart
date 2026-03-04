@@ -157,7 +157,7 @@ class UploadIdCardScreen extends ConsumerWidget {
                                   'Upload Document',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 14),
-                                    color: const Color(0xFF4CAF50),
+                                    color: const Color(0xFF069494),
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),

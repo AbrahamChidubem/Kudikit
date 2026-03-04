@@ -60,7 +60,7 @@ class _BulkTransferPreviewScreenState
                 child: const Text(
                   '36%',
                   style: TextStyle(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -84,14 +84,14 @@ class _BulkTransferPreviewScreenState
                     padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF389165), Color(0xFF2A6B4D)],
+                        colors: [Color(0xFF069494), Color(0xFF2A6B4D)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF389165).withOpacity(0.3),
+                          color: const Color(0xFF069494).withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -189,13 +189,13 @@ class _BulkTransferPreviewScreenState
                         icon: Icon(
                           Icons.edit,
                           size: AppLayout.scaleWidth(context, 18),
-                          color: const Color(0xFF389165),
+                          color: const Color(0xFF069494),
                         ),
                         label: Text(
                           'Edit',
                           style: TextStyle(
                             fontSize: AppLayout.fontSize(context, 14),
-                            color: const Color(0xFF389165),
+                            color: const Color(0xFF069494),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -234,7 +234,7 @@ class _BulkTransferPreviewScreenState
                               _isReviewChecked = value ?? false;
                             });
                           },
-                          activeColor: const Color(0xFF389165),
+                          activeColor: const Color(0xFF069494),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(4),
                           ),
@@ -370,7 +370,7 @@ class _BulkTransferPreviewScreenState
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor:
-                  isEnabled ? const Color(0xFF389165) : const Color(0xFFB8E6CC),
+                  isEnabled ? const Color(0xFF069494) : const Color(0xFFB8E6CC),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
               ),

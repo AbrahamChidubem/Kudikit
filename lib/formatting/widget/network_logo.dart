@@ -371,7 +371,7 @@ class _NetworkOption extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 11,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                   ),
                 ),
               ),

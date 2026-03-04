@@ -23,7 +23,7 @@ class TierSelectionScreen extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: Color.fromARGB(255, 78, 88, 99),
+      backgroundColor: Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -62,15 +62,15 @@ class TierSelectionScreen extends ConsumerWidget {
             Container(
               padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
               decoration: BoxDecoration(
-                color: const Color(0xFF4CAF50).withOpacity(0.1),
+                color: const Color(0xFF069494).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-                border: Border.all(color: const Color(0xFF4CAF50)),
+                border: Border.all(color: const Color(0xFF069494)),
               ),
               child: Row(
                 children: [
                   Icon(
                     Icons.info_outline,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF069494),
                     size: AppLayout.scaleWidth(context, 20),
                   ),
                   SizedBox(width: AppLayout.scaleWidth(context, 12)),
@@ -79,7 +79,7 @@ class TierSelectionScreen extends ConsumerWidget {
                       'You are currently on ${_getTierName(currentTier)}',
                       style: GoogleFonts.openSans(
                         fontSize: AppLayout.fontSize(context, 14),
-                        color: const Color(0xFF2E7D32),
+                        color: const Color(0xFF069494),
                         fontWeight: FontWeight.w600,
                       ),
                     ),

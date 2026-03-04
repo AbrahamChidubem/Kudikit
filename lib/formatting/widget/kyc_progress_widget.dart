@@ -104,14 +104,14 @@ class KycProgressWidget extends ConsumerWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF389165),
+            Color(0xFF069494),
             Color(0xFF4DB6AC),
           ],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF389165).withOpacity(0.3),
+            color: const Color(0xFF069494).withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -249,7 +249,7 @@ class KycProgressWidget extends ConsumerWidget {
                     ),
                     child: const Icon(
                       Icons.check_circle,
-                      color: Color(0xFF389165),
+                      color: Color(0xFF069494),
                       size: 24,
                     ),
                   ),
@@ -307,7 +307,7 @@ class KycProgressWidget extends ConsumerWidget {
               child: Icon(
                 isCompleted ? Icons.check : icon,
                 color: isCompleted
-                    ? const Color(0xFF389165)
+                    ? const Color(0xFF069494)
                     : Colors.white,
                 size: 22,
               ),
@@ -335,7 +335,7 @@ class KycProgressWidget extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                   ),
                 ),
               )

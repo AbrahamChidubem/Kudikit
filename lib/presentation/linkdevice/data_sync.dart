@@ -29,7 +29,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
               color: Colors.black26,
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                 ),
               ),
             ),
@@ -158,7 +158,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
           Checkbox(
             value: value,
             onChanged: (newValue) => onChanged(newValue ?? false),
-            activeColor: const Color(0xFF389165),
+            activeColor: const Color(0xFF069494),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(4),
             ),
@@ -223,7 +223,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
                       }
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
@@ -254,7 +254,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
               'Skip',
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -37,7 +37,7 @@ class SelfieInstructionsScreen extends ConsumerWidget {
                       strokeWidth: AppLayout.scaleWidth(context, 2),
                       backgroundColor: const Color(0xFFE0E0E0),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4DB6AC)),
+                          Color(0xFF069494)),
                     ),
                   ),
                   Positioned.fill(
@@ -168,7 +168,7 @@ class SelfieInstructionsScreen extends ConsumerWidget {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF389165),
+                  backgroundColor: const Color(0xFF069494),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
                         AppLayout.scaleWidth(context, 28)),

@@ -92,7 +92,7 @@ class _VerifyIdentityScreenState extends ConsumerState<VerifyIdentityScreen> {
                       strokeWidth: 3,
                       backgroundColor: Colors.grey[200],
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF389165),
+                        Color(0xFF069494),
                       ),
                     ),
                   ),
@@ -342,7 +342,7 @@ class _VerifyIdentityScreenState extends ConsumerState<VerifyIdentityScreen> {
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
@@ -366,7 +366,7 @@ class _VerifyIdentityScreenState extends ConsumerState<VerifyIdentityScreen> {
               'Back',
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
                 fontWeight: FontWeight.w500,
               ),
             ),

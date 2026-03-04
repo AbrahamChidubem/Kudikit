@@ -94,7 +94,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: isOnline ? Colors.green : Colors.red,
+              color: isOnline ? Color(0xFF069494) : Colors.red,
               shape: BoxShape.circle,
             ),
           ),

@@ -88,7 +88,7 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => RequestMoneyScr
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Adding ${_phoneController.text.trim()} as recipient'),
-          backgroundColor: AppColors.primaryGreen,
+          backgroundColor: Color(0xFF069494),
           behavior: SnackBarBehavior.floating,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -398,8 +398,8 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => RequestMoneyScr
       child: ElevatedButton(
         onPressed: _canContinue ? _onContinue : null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.primaryGreen,
-          disabledBackgroundColor: AppColors.primaryGreen.withOpacity(0.45),
+          backgroundColor: Color(0xFF069494),
+          disabledBackgroundColor: Color(0xFF069494).withOpacity(0.45),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),

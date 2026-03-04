@@ -33,7 +33,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
           state.isLoading
               ? const Center(
                   child: CircularProgressIndicator(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                   ),
                 )
               : _buildBody(context, state),
@@ -44,7 +44,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
       // body: state.isLoading
       //     ? const Center(
       //         child: CircularProgressIndicator(
-      //           color: Color(0xFF389165),
+      //           color: Color(0xFF069494),
       //         ),
       //       )
       //     : _buildBody(context, state),
@@ -120,7 +120,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
       width: AppLayout.scaleWidth(context, 80),
       height: AppLayout.scaleWidth(context, 80),
       decoration: BoxDecoration(
-        color: const Color(0xFF389165),
+        color: const Color(0xFF069494),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -156,7 +156,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
             ),
             child: Icon(
               Icons.security,
-              color: const Color(0xFF389165),
+              color: const Color(0xFF069494),
               size: AppLayout.scaleWidth(context, 20),
             ),
           ),
@@ -197,7 +197,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
@@ -228,7 +228,7 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
               'I don\'t have access to my old phone',
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
                 fontWeight: FontWeight.w500,
               ),
             ),

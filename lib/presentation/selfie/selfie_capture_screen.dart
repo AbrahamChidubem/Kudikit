@@ -179,7 +179,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
               color: Colors.grey[900],
               child: const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4DB6AC)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
                 ),
               ),
             ),
@@ -206,7 +206,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                       padding:
                           EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
                       decoration: BoxDecoration(
-                        color: Colors.green,
+                        color: Color(0xFF069494),
                         borderRadius: BorderRadius.circular(
                             AppLayout.scaleWidth(context, 20)),
                       ),
@@ -305,7 +305,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                   children: [
                     CircularProgressIndicator(
                       valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF4DB6AC)),
+                          AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
                     ),
                     SizedBox(height: AppLayout.scaleHeight(context, 16)),
                     Text(
@@ -339,11 +339,11 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Color(0xFF069494).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.check_circle,
-                  color: Colors.green, size: AppLayout.scaleWidth(context, 50)),
+                  color: Color(0xFF069494), size: AppLayout.scaleWidth(context, 50)),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
             Text(
@@ -382,7 +382,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                   // }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4DB6AC),
+                  backgroundColor: const Color(0xFF069494),
                   padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(

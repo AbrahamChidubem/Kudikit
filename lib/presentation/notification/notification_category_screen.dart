@@ -46,7 +46,7 @@ class NotificationCategoryScreen extends ConsumerWidget {
           data: (preferences) => _buildContent(context, ref, preferences),
           loading: () => const Center(
             child: CircularProgressIndicator(
-              color: Color(0xFF5C7C6F),
+              color: Color(0xFF069494),
             ),
           ),
           error: (error, stack) => const Center(
@@ -239,7 +239,7 @@ class NotificationCategoryScreen extends ConsumerWidget {
                     .togglePreference(key, newValue);
               },
               activeColor: Colors.white,
-              activeTrackColor: const Color(0xFF5C7C6F),
+              activeTrackColor: const Color(0xFF069494),
               inactiveThumbColor: Colors.white,
               inactiveTrackColor: Colors.grey[300],
             ),

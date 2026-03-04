@@ -41,7 +41,7 @@ class RecipientTabBar extends StatelessWidget {
                     height: 2,
                     width: isSelected ? 40 : 0,
                     decoration: BoxDecoration(
-                      color: AppColors.primaryGreen,
+                      color: Color(0xFF069494),
                       borderRadius: BorderRadius.circular(1),
                     ),
                   ),

@@ -38,7 +38,7 @@ class TransferMenuScreen extends StatelessWidget {
             _buildTransferOption(
               context: context,
               icon: Icons.person_outline,
-              iconColor: const Color(0xFF389165),
+              iconColor: const Color(0xFF069494),
               iconBgColor: const Color(0xFFE8F5E9),
               title: 'Single Transfer',
               subtitle: 'Send money to one recipient',
@@ -58,7 +58,7 @@ class TransferMenuScreen extends StatelessWidget {
             _buildTransferOption(
               context: context,
               icon: Icons.group_outlined,
-              iconColor: const Color(0xFF389165),
+              iconColor: const Color(0xFF069494),
               iconBgColor: const Color(0xFFE8F5E9),
               title: 'Bulk Transfer',
               subtitle: 'Send money to up to 15 people at once',

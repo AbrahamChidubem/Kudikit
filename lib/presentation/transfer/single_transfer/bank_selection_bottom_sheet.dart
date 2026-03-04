@@ -153,7 +153,7 @@ class _BankSelectionBottomSheetState
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(
-                      color: Color(0xFF389165),
+                      color: Color(0xFF069494),
                       width: 2,
                     ),
                   ),

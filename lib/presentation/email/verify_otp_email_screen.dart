@@ -149,7 +149,7 @@ class _VerifyEmailOtpScreenState extends ConsumerState<VerifyEmailOtpScreen> {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Code resent successfully'),
-                                  backgroundColor: Color(0xFF5C7C6F),
+                                  backgroundColor: Color(0xFF069494),
                                 ),
                               );
                             }
@@ -163,7 +163,7 @@ class _VerifyEmailOtpScreenState extends ConsumerState<VerifyEmailOtpScreen> {
                       'Resend code',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 14),
-                        color: const Color(0xFF5C7C6F),
+                        color: const Color(0xFF069494),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -204,7 +204,7 @@ class _VerifyEmailOtpScreenState extends ConsumerState<VerifyEmailOtpScreen> {
                           }
                         },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5C7C6F),
+                    backgroundColor: const Color(0xFF069494),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(

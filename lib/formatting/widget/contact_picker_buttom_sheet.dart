@@ -259,7 +259,7 @@ class _ContactPickerBottomSheetState
                       style: const TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF389165),
+                        color: Color(0xFF069494),
                       ),
                     ),
                   ),
@@ -342,7 +342,7 @@ class _ContactPickerBottomSheetState
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const CircularProgressIndicator(
-            color: Color(0xFF389165),
+            color: Color(0xFF069494),
             strokeWidth: 2.5,
           ),
           const SizedBox(height: 16),
@@ -383,7 +383,7 @@ class _ContactPickerBottomSheetState
             ),
             child: const Icon(
               Icons.contacts_outlined,
-              color: Color(0xFF389165),
+              color: Color(0xFF069494),
               size: 36,
             ),
           ),
@@ -414,7 +414,7 @@ class _ContactPickerBottomSheetState
             child: ElevatedButton(
               onPressed: _loadContacts,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
@@ -485,7 +485,7 @@ class _ContactPickerBottomSheetState
                 await ContactService.instance.openSettings();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
@@ -565,7 +565,7 @@ class _ContactPickerBottomSheetState
             child: OutlinedButton(
               onPressed: () => Navigator.pop(context),
               style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Color(0xFF389165), width: 1.5),
+                side: const BorderSide(color: Color(0xFF069494), width: 1.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
@@ -575,7 +575,7 @@ class _ContactPickerBottomSheetState
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 15),
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF389165),
+                  color: const Color(0xFF069494),
                 ),
               ),
             ),
@@ -617,7 +617,7 @@ class _ContactPickerBottomSheetState
           ElevatedButton(
             onPressed: _loadContacts,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF389165),
+              backgroundColor: const Color(0xFF069494),
               elevation: 0,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28)),
@@ -753,7 +753,7 @@ class _SectionHeader extends StatelessWidget {
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 13),
           fontWeight: FontWeight.w700,
-          color: const Color(0xFF389165),
+          color: const Color(0xFF069494),
           letterSpacing: 0.5,
         ),
       ),
@@ -997,7 +997,7 @@ class _AlphabetIndex extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
-                      color: Color(0xFF389165),
+                      color: Color(0xFF069494),
                     ),
                   ),
                 ),

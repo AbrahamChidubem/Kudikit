@@ -94,9 +94,9 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
             color: Colors.white,
             child: TabBar(
               controller: _tabController,
-              labelColor: const Color(0xFF2E7D32),
+              labelColor: const Color(0xFF069494),
               unselectedLabelColor: Colors.grey[600],
-              indicatorColor: const Color(0xFF2E7D32),
+              indicatorColor: const Color(0xFF069494),
               indicatorWeight: 3,
               isScrollable: true,
               labelStyle: GoogleFonts.openSans(
@@ -115,7 +115,7 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
                           vertical: AppLayout.scaleHeight(context, 2),
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF2E7D32),
+                          color: const Color(0xFF069494),
                           borderRadius: BorderRadius.circular(
                             AppLayout.scaleWidth(context, 10),
                           ),
@@ -157,7 +157,7 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
         onPressed: () {
           Navigator.pop(context);
         },
-        backgroundColor: const Color(0xFF2E7D32),
+        backgroundColor: const Color(0xFF069494),
         child: Icon(Icons.add, 
           color: Colors.white,
           size: AppLayout.scaleWidth(context, 24),
@@ -426,7 +426,7 @@ class _RequestCard extends StatelessWidget {
 
   Color _getAvatarColor() {
     final colors = [
-      const Color(0xFF4CAF50),
+      const Color(0xFF069494),
       const Color(0xFFE91E63),
       const Color(0xFFFFA726),
     ];

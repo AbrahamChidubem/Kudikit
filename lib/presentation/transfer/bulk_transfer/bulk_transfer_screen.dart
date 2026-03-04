@@ -43,7 +43,7 @@ class BulkTransferScreen extends ConsumerWidget {
                       strokeWidth: AppLayout.scaleWidth(context, 2),
                       backgroundColor: const Color(0xFFE0E0E0),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4DB6AC)),
+                          Color(0xFF069494)),
                     ),
                   ),
                   Positioned.fill(
@@ -99,12 +99,12 @@ class BulkTransferScreen extends ConsumerWidget {
               _buildMethodOption(
                 context: context,
                 icon: Icons.person_add_outlined,
-                iconColor: const Color(0xFF389165),
+                iconColor: const Color(0xFF069494),
                 iconBgColor: const Color(0xFFE8F5E9),
                 title: 'Add manually',
                 subtitle: 'Add recipient one by one by adding their details',
                 badgeText: 'Most flexible',
-                badgeColor: const Color(0xFF4CAF50),
+                badgeColor: Color(0xFF069494),
                 recommendedText: 'Best for 1-5 recipients',
                 onTap: () {
                   Navigator.push(

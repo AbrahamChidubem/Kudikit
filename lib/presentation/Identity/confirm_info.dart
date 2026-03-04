@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/model/user/user_info.dart';
+import 'package:kudipay/presentation/transactionpin/transaction_pin_screen.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
+
 
 class ConfirmInfoScreen extends ConsumerWidget {
   final UserInfo userInfo;
@@ -31,13 +33,13 @@ class ConfirmInfoScreen extends ConsumerWidget {
               height: 50,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF4CAF50), width: 2),
+                border: Border.all(color: const Color(0xFF069494), width: 2),
               ),
               child: const Center(
                 child: Text(
                   '100%',
                   style: TextStyle(
-                    color: Color(0xFF4CAF50),
+                    color: Color(0xFF069494),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -108,7 +110,7 @@ class ConfirmInfoScreen extends ConsumerWidget {
                 child: ElevatedButton(
                   onPressed: () => _handleSubmit(context, ref),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4CAF50),
+                    backgroundColor: const Color(0xFF069494),
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -134,7 +136,7 @@ class ConfirmInfoScreen extends ConsumerWidget {
                   onPressed: () => Navigator.pop(context),
                   style: OutlinedButton.styleFrom(
                     backgroundColor: const Color(0xFFE8F5E9),
-                    foregroundColor: const Color(0xFF4CAF50),
+                    foregroundColor: const Color(0xFF069494),
                     side: BorderSide.none,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -166,7 +168,7 @@ class ConfirmInfoScreen extends ConsumerWidget {
       barrierDismissible: false,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF4CAF50),
+          color: Color(0xFF069494),
         ),
       ),
     );
@@ -194,15 +196,15 @@ class ConfirmInfoScreen extends ConsumerWidget {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Information submitted successfully!'),
-              backgroundColor: Color(0xFF4CAF50),
+              backgroundColor: Color(0xFF069494),
               duration: Duration(seconds: 2),
             ),
           );
 
-          // Navigate to dashboard/home and clear navigation stack
+          // Navigate to transaction PIN creation — required before home
            Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const BottomNavBar()),
+        MaterialPageRoute(builder: (context) => const CreateTransactionPinScreen()),
       );
         }
       } else {

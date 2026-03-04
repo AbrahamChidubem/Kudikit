@@ -146,7 +146,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     if (state.isLoading && state.transactions.isEmpty) {
       return const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF4CAF50),
+          color: Color(0xFF069494),
         ),
       );
     }
@@ -184,7 +184,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   .read(transactionProvider.notifier)
                   .loadTransactions(refresh: true),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: const Color(0xFF069494),
               ),
               child: const Text('Retry'),
             ),
@@ -222,7 +222,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             .read(transactionProvider.notifier)
             .loadTransactions(refresh: true);
       },
-      color: const Color(0xFF4CAF50),
+      color: const Color(0xFF069494),
       child: ListView(
         controller: _scrollController,
         padding: EdgeInsets.symmetric(
@@ -236,7 +236,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
               padding: EdgeInsets.all(16.0),
               child: Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF4CAF50),
+                  color: Color(0xFF069494),
                 ),
               ),
             ),
@@ -314,7 +314,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       ),
       child: Icon(
         isDebit ? Icons.arrow_upward : Icons.arrow_downward,
-        color: const Color(0xFF4CAF50),
+        color: const Color(0xFF069494),
         size: 20,
       ),
     );
@@ -358,7 +358,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
             fontWeight: FontWeight.w600,
             color: transaction.type == TransactionType.debit
                 ? Colors.black87
-                : const Color(0xFF4CAF50),
+                : const Color(0xFF069494),
           ),
         ),
         const SizedBox(height: 4),
@@ -387,7 +387,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   Color _getStatusColor(TransactionStatus status) {
     switch (status) {
       case TransactionStatus.successful:
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF069494);
       case TransactionStatus.failed:
         return Colors.red;
       case TransactionStatus.pending:

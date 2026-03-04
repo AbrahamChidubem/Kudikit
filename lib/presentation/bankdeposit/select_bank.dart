@@ -131,7 +131,7 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
   ) {
     if (banksState.isLoading && banksState.banks.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+        child: CircularProgressIndicator(color: Color(0xFF069494)),
       );
     }
 
@@ -255,7 +255,7 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF069494),
                   padding: EdgeInsets.symmetric(
                     horizontal: AppLayout.scaleWidth(context, 32),
                     vertical: AppLayout.scaleHeight(context, 12),
@@ -288,7 +288,7 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
       case 'globus':
         return const Color(0xFFD32F2F);
       default:
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF069494);
     }
   }
 

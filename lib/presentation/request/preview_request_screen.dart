@@ -51,7 +51,7 @@ class _PreviewRequestScreenState extends State<PreviewRequestScreen> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF2E7D32),
+                    color: const Color(0xFF069494),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Column(
@@ -138,7 +138,7 @@ class _PreviewRequestScreenState extends State<PreviewRequestScreen> {
                                       if (recipients[0].isVerified)
                                         const Icon(
                                           Icons.check_circle,
-                                          color: Color(0xFF2E7D32),
+                                          color: Color(0xFF069494),
                                           size: 16,
                                         ),
                                     ],
@@ -258,7 +258,7 @@ class _PreviewRequestScreenState extends State<PreviewRequestScreen> {
                               ),
                               child: const Icon(
                                 Icons.notifications_outlined,
-                                color: Color(0xFF2E7D32),
+                                color: Color(0xFF069494),
                                 size: 20,
                               ),
                             ),
@@ -361,7 +361,7 @@ class _PreviewRequestScreenState extends State<PreviewRequestScreen> {
                       );
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E7D32),
+                      backgroundColor: const Color(0xFF069494),
                       foregroundColor: Colors.white,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -394,7 +394,7 @@ class _PreviewRequestScreenState extends State<PreviewRequestScreen> {
                       style: GoogleFonts.openSans(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: const Color(0xFF2E7D32),
+                        color: const Color(0xFF069494),
                       ),
                     ),
                   ),

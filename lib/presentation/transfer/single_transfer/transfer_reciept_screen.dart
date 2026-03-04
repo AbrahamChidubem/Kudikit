@@ -128,7 +128,7 @@ class _TransferRecipientScreenState
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 13),
-          color: const Color(0xFF2E7D32),
+          color: const Color(0xFF069494),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -151,10 +151,10 @@ class _TransferRecipientScreenState
         indicator: UnderlineTabIndicator(
           borderSide: BorderSide(
             width: 2,
-            color: const Color(0xFF389165),
+            color: const Color(0xFF069494),
           ),
         ),
-        labelColor: const Color(0xFF389165),
+        labelColor: const Color(0xFF069494),
         unselectedLabelColor: Colors.black54,
         labelStyle: TextStyle(
           fontSize: AppLayout.fontSize(context, 14),
@@ -256,7 +256,7 @@ class _TransferRecipientScreenState
                   color: hasError
                       ? Colors.red
                       : hasRecipient
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF069494)
                           : Colors.grey[300]!,
                 ),
               ),
@@ -266,19 +266,19 @@ class _TransferRecipientScreenState
                   color: hasError
                       ? Colors.red
                       : hasRecipient
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF069494)
                           : Colors.grey[300]!,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                   width: 2,
                 ),
               ),
               suffixIcon: hasRecipient
-                  ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50))
+                  ? const Icon(Icons.check_circle, color: Color(0xFF069494))
                   : null,
               counterText: '',
             ),
@@ -316,7 +316,7 @@ class _TransferRecipientScreenState
               decoration: BoxDecoration(
                 border: Border.all(
                   color: _selectedBank != null
-                      ? const Color(0xFF4CAF50)
+                      ? const Color(0xFF069494)
                       : Colors.grey[300]!,
                 ),
                 borderRadius: BorderRadius.circular(8),
@@ -384,7 +384,7 @@ class _TransferRecipientScreenState
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF069494),
                     size: AppLayout.scaleWidth(context, 16),
                   ),
                   SizedBox(width: AppLayout.scaleWidth(context, 8)),
@@ -392,7 +392,7 @@ class _TransferRecipientScreenState
                     state.transferData.recipient!.name.toUpperCase(),
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 13),
-                      color: const Color(0xFF2E7D32),
+                      color: const Color(0xFF069494),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -419,7 +419,7 @@ class _TransferRecipientScreenState
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -491,7 +491,7 @@ class _TransferRecipientScreenState
                   color: hasError
                       ? Colors.red
                       : hasRecipient
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF069494)
                           : Colors.grey[300]!,
                 ),
               ),
@@ -501,19 +501,19 @@ class _TransferRecipientScreenState
                   color: hasError
                       ? Colors.red
                       : hasRecipient
-                          ? const Color(0xFF4CAF50)
+                          ? const Color(0xFF069494)
                           : Colors.grey[300]!,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                   width: 2,
                 ),
               ),
               suffixIcon: hasRecipient
-                  ? const Icon(Icons.check_circle, color: Color(0xFF4CAF50))
+                  ? const Icon(Icons.check_circle, color: Color(0xFF069494))
                   : null,
               counterText: '',
             ),
@@ -574,7 +574,7 @@ class _TransferRecipientScreenState
                 children: [
                   Icon(
                     Icons.check_circle,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF069494),
                     size: AppLayout.scaleWidth(context, 16),
                   ),
                   SizedBox(width: AppLayout.scaleWidth(context, 8)),
@@ -582,7 +582,7 @@ class _TransferRecipientScreenState
                     state.transferData.recipient!.name.toUpperCase(),
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 13),
-                      color: const Color(0xFF2E7D32),
+                      color: const Color(0xFF069494),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -636,7 +636,7 @@ class _TransferRecipientScreenState
                     }
                   : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),
@@ -689,7 +689,7 @@ class _TransferRecipientScreenState
           children: [
             Icon(
               icon,
-              color: const Color(0xFF389165),
+              color: const Color(0xFF069494),
               size: AppLayout.scaleWidth(context, 18),
             ),
             SizedBox(width: AppLayout.scaleWidth(context, 8)),
@@ -697,7 +697,7 @@ class _TransferRecipientScreenState
               label,
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 13),
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -756,7 +756,7 @@ class _TransferRecipientScreenState
           label,
           style: TextStyle(
             fontSize: AppLayout.fontSize(context, 13),
-            color: isActive ? const Color(0xFF389165) : Colors.black54,
+            color: isActive ? const Color(0xFF069494) : Colors.black54,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
@@ -765,7 +765,7 @@ class _TransferRecipientScreenState
           Container(
             width: AppLayout.scaleWidth(context, 40),
             height: 2,
-            color: const Color(0xFF389165),
+            color: const Color(0xFF069494),
           ),
       ],
     );

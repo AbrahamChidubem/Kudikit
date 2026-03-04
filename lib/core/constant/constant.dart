@@ -5,7 +5,7 @@ import 'package:form_field_validator/form_field_validator.dart';
 
 // colors that we use in the app
 const titleColor = Color(0xFF010F07);
-const primaryColor = Color(0xFF389165);
+const primaryColor = Color(0xFF069494);
 const accentColor = Color(0xFFEF9920);
 const bodyTextColor = Color(0xFF868686);
 const inputColor = Color(0xFFFBFBFB);

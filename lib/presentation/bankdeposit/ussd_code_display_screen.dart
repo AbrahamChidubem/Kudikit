@@ -303,7 +303,7 @@ class _UssdCodeDisplayScreenState extends ConsumerState<UssdCodeDisplayScreen> {
     return ElevatedButton(
       onPressed: () => _copyCode(context, ussdData.ussdCode),
       style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF069494),
         minimumSize: Size(
           double.infinity,
           AppLayout.scaleHeight(context, 50),
@@ -336,7 +336,7 @@ class _UssdCodeDisplayScreenState extends ConsumerState<UssdCodeDisplayScreen> {
           double.infinity,
           AppLayout.scaleHeight(context, 50),
         ),
-        side: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+        side: const BorderSide(color: Color(0xFF069494), width: 2),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         ),
@@ -346,7 +346,7 @@ class _UssdCodeDisplayScreenState extends ConsumerState<UssdCodeDisplayScreen> {
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 16),
           fontWeight: FontWeight.w600,
-          color: const Color(0xFF4CAF50),
+          color: const Color(0xFF069494),
         ),
       ),
     );
@@ -357,7 +357,7 @@ class _UssdCodeDisplayScreenState extends ConsumerState<UssdCodeDisplayScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('USSD code copied to clipboard'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF069494),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
@@ -395,7 +395,7 @@ class _UssdCodeDisplayScreenState extends ConsumerState<UssdCodeDisplayScreen> {
       case 'globus':
         return const Color(0xFFD32F2F);
       default:
-        return const Color(0xFF4CAF50);
+        return const Color(0xFF069494);
     }
   }
 

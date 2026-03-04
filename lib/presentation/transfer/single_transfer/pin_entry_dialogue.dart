@@ -119,7 +119,7 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
                     top: AppLayout.scaleHeight(context, 16),
                   ),
                   child: const CircularProgressIndicator(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                   ),
                 ),
             ],
@@ -142,7 +142,7 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
           height: AppLayout.scaleWidth(context, 12),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isFilled ? const Color(0xFF389165) : Colors.grey[300],
+            color: isFilled ? const Color(0xFF069494) : Colors.grey[300],
           ),
         );
       }),
@@ -176,7 +176,7 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
             context,
             child: Icon(
               Icons.backspace_outlined,
-              color: const Color(0xFF389165),
+              color: const Color(0xFF069494),
               size: AppLayout.scaleWidth(context, 24),
             ),
             onPressed: _onDeletePressed,

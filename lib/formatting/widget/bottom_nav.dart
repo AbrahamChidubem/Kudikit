@@ -46,7 +46,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
           },
           type: BottomNavigationBarType.fixed,
           backgroundColor: Colors.white,
-          selectedItemColor: const Color(0xFF4CAF50),
+          selectedItemColor: const Color(0xFF069494),
           unselectedItemColor: Colors.grey[400],
           selectedFontSize: 12,
           unselectedFontSize: 12,

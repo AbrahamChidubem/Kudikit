@@ -242,7 +242,7 @@ class VerificationInProgressScreen extends ConsumerWidget {
             children: [
               Icon(
                 Icons.phone_outlined,
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
                 size: AppLayout.scaleWidth(context, 24),
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 12)),
@@ -282,14 +282,14 @@ class VerificationInProgressScreen extends ConsumerWidget {
                     'Contact support',
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 14),
-                      color: const Color(0xFF389165),
+                      color: const Color(0xFF069494),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   SizedBox(width: AppLayout.scaleWidth(context, 4)),
                   Icon(
                     Icons.arrow_forward,
-                    color: const Color(0xFF389165),
+                    color: const Color(0xFF069494),
                     size: AppLayout.scaleWidth(context, 16),
                   ),
                 ],

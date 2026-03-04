@@ -510,7 +510,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 : (value) {
                     ref.read(_termsAcceptedProvider.notifier).state = value ?? false;
                   },
-            activeColor: const Color(0xFF389165),
+            activeColor: const Color(0xFF069494),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 4)),
             ),
@@ -530,7 +530,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 TextSpan(
                   text: 'Terms & Conditions',
                   style: TextStyle(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -539,7 +539,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 TextSpan(
                   text: 'Privacy Policy',
                   style: TextStyle(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
@@ -556,7 +556,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     if (isLoading) {
       return Center(
         child: CircularProgressIndicator(
-          color: const Color(0xFF389165),
+          color: const Color(0xFF069494),
           strokeWidth: AppLayout.scaleWidth(context, 3),
         ),
       );
@@ -606,7 +606,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 14),
               fontWeight: FontWeight.bold,
-              color: isOnline ? const Color(0xFF389165) : Colors.grey,
+              color: isOnline ? const Color(0xFF069494) : Colors.grey,
             ),
           ),
         ),
@@ -671,7 +671,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   Widget _buildCriteriaRow(BuildContext context, String label, bool isMet) {
-    final Color activeColor = const Color(0xFF389165);
+    final Color activeColor = const Color(0xFF069494);
     final Color inactiveColor = Colors.grey[400]!;
 
     return Padding(

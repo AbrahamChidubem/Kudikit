@@ -233,7 +233,7 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
                                     ),
                                     child: const Icon(
                                       Icons.person_search_outlined,
-                                      color: Color(0xFF389165),
+                                      color: Color(0xFF069494),
                                       size: 22,
                                     ),
                                   ),
@@ -259,7 +259,7 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
                                         fontSize:
                                             AppLayout.fontSize(context, 13),
                                         fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF389165),
+                                        color: const Color(0xFF069494),
                                       ),
                                     ),
                                     const SizedBox(width: 6),
@@ -267,7 +267,7 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
                                       width: 5,
                                       height: 5,
                                       decoration: const BoxDecoration(
-                                        color: Color(0xFF389165),
+                                        color: Color(0xFF069494),
                                         shape: BoxShape.circle,
                                       ),
                                     ),
@@ -336,13 +336,13 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
                             children: [
                               TabBar(
                                 controller: _tabController,
-                                labelColor: const Color(0xFF389165),
+                                labelColor: const Color(0xFF069494),
                                 unselectedLabelColor: const Color(0xFF9E9E9E),
                                 labelStyle: const TextStyle(
                                     fontWeight: FontWeight.w600, fontSize: 14),
                                 unselectedLabelStyle: const TextStyle(
                                     fontWeight: FontWeight.w400, fontSize: 14),
-                                indicatorColor: const Color(0xFF389165),
+                                indicatorColor: const Color(0xFF069494),
                                 indicatorSize: TabBarIndicatorSize.label,
                                 tabs: const [
                                   Tab(text: 'Recent'),
@@ -358,13 +358,13 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
                                     beneficiariesState.isLoading
                                         ? const Center(
                                             child: CircularProgressIndicator(
-                                              color: Color(0xFF389165),
+                                              color: Color(0xFF069494),
                                               strokeWidth: 2,
                                             ),
                                           )
                                         : beneficiariesState
                                                 .beneficiaries.isEmpty
-                                            ? _EmptyBeneficiaries(
+                                            ? const _EmptyBeneficiaries(
                                                 message:
                                                     "You haven't purchased any airtime",
                                                 subMessage:
@@ -421,7 +421,7 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
                 child: ElevatedButton(
                   onPressed: state.canProceedFromPhone ? _proceed : null,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF389165),
+                    backgroundColor: const Color(0xFF069494),
                     disabledBackgroundColor: const Color(0xFFA8D5BF),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
@@ -473,7 +473,7 @@ class _ContactTabPrompt extends StatelessWidget {
               ),
               child: const Icon(
                 Icons.contacts_outlined,
-                color: Color(0xFF389165),
+                color: Color(0xFF069494),
                 size: 26,
               ),
             ),
@@ -483,7 +483,7 @@ class _ContactTabPrompt extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
                 fontWeight: FontWeight.w600,
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
               ),
             ),
             const SizedBox(height: 4),

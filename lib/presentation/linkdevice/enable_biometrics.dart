@@ -244,7 +244,7 @@ class EnableBiometricsScreen extends ConsumerWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(28),
                 ),
@@ -274,7 +274,7 @@ class EnableBiometricsScreen extends ConsumerWidget {
               'Skip',
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
-                color: const Color(0xFF389165),
+                color: const Color(0xFF069494),
                 fontWeight: FontWeight.w500,
               ),
             ),

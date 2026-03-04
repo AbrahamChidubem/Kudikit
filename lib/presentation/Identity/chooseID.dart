@@ -45,7 +45,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+                child: CircularProgressIndicator(color: Color(0xFF069494)),
               ),
             ),
         ],
@@ -81,7 +81,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                       strokeWidth: 3,
                       backgroundColor: Colors.grey[200],
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF4CAF50),
+                        Color(0xFF069494),
                       ),
                     ),
                   ),
@@ -252,7 +252,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
           borderRadius:
               BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[300]!,
+            color: isSelected ? const Color(0xFF069494) : Colors.grey[300]!,
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -262,7 +262,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 16),
               fontWeight: FontWeight.w600,
-              color: isSelected ? const Color(0xFF4CAF50) : Colors.grey[700],
+              color: isSelected ? const Color(0xFF069494) : Colors.grey[700],
             ),
           ),
         ),
@@ -332,7 +332,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -358,7 +358,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-        border: Border.all(color: const Color(0xFF4CAF50), width: 1),
+        border: Border.all(color: const Color(0xFF069494), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,7 +367,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             children: [
               Icon(
                 Icons.check_circle,
-                color: const Color(0xFF4CAF50),
+                color: const Color(0xFF069494),
                 size: AppLayout.scaleWidth(context, 20),
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 8)),
@@ -376,7 +376,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 14),
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF4CAF50),
+                  color: const Color(0xFF069494),
                 ),
               ),
             ],
@@ -387,7 +387,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 14),
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF4CAF50),
+              color: const Color(0xFF069494),
               letterSpacing: 0.5,
             ),
           ),

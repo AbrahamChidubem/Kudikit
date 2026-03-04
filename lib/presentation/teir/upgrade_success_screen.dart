@@ -42,7 +42,7 @@ class UpgradeSuccessScreen extends StatelessWidget {
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: const BoxDecoration(
-                color: Color(0xFF2E7D32),
+                color: Color(0xFF069494),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -81,7 +81,7 @@ class UpgradeSuccessScreen extends StatelessWidget {
                         Icon(
                           Icons.check_circle,
                           size: AppLayout.scaleWidth(context, 20),
-                          color: const Color(0xFF4CAF50),
+                          color: const Color(0xFF069494),
                         ),
                         SizedBox(width: AppLayout.scaleWidth(context, 12)),
                         Expanded(
@@ -128,7 +128,7 @@ class UpgradeSuccessScreen extends StatelessWidget {
               Navigator.popUntil(context, (route) => route.isFirst);
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: const Color(0xFF069494),
               foregroundColor: Colors.white,
               padding: EdgeInsets.symmetric(
                 vertical: AppLayout.scaleHeight(context, 16),

@@ -78,7 +78,7 @@ class AccountActiveScreen extends ConsumerWidget {
       width: AppLayout.scaleWidth(context, 120),
       height: AppLayout.scaleWidth(context, 120),
       decoration: BoxDecoration(
-        color: const Color(0xFF4CAF50),
+        color: const Color(0xFF069494),
         shape: BoxShape.circle,
       ),
       child: Icon(
@@ -104,7 +104,7 @@ class AccountActiveScreen extends ConsumerWidget {
             Navigator.of(context).popUntil((route) => route.isFirst);
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF389165),
+            backgroundColor: const Color(0xFF069494),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(28),
             ),

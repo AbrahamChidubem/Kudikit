@@ -49,7 +49,7 @@ class BulkTransferTemplatesScreen extends ConsumerWidget {
                 child: const Text(
                   '36%',
                   style: TextStyle(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -179,7 +179,7 @@ class BulkTransferTemplatesScreen extends ConsumerWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('Template "${template.name}" deleted'),
-                  backgroundColor: const Color(0xFF389165),
+                  backgroundColor: const Color(0xFF069494),
                 ),
               );
             },
@@ -348,7 +348,7 @@ class _TemplateCard extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onUseTemplate,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF389165),
+                backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(24),
                 ),

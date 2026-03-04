@@ -143,7 +143,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                             provider.toggleContactSelection(contact);
                           },
                           backgroundColor: const Color(0xFFE8F5E9),
-                          deleteIconColor: const Color(0xFF2E7D32),
+                          deleteIconColor: const Color(0xFF069494),
                         ),
                       );
                     },
@@ -163,9 +163,9 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                 ),
                 child: TabBar(
                   controller: _tabController,
-                  labelColor: const Color(0xFF2E7D32),
+                  labelColor: const Color(0xFF069494),
                   unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: const Color(0xFF2E7D32),
+                  indicatorColor: const Color(0xFF069494),
                   indicatorWeight: 3,
                   labelStyle: GoogleFonts.openSans(
                     fontSize: AppLayout.fontSize(context, 14),
@@ -233,7 +233,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF2E7D32),
+                  backgroundColor: const Color(0xFF069494),
                   disabledBackgroundColor: const Color(0xFFE0E0E0),
                   foregroundColor: Colors.white,
                   padding: EdgeInsets.symmetric(
@@ -318,7 +318,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
               SizedBox(width: AppLayout.scaleWidth(context, 4)),
               if (contact.isVerified)
                 Icon(Icons.check_circle, 
-                  color: const Color(0xFF2E7D32), 
+                  color: const Color(0xFF069494), 
                   size: AppLayout.scaleWidth(context, 16),
                 ),
             ],
@@ -344,7 +344,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                     'Invite',
                     style: GoogleFonts.openSans(
                       fontSize: AppLayout.fontSize(context, 12),
-                      color: const Color(0xFF2E7D32),
+                      color: const Color(0xFF069494),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -355,7 +355,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                   onChanged: (value) {
                     provider.toggleContactSelection(contact);
                   },
-                  activeColor: const Color(0xFF2E7D32),
+                  activeColor: const Color(0xFF069494),
                 ),
           onTap: () {
             provider.toggleContactSelection(contact);
@@ -409,7 +409,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFE8F5E9),
-                foregroundColor: const Color(0xFF2E7D32),
+                foregroundColor: const Color(0xFF069494),
                 padding: EdgeInsets.symmetric(
                   vertical: AppLayout.scaleHeight(context, 16),
                 ),
@@ -443,7 +443,7 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
 
   Color _getAvatarColor(int index) {
     final colors = [
-      const Color(0xFF4CAF50),
+      const Color(0xFF069494),
       Colors.black,
       const Color(0xFF3F51B5),
       const Color(0xFF2196F3),

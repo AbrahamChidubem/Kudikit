@@ -53,7 +53,7 @@ class _BulkTransferUploadFileScreenState
                 child: const Text(
                   '36%',
                   style: TextStyle(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -82,7 +82,7 @@ class _BulkTransferUploadFileScreenState
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
-                    color: const Color(0xFF389165),
+                    color: const Color(0xFF069494),
                     width: 2,
                     style: BorderStyle.solid,
                   ),
@@ -98,7 +98,7 @@ class _BulkTransferUploadFileScreenState
                       ),
                       child: Icon(
                         Icons.upload_outlined,
-                        color: const Color(0xFF389165),
+                        color: const Color(0xFF069494),
                         size: AppLayout.scaleWidth(context, 32),
                       ),
                     ),
@@ -237,7 +237,7 @@ class _BulkTransferUploadFileScreenState
       children: [
         Icon(
           Icons.check_circle_outline,
-          color: const Color(0xFF4CAF50),
+          color: const Color(0xFF069494),
           size: AppLayout.scaleWidth(context, 18),
         ),
         SizedBox(width: AppLayout.scaleWidth(context, 12)),
@@ -304,7 +304,7 @@ class _BulkTransferUploadFileScreenState
           barrierDismissible: false,
           builder: (context) => const Center(
             child: CircularProgressIndicator(
-              color: Color(0xFF389165),
+              color: Color(0xFF069494),
             ),
           ),
         );
@@ -464,7 +464,7 @@ class _BulkTransferUploadFileScreenState
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Template download feature coming soon'),
-        backgroundColor: Color(0xFF389165),
+        backgroundColor: Color(0xFF069494),
       ),
     );
   }

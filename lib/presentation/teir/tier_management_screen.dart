@@ -19,7 +19,7 @@ class TierManagementScreen extends ConsumerWidget {
     final nextTier = tierState.getNextTier();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -326,14 +326,14 @@ class TierManagementScreen extends ConsumerWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           ),
-          side: const BorderSide(color: Color(0xFF2E7D32), width: 2),
+          side: const BorderSide(color: Color(0xFF069494), width: 2),
         ),
         child: Text(
           'View All Tiers',
           style: GoogleFonts.openSans(
             fontSize: AppLayout.fontSize(context, 16),
             fontWeight: FontWeight.w600,
-            color: const Color(0xFF2E7D32),
+            color: const Color(0xFF069494),
           ),
         ),
       ),

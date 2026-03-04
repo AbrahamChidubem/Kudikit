@@ -103,7 +103,7 @@ class _BulkTransferFileValidationScreenState
                 child: const Text(
                   '36%',
                   style: TextStyle(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -134,7 +134,7 @@ class _BulkTransferFileValidationScreenState
                           ),
                           child: Icon(
                             Icons.insert_drive_file_outlined,
-                            color: const Color(0xFF389165),
+                            color: const Color(0xFF069494),
                             size: AppLayout.scaleWidth(context, 24),
                           ),
                         ),
@@ -170,7 +170,7 @@ class _BulkTransferFileValidationScreenState
                             'Change file',
                             style: TextStyle(
                               fontSize: AppLayout.fontSize(context, 14),
-                              color: const Color(0xFF389165),
+                              color: const Color(0xFF069494),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -233,14 +233,14 @@ class _BulkTransferFileValidationScreenState
                     padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF389165), Color(0xFF2A6B4D)],
+                        colors: [Color(0xFF069494), Color(0xFF2A6B4D)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF389165).withOpacity(0.3),
+                          color: const Color(0xFF069494).withOpacity(0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -397,7 +397,7 @@ class _BulkTransferFileValidationScreenState
                               style: TextStyle(
                                 fontSize: AppLayout.fontSize(context, 14),
                                 fontWeight: FontWeight.w600,
-                                color: const Color(0xFF4CAF50),
+                                color: const Color(0xFF069494),
                               ),
                             ),
                           ],
@@ -495,7 +495,7 @@ class _BulkTransferFileValidationScreenState
                     : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: isEnabled
-                      ? const Color(0xFF389165)
+                      ? const Color(0xFF069494)
                       : const Color(0xFFB8E6CC),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(27),
@@ -522,7 +522,7 @@ class _BulkTransferFileValidationScreenState
                 },
                 style: OutlinedButton.styleFrom(
                   side: const BorderSide(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                     width: 1.5,
                   ),
                   shape: RoundedRectangleBorder(
@@ -534,7 +534,7 @@ class _BulkTransferFileValidationScreenState
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF389165),
+                    color: const Color(0xFF069494),
                   ),
                 ),
               ),
@@ -593,7 +593,7 @@ class _RecipientValidationCard extends StatelessWidget {
         color: hasError ? const Color(0xFFFFEBEE) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: hasError ? const Color(0xFFEF5350) : const Color(0xFF4CAF50),
+          color: hasError ? const Color(0xFFEF5350) : const Color(0xFF069494),
           width: 1.5,
         ),
       ),
@@ -607,7 +607,7 @@ class _RecipientValidationCard extends StatelessWidget {
                 width: AppLayout.scaleWidth(context, 32),
                 height: AppLayout.scaleWidth(context, 32),
                 decoration: BoxDecoration(
-                  color: hasError ? const Color(0xFFEF5350) : const Color(0xFF4CAF50),
+                  color: hasError ? const Color(0xFFEF5350) : const Color(0xFF069494),
                   shape: BoxShape.circle,
                 ),
                 child: Center(
@@ -638,7 +638,7 @@ class _RecipientValidationCard extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: recipient.accountType == TransferAccountType.kudikit
-                      ? const Color(0xFF4CAF50).withOpacity(0.2)
+                      ? const Color(0xFF069494).withOpacity(0.2)
                       : const Color(0xFF2196F3).withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -650,7 +650,7 @@ class _RecipientValidationCard extends StatelessWidget {
                     fontSize: AppLayout.fontSize(context, 11),
                     fontWeight: FontWeight.w600,
                     color: recipient.accountType == TransferAccountType.kudikit
-                        ? const Color(0xFF2E7D32)
+                        ? const Color(0xFF069494)
                         : const Color(0xFF1976D2),
                   ),
                 ),

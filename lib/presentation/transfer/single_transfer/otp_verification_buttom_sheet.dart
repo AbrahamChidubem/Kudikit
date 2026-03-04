@@ -120,7 +120,7 @@ class _OtpVerificationBottomSheetState
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('OTP sent to ${widget.maskedPhone}'),
-        backgroundColor: const Color(0xFF389165),
+        backgroundColor: const Color(0xFF069494),
       ),
     );
   }
@@ -172,7 +172,7 @@ class _OtpVerificationBottomSheetState
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 36),
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF389165),
+                    color: const Color(0xFF069494),
                   ),
                 ),
 
@@ -230,7 +230,7 @@ class _OtpVerificationBottomSheetState
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(
-                              color: Color(0xFF389165),
+                              color: Color(0xFF069494),
                               width: 2,
                             ),
                           ),
@@ -272,7 +272,7 @@ class _OtpVerificationBottomSheetState
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 13),
                           color: _countdown == 0
-                              ? const Color(0xFF389165)
+                              ? const Color(0xFF069494)
                               : Colors.grey,
                           fontWeight: FontWeight.w600,
                         ),
@@ -306,7 +306,7 @@ class _OtpVerificationBottomSheetState
                         'OTP sent to ${widget.maskedPhone}',
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 13),
-                          color: const Color(0xFF2E7D32),
+                          color: const Color(0xFF069494),
                         ),
                       ),
                     ],
@@ -324,7 +324,7 @@ class _OtpVerificationBottomSheetState
                     'Having problem?',
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 14),
-                      color: const Color(0xFF389165),
+                      color: const Color(0xFF069494),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -333,7 +333,7 @@ class _OtpVerificationBottomSheetState
                 if (_isVerifying) ...[
                   SizedBox(height: AppLayout.scaleHeight(context, 16)),
                   const CircularProgressIndicator(
-                    color: Color(0xFF389165),
+                    color: Color(0xFF069494),
                   ),
                 ],
 

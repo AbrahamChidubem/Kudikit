@@ -35,7 +35,7 @@ class PasscodeDotsIndicator extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: index < filledCount
-                    ? (showError ? Colors.red : const Color(0xFF4CAF50))
+                    ? (showError ? Colors.red : const Color(0xFF069494))
                     : Colors.grey[300],
               ),
             ),

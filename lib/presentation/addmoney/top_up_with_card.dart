@@ -51,7 +51,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+                child: CircularProgressIndicator(color: Color(0xFF069494)),
               ),
             ),
         ],
@@ -184,7 +184,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -257,7 +257,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -333,7 +333,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -427,7 +427,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -521,7 +521,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -558,7 +558,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
         child: ElevatedButton(
           onPressed: _handleConfirm,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: const Color(0xFF069494),
             minimumSize: Size(
               double.infinity,
               AppLayout.scaleHeight(context, 50),

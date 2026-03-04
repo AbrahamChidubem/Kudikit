@@ -53,7 +53,7 @@ class _UploadSelfieScreenState extends ConsumerState<UploadSelfieScreen> {
               color: Colors.black26,
               child: const Center(
                 child: CircularProgressIndicator(
-                  color: Color(0xFF389165),
+                  color: Color(0xFF069494),
                 ),
               ),
             ),
@@ -88,7 +88,7 @@ class _UploadSelfieScreenState extends ConsumerState<UploadSelfieScreen> {
                       strokeWidth: 3,
                       backgroundColor: Colors.grey[200],
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF389165),
+                        Color(0xFF069494),
                       ),
                     ),
                   ),
@@ -336,7 +336,7 @@ class _UploadSelfieScreenState extends ConsumerState<UploadSelfieScreen> {
                 }
               : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF389165),
+            backgroundColor: const Color(0xFF069494),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(28),
             ),

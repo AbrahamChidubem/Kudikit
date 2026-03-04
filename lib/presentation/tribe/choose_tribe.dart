@@ -42,7 +42,7 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                       strokeWidth: AppLayout.scaleWidth(context, 2),
                       backgroundColor: const Color(0xFFE0E0E0),
                       valueColor: const AlwaysStoppedAnimation<Color>(
-                          Color(0xFF4DB6AC)),
+                          Color(0xFF069494)),
                     ),
                   ),
                   Positioned.fill(
@@ -90,7 +90,7 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                   const SizedBox(height: 24),
                   TribeCard(
                     icon: Icons.shield,
-                    iconColor: const Color(0xFF4DB6AC),
+                    iconColor: const Color(0xFF069494),
                     title: 'Basic Tribe',
                     tier: 'Tier 1',
                     subtitle: 'For everyday transactions',
@@ -183,9 +183,9 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF389165),
+                  backgroundColor: const Color(0xFF069494),
                   disabledBackgroundColor:
-                      const Color(0xFF9ED4C5).withOpacity(0.5),
+                      const Color(0xFF069494).withOpacity(0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
                   ),

@@ -108,7 +108,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final fontSize = size.width * 0.1;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF389165),
+      backgroundColor: const Color(0xFF069494),
       body: Center(
         child: AnimatedOpacity(
           opacity: _opacity,

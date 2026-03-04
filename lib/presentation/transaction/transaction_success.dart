@@ -51,7 +51,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
         IconButton(
           icon: Icon(
             Icons.headset_mic_outlined,
-            color: const Color(0xFF4CAF50),
+            color: const Color(0xFF069494),
             size: AppLayout.scaleWidth(context, 24),
           ),
           onPressed: () {
@@ -114,7 +114,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
             ),
             child: Icon(
               Icons.account_balance,
-              color: const Color(0xFF4CAF50),
+              color: const Color(0xFF069494),
               size: AppLayout.scaleWidth(context, 28),
             ),
           ),
@@ -160,7 +160,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
               children: [
                 Icon(
                   Icons.check_circle,
-                  color: const Color(0xFF4CAF50),
+                  color: const Color(0xFF069494),
                   size: AppLayout.scaleWidth(context, 16),
                 ),
                 SizedBox(width: AppLayout.scaleWidth(context, 6)),
@@ -169,7 +169,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 13),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF4CAF50),
+                    color: const Color(0xFF069494),
                   ),
                 ),
               ],
@@ -305,7 +305,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
               ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF4CAF50),
+              foregroundColor: const Color(0xFF069494),
               side: const BorderSide(color: Color(0xFFE8F5E9), width: 2),
               backgroundColor: const Color(0xFFE8F5E9),
               minimumSize: Size(
@@ -342,7 +342,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
               ),
             ),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF4CAF50),
+              backgroundColor: const Color(0xFF069494),
               foregroundColor: Colors.white,
               minimumSize: Size(
                 0,

@@ -91,7 +91,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: index < _pin.length
-                        ? const Color(0xFF389165)
+                        ? const Color(0xFF069494)
                         : const Color(0xFFE0E0E0),
                   ),
                 );
@@ -207,7 +207,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
       barrierDismissible: false,
       builder: (context) => const Center(
         child: CircularProgressIndicator(
-          color: Color(0xFF389165),
+          color: Color(0xFF069494),
         ),
       ),
     );

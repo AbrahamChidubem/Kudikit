@@ -36,7 +36,7 @@ class NotificationPreferenceScreen extends ConsumerWidget {
           data: (preferences) => _buildContent(context, preferences),
           loading: () => const Center(
             child: CircularProgressIndicator(
-              color: Color(0xFF4CAF50),
+              color: Color(0xFF069494),
             ),
           ),
           error: (error, stack) => Center(
@@ -190,7 +190,7 @@ class NotificationPreferenceScreen extends ConsumerWidget {
               ),
               child: Icon(
                 icon,
-                color: const Color(0xFF4CAF50),
+                color: const Color(0xFF069494),
                 size: AppLayout.scaleWidth(context, 20),
               ),
             ),

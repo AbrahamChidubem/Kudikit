@@ -54,7 +54,7 @@ class _BulkTransferSuccessDialogState
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: const BoxDecoration(
-                color: Color(0xFF4CAF50),
+                color: Color(0xFF069494),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -161,7 +161,7 @@ class _BulkTransferSuccessDialogState
                                   'Completed',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 11),
-                                    color: const Color(0xFF4CAF50),
+                                    color: Color(0xFF069494),
                                   ),
                                 ),
                               ],

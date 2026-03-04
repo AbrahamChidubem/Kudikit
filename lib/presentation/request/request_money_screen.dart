@@ -56,7 +56,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
         return Theme(
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF2E7D32),
+              primary: Color(0xFF069494),
               onPrimary: Colors.white,
               onSurface: Colors.black,
             ),
@@ -109,7 +109,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     final canContinue = _amountController.text.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5E9),
+      backgroundColor: const Color(0xFFf9f9f9),
       appBar: AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
@@ -213,7 +213,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                             : Colors.white,
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF2E7D32)
+                              ? const Color(0xFF069494)
                               : Colors.grey[300]!,
                         ),
                         borderRadius: BorderRadius.circular(20),
@@ -224,7 +224,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: isSelected
-                              ? const Color(0xFF2E7D32)
+                              ? const Color(0xFF069494)
                               : Colors.grey[700],
                         ),
                       ),
@@ -348,7 +348,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: _useTodayDate
-                                ? const Color(0xFF2E7D32)
+                                ? const Color(0xFF069494)
                                 : Colors.grey[700],
                           ),
                         ),
@@ -379,7 +379,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                             color: !_useTodayDate
-                                ? const Color(0xFF2E7D32)
+                                ? const Color(0xFF069494)
                                 : Colors.grey[700],
                           ),
                         ),
@@ -399,7 +399,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                         alignment: Alignment.center,
                         child: const Icon(
                           Icons.calendar_today,
-                          color: Color(0xFF2E7D32),
+                          color: Color(0xFF069494),
                           size: 20,
                         ),
                       ),
@@ -468,7 +468,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                           _isPrivate = value;
                         });
                       },
-                      activeColor: const Color(0xFF2E7D32),
+                      activeColor: const Color(0xFF069494),
                     ),
                   ],
                 ),
@@ -493,7 +493,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
           child: ElevatedButton(
             onPressed: canContinue ? _continue : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: const Color(0xFF069494),
               disabledBackgroundColor: const Color(0xFFE0E0E0),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),

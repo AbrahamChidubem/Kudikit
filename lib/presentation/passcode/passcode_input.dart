@@ -36,7 +36,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
               width: 80,
               height: 80,
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: const Color(0xFF069494).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(
@@ -80,7 +80,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF069494),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -199,7 +199,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
               color: Colors.black.withOpacity(0.3),
               child: const Center(
                 child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF4CAF50)),
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
                   strokeWidth: 3,
                 ),
               ),

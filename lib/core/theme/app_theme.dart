@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color primaryGreen = Color(0xFF4CAF8A);
+  static const Color primaryGreen = Color(0xFF069494);
   static const Color lightGreen = Color(0xFFE8F5EE);
   static const Color backgroundGreen = Color(0xFFEDF7F1);
   static const Color searchBackground = Color(0xFFDCEFE4);
@@ -23,7 +23,7 @@ class AppColors {
 
 class AppTextStyles {
   static const TextStyle pageTitle = TextStyle(
-    fontFamily: 'OpenSans',
+    fontFamily: 'PolySans',
     fontSize: 18,
     fontWeight: FontWeight.w700,
     color: AppColors.textDark,

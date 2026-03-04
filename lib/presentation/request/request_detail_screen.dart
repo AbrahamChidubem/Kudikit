@@ -163,7 +163,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: const Color(0xFF2E7D32),
+                color: const Color(0xFF069494),
                 borderRadius: BorderRadius.circular(16),
               ),
               child: Column(
@@ -328,7 +328,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     ElevatedButton(
                       onPressed: () => _showPaymentConfirmation(request.remainingAmount),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2E7D32),
+                        backgroundColor: const Color(0xFF069494),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
@@ -355,8 +355,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           child: OutlinedButton(
                             onPressed: _showPartialPaymentDialog,
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2E7D32),
-                              side: const BorderSide(color: Color(0xFF2E7D32)),
+                              foregroundColor: const Color(0xFF069494),
+                              side: const BorderSide(color: Color(0xFF069494)),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -376,8 +376,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                           child: OutlinedButton(
                             onPressed: _showCounterOfferDialog,
                             style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2E7D32),
-                              side: const BorderSide(color: Color(0xFF2E7D32)),
+                              foregroundColor: const Color(0xFF069494),
+                              side: const BorderSide(color: Color(0xFF069494)),
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -611,7 +611,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: const Color(0xFF069494),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(
@@ -682,7 +682,7 @@ class _PercentageChip extends StatelessWidget {
             color: isSelected ? const Color(0xFFE8F5E9) : Colors.grey[100],
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isSelected ? const Color(0xFF2E7D32) : Colors.transparent,
+              color: isSelected ? const Color(0xFF069494) : Colors.transparent,
             ),
           ),
           alignment: Alignment.center,
@@ -691,7 +691,7 @@ class _PercentageChip extends StatelessWidget {
             style: GoogleFonts.openSans(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: isSelected ? const Color(0xFF2E7D32) : Colors.grey[700],
+              color: isSelected ? const Color(0xFF069494) : Colors.grey[700],
             ),
           ),
         ),
@@ -794,7 +794,7 @@ class _PaymentConfirmationSheet extends StatelessWidget {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: const Color(0xFF069494),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 shape: RoundedRectangleBorder(

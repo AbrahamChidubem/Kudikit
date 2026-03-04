@@ -67,7 +67,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
   ) {
     if (optionsState.isLoading && optionsState.options.isEmpty) {
       return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+        child: CircularProgressIndicator(color: Color(0xFF069494)),
       );
     }
 
@@ -138,7 +138,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                     ),
                     child: Icon(
                       Icons.account_balance,
-                      color: const Color(0xFF4CAF50),
+                      color: const Color(0xFF069494),
                       size: AppLayout.scaleWidth(context, 20),
                     ),
                   ),
@@ -191,7 +191,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 vertical: AppLayout.scaleHeight(context, 16),
               ),
               child: const CircularProgressIndicator(
-                color: Color(0xFF4CAF50),
+                color: Color(0xFF069494),
                 strokeWidth: 2,
               ),
             ),
@@ -249,7 +249,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 padding: EdgeInsets.all(AppLayout.scaleWidth(context, 8)),
                 child: Icon(
                   Icons.share,
-                  color: const Color(0xFF4CAF50),
+                  color: const Color(0xFF069494),
                   size: AppLayout.scaleWidth(context, 20),
                 ),
               ),
@@ -341,7 +341,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               ),
               child: Icon(
                 iconData,
-                color: const Color(0xFF4CAF50),
+                color: const Color(0xFF069494),
                 size: AppLayout.scaleWidth(context, 20),
               ),
             ),
@@ -413,7 +413,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 icon: const Icon(Icons.refresh),
                 label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4CAF50),
+                  backgroundColor: const Color(0xFF069494),
                   padding: EdgeInsets.symmetric(
                     horizontal: AppLayout.scaleWidth(context, 32),
                     vertical: AppLayout.scaleHeight(context, 12),
@@ -538,7 +538,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
             ElevatedButton(
               onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4CAF50),
+                backgroundColor: const Color(0xFF069494),
                 minimumSize: Size(
                   double.infinity,
                   AppLayout.scaleHeight(context, 50),
@@ -595,7 +595,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 child: Icon(
                   Icons.copy,
                   size: AppLayout.scaleWidth(context, 16),
-                  color: const Color(0xFF4CAF50),
+                  color: const Color(0xFF069494),
                 ),
               ),
             ],
@@ -610,7 +610,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Copied to clipboard'),
-        backgroundColor: const Color(0xFF4CAF50),
+        backgroundColor: const Color(0xFF069494),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
