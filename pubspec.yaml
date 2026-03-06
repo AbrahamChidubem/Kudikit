@@ -66,7 +66,15 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  permission_handler:
+  
+  flutter_launcher_icons: 
+
+flutter_icons: 
+  android: true
+  ios: true
+  image_path: "assets/images/kudikit_teal_logo.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/kudikit_android_logo.png"
 
 flutter:
   uses-material-design: true

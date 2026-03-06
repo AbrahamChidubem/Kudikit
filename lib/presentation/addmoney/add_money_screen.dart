@@ -554,6 +554,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 16),
                   fontWeight: FontWeight.w600,
+                  color: Colors.white
                 ),
               ),
             ),

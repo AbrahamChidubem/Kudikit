@@ -203,7 +203,7 @@ class UploadIdCardScreen extends ConsumerWidget {
                               barrierDismissible: false,
                               builder: (context) => const Center(
                                 child: CircularProgressIndicator(
-                                  color: Color(0xFF389165),
+                                  color: Color(0xFF069494),
                                 ),
                               ),
                             );
@@ -263,7 +263,7 @@ class UploadIdCardScreen extends ConsumerWidget {
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF389165),
+                      backgroundColor: const Color(0xFF069494),
                       disabledBackgroundColor: Colors.grey[300],
                       padding: EdgeInsets.symmetric(
                         vertical: AppLayout.scaleHeight(context, 18),

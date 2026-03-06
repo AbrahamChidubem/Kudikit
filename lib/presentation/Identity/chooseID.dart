@@ -358,7 +358,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-        border: Border.all(color: const Color(0xFF069494), width: 1),
+        border: Border.all(color: const Color(0xFFF9F9F9), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,7 +376,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 14),
                   fontWeight: FontWeight.w600,
-                  color: const Color(0xFF069494),
+                  color: const Color(0xFF171515),
                 ),
               ),
             ],
@@ -387,7 +387,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 14),
               fontWeight: FontWeight.w700,
-              color: const Color(0xFF069494),
+              color: Color(0xFF171515),
               letterSpacing: 0.5,
             ),
           ),
@@ -419,7 +419,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
         child: ElevatedButton(
           onPressed: isEnabled ? _handleNext : null,
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF389165),
+            backgroundColor: const Color(0xFF069494),
             disabledBackgroundColor: Colors.grey[300],
             minimumSize: Size(
               double.infinity,

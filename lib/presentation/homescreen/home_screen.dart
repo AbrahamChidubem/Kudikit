@@ -254,7 +254,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           end: Alignment.bottomRight,
                           colors: [
                             Color(0xFF069494),
-                            Color(0xFF069494),
+                            Color(0xFF013838),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(

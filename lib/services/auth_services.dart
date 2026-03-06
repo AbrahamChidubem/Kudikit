@@ -79,6 +79,7 @@ class AuthService {
   Future<Map<String, dynamic>> verifyEmail({
     required String email,
     required String code,
+    String phoneNumber = '',
   }) async {
     await Future.delayed(const Duration(seconds: 1));
 
@@ -97,7 +98,7 @@ class AuthService {
       final user = UserModel(
         userId: userId,
         email: email,
-        phoneNumber: '+2348012345678', // From signup
+        phoneNumber: phoneNumber.isNotEmpty ? phoneNumber : '+234000000000',
         name: email.split('@')[0],
         isEmailVerified: true,
         createdAt: DateTime.now(),

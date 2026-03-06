@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
+import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/presentation/linkdevice/link_device_screen.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
@@ -11,9 +11,57 @@ import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/api_services.dart';
 import 'package:kudipay/services/storage_services.dart';
 
+// =============================================================================
+// storedUserProvider
+// -----------------------------------------------------------------------------
+// Loads the UserModel that was persisted at signup time (email + phone number).
+// The LoginPage watches this to pre-fill the identifier field without any
+// user input — both values are read-only on this screen.
+// autoDispose ensures a fresh read every time the page is opened.
+// =============================================================================
+final storedUserProvider = FutureProvider.autoDispose<UserModel?>((ref) async {
+  return StorageService.instance.getUserModel();
+});
+
+// =============================================================================
+// LoginPage
+// =============================================================================
+//
+// Layout (matches mockup):
+//   ─────────────────────────────────────────────
+//   [Logo image]                   Link new device
+//
+//   Login into your Kudikit Account
+//
+//   ┌─ [icon]  08124608695              [▾] ────┐  ← read-only, dropdown
+//   └────────────────────────────────────────────┘
+//   ┌─ [🔒]  Password                      [👁] ┐  ← only editable field
+//   └────────────────────────────────────────────┘
+//                                      Forgot PIN
+//
+//           [         Continue         ]
+//
+//     Already have an account?  Log in
+//
+//   [CBN logo] Licensed by the CBN and insured by [NDIC logo]
+//   ─────────────────────────────────────────────
+//
+// Key behaviours:
+//  • Phone number and email are pre-filled from StorageService (saved at signup)
+//  • A dropdown lets the user toggle which identifier is displayed (phone/email)
+//  • Neither the phone nor email field is editable — plain Text inside a Container
+//  • The password field is the only editable input
+//  • Password verified locally via StorageService.verifyPin(), then forwarded
+//    to AuthNotifier.login() to create the remote session
+//  • Full offline-banner + ConnectivitySnackBar support
+//  • Logo uses Image.asset — swap path when final asset is ready
+// =============================================================================
+
 class LoginPage extends ConsumerStatefulWidget {
+  /// Optional overrides — used when navigating here directly from SignUpScreen
   final String? email;
   final String? phoneNumber;
+
   const LoginPage({this.email, this.phoneNumber, super.key});
 
   @override
@@ -21,137 +69,259 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final TextEditingController _phoneController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
+  // ─── Controllers & UI state ────────────────────────────────────────────────
+  final TextEditingController _passwordCtrl = TextEditingController();
   bool _passwordVisible = false;
-  bool _isLoading = false;
 
+  /// true = showing phone number, false = showing email address
+  bool _showingPhone = true;
+
+  bool _isLoading = false;
+  String? _errorText;
+
+  // ─── Lifecycle ──────────────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
-    _prefillPhone();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _setupConnectivityListener());
+    _passwordCtrl.addListener(_clearErrorOnType);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _setupConnectivityListener();
+    });
   }
 
   @override
   void dispose() {
-    _phoneController.dispose();
-    _passwordController.dispose();
+    _passwordCtrl.removeListener(_clearErrorOnType);
+    _passwordCtrl.dispose();
     super.dispose();
   }
 
-  Future<void> _prefillPhone() async {
-    if (widget.phoneNumber != null && widget.phoneNumber!.isNotEmpty) {
-      _phoneController.text = widget.phoneNumber!;
-      return;
-    }
-    try {
-      final userModel = await StorageService.instance.getUserModel();
-      if (userModel != null && userModel.phoneNumber.isNotEmpty) {
-        final phone = userModel.phoneNumber;
-        _phoneController.text = phone.startsWith('+234') ? '0${phone.substring(4)}' : phone;
-      }
-    } catch (_) {}
+  void _clearErrorOnType() {
+    if (_errorText != null && mounted) setState(() => _errorText = null);
   }
 
   void _setupConnectivityListener() {
     ref.listen(connectivityProvider, (previous, next) {
       next.whenData((isConnected) {
-        if (previous?.value != null && previous!.value! && !isConnected) {
+        final wasConnected = previous?.value ?? true;
+        if (wasConnected && !isConnected) {
           ConnectivitySnackBar.showNoInternet(context);
-        } else if (previous?.value != null && !previous!.value! && isConnected) {
+          _passwordCtrl.clear();
+          if (mounted) setState(() => _errorText = null);
+        } else if (!wasConnected && isConnected) {
           ConnectivitySnackBar.showConnectionRestored(context);
         }
       });
     });
   }
 
-  Future<void> _handleLogin() async {
-    final isConnected = ref.read(currentConnectivityProvider);
-    if (!isConnected) { ConnectivitySnackBar.showNoInternet(context); return; }
-    if (!_formKey.currentState!.validate()) return;
+  // ─── Data helpers ───────────────────────────────────────────────────────────
+  String _formatPhone(String raw) {
+    if (raw.startsWith('+234') && raw.length >= 13) {
+      return '0${raw.substring(4)}';
+    }
+    return raw;
+  }
 
-    setState(() => _isLoading = true);
+  String _displayValue(UserModel? user) {
+    if (_showingPhone) {
+      final raw = widget.phoneNumber ?? user?.phoneNumber ?? '';
+      return raw.isEmpty ? '—' : _formatPhone(raw);
+    }
+    final email = widget.email ?? user?.email ?? '';
+    return email.isEmpty ? '—' : email;
+  }
+
+  bool _hasPhone(UserModel? user) =>
+      (widget.phoneNumber ?? user?.phoneNumber ?? '').isNotEmpty;
+
+  bool _hasEmail(UserModel? user) =>
+      (widget.email ?? user?.email ?? '').isNotEmpty;
+
+  // ─── Login ──────────────────────────────────────────────────────────────────
+  Future<void> _handleLogin(UserModel? user) async {
+    final isConnected = ref.read(currentConnectivityProvider);
+    if (!isConnected) {
+      ConnectivitySnackBar.showNoInternet(context);
+      return;
+    }
+
+    final password = _passwordCtrl.text.trim();
+    if (password.isEmpty) {
+      setState(() => _errorText = 'Please enter your password');
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+      _errorText = null;
+    });
+
     try {
-      final password = _passwordController.text.trim();
+      // Step 1: local hash check — fast, works offline for this step
       final isValid = await StorageService.instance.verifyPin(password);
       if (!mounted) return;
-      if (isValid) {
-        await ref.read(authProvider.notifier).login(
-          email: widget.email ?? ref.read(userEmailProvider),
-          password: password,
-        );
-        if (!mounted) return;
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const BottomNavBar()));
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text('Incorrect password. Please try again.'),
-          backgroundColor: Colors.red,
-        ));
-        _passwordController.clear();
+
+      if (!isValid) {
+        setState(() {
+          _isLoading = false;
+          _errorText = 'Incorrect password. Please try again.';
+        });
+        _passwordCtrl.clear();
+        return;
       }
+
+      // Step 2: remote login — creates session token
+      final email =
+          widget.email ?? user?.email ?? ref.read(userEmailProvider) ?? '';
+      await ref.read(authProvider.notifier).login(
+            email: email,
+            password: password,
+          );
+
+      if (!mounted) return;
+
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const BottomNavBar()),
+        (_) => false,
+      );
     } on NoInternetException {
       if (mounted) ConnectivitySnackBar.showNoInternet(context);
+    } on TimeoutException catch (e) {
+      if (mounted) setState(() => _errorText = e.toString());
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text('Login failed: ${e.toString()}'), backgroundColor: Colors.red,
-      ));
+      if (mounted) {
+        setState(() => _errorText = 'Login failed. Please try again.');
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
+  // ─── Dropdown ───────────────────────────────────────────────────────────────
+  void _showIdentifierMenu(BuildContext context, UserModel? user) {
+    final phone = widget.phoneNumber ?? user?.phoneNumber ?? '';
+    final email = widget.email ?? user?.email ?? '';
+
+    final renderBox = context.findRenderObject() as RenderBox;
+    final overlay =
+        Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
+    final topLeft = renderBox.localToGlobal(Offset.zero, ancestor: overlay);
+
+    final position = RelativeRect.fromLTRB(
+      topLeft.dx + AppLayout.scaleWidth(context, 24),
+      topLeft.dy + AppLayout.scaleHeight(context, 148),
+      overlay.size.width -
+          topLeft.dx -
+          renderBox.size.width +
+          AppLayout.scaleWidth(context, 24),
+      0,
+    );
+
+    showMenu<String>(
+      context: context,
+      position: position,
+      elevation: 8,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 14)),
+      ),
+      items: [
+        if (phone.isNotEmpty)
+          _menuItem(context,
+              value: 'phone',
+              icon: Icons.person_outline_rounded,
+              label: _formatPhone(phone),
+              selected: _showingPhone),
+        if (email.isNotEmpty)
+          _menuItem(context,
+              value: 'email',
+              icon: Icons.email_outlined,
+              label: email,
+              selected: !_showingPhone),
+      ],
+    ).then((value) {
+      if (value == null || !mounted) return;
+      setState(() {
+        _showingPhone = value == 'phone';
+        _errorText = null;
+      });
+    });
+  }
+
+  PopupMenuItem<String> _menuItem(
+    BuildContext context, {
+    required String value,
+    required IconData icon,
+    required String label,
+    required bool selected,
+  }) {
+    const brand = Color(0xFF389165);
+    return PopupMenuItem<String>(
+      value: value,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 16),
+        vertical: AppLayout.scaleHeight(context, 10),
+      ),
+      child: Row(
+        children: [
+          Icon(icon,
+              size: AppLayout.scaleWidth(context, 18),
+              color: selected ? brand : Colors.grey[500]),
+          SizedBox(width: AppLayout.scaleWidth(context, 12)),
+          Expanded(
+            child: Text(
+              label,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 14),
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                color: selected ? brand : Colors.black87,
+              ),
+            ),
+          ),
+          if (selected) ...[
+            SizedBox(width: AppLayout.scaleWidth(context, 8)),
+            Icon(Icons.check_rounded,
+                size: AppLayout.scaleWidth(context, 16), color: brand),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _showForgotPinSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _ForgotPinSheet(),
+    );
+  }
+
+  // ─── Build ───────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final connectivityState = ref.watch(connectivityStateProvider);
     final isOnline = connectivityState.isConnected;
+    final userAsync = ref.watch(storedUserProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFEFF7F2),
+      backgroundColor: const Color(0xFFECF5F0),
       body: SafeArea(
         child: Column(
           children: [
-            if (!isOnline) _buildOfflineBanner(context),
+            if (!isOnline)
+              _OfflineBanner(
+                onRetry: () =>
+                    ref.read(connectivityStateProvider.notifier).refresh(),
+              ),
             Expanded(
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 24)),
-                  child: Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(height: AppLayout.scaleHeight(context, 16)),
-                        _buildTopBar(context, isOnline),
-                        SizedBox(height: AppLayout.scaleHeight(context, 48)),
-                        Text('Login into your\nKudikit Account',
-                          style: TextStyle(fontSize: AppLayout.fontSize(context, 27), fontWeight: FontWeight.w700, color: Colors.black87, height: 1.2)),
-                        SizedBox(height: AppLayout.scaleHeight(context, 32)),
-                        _buildPhoneField(context, isOnline),
-                        SizedBox(height: AppLayout.scaleHeight(context, 12)),
-                        _buildPasswordField(context, isOnline),
-                        SizedBox(height: AppLayout.scaleHeight(context, 4)),
-                        Align(alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: isOnline ? _handleForgotPin : null,
-                            child: Text('Forgot PIN', style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 13),
-                              fontWeight: FontWeight.w600,
-                              color: isOnline ? const Color(0xFF5C7C6F) : Colors.grey,
-                            )),
-                          )),
-                        SizedBox(height: AppLayout.scaleHeight(context, 20)),
-                        _buildContinueButton(context, isOnline),
-                        SizedBox(height: AppLayout.scaleHeight(context, 20)),
-                        _buildSignUpRow(context, isOnline),
-                        SizedBox(height: AppLayout.scaleHeight(context, 40)),
-                        _buildLicensingFooter(context),
-                        SizedBox(height: AppLayout.scaleHeight(context, 20)),
-                      ],
-                    ),
-                  ),
-                ),
+              child: userAsync.when(
+                loading: () => _buildBody(context, null, isOnline),
+                error: (_, __) => _buildBody(context, null, isOnline),
+                data: (user) => _buildBody(context, user, isOnline),
               ),
             ),
           ],
@@ -160,192 +330,681 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  Widget _buildTopBar(BuildContext context, bool isOnline) {
+  Widget _buildBody(BuildContext context, UserModel? user, bool isOnline) {
+    final screenH = MediaQuery.of(context).size.height;
+    final topPad = MediaQuery.of(context).padding.top;
+    final bannerH = isOnline ? 0.0 : AppLayout.scaleHeight(context, 42);
+
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: screenH - topPad - bannerH),
+        child: IntrinsicHeight(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: AppLayout.scaleWidth(context, 24)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: AppLayout.scaleHeight(context, 18)),
+
+                // ── Top bar ───────────────────────────────────────────────
+                _TopBar(isOnline: isOnline),
+
+                // ── Heading ───────────────────────────────────────────────
+                SizedBox(height: AppLayout.scaleHeight(context, 48)),
+                Text(
+                  'Login into your Kudikit Account',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 26),
+                    fontWeight: FontWeight.w700,
+                    color: const Color(0xFF1A1A1A),
+                    height: 1.25,
+                  ),
+                ),
+                SizedBox(height: AppLayout.scaleHeight(context, 28)),
+
+                // ── Identifier field ──────────────────────────────────────
+                _IdentifierField(
+                  displayValue: _displayValue(user),
+                  showingPhone: _showingPhone,
+                  canToggle: _hasPhone(user) && _hasEmail(user),
+                  onTap: () => _showIdentifierMenu(context, user),
+                ),
+                SizedBox(height: AppLayout.scaleHeight(context, 12)),
+
+                // ── Password field ────────────────────────────────────────
+                _PasswordField(
+                  controller: _passwordCtrl,
+                  visible: _passwordVisible,
+                  enabled: !_isLoading && isOnline,
+                  onToggleVisibility: () =>
+                      setState(() => _passwordVisible = !_passwordVisible),
+                  onSubmitted: () => _handleLogin(user),
+                ),
+
+                // ── Inline error ──────────────────────────────────────────
+                if (_errorText != null) ...[
+                  SizedBox(height: AppLayout.scaleHeight(context, 6)),
+                  Text(
+                    _errorText!,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: Colors.red[600],
+                    ),
+                  ),
+                ],
+
+                // ── Forgot PIN ────────────────────────────────────────────
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: isOnline ? _showForgotPinSheet : null,
+                    style: TextButton.styleFrom(
+                      minimumSize: Size.zero,
+                      padding: EdgeInsets.symmetric(
+                          vertical: AppLayout.scaleHeight(context, 6)),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: Text(
+                      'Forgot PIN',
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 14),
+                        fontWeight: FontWeight.w600,
+                        color: isOnline
+                            ? const Color(0xFF5C7C6F)
+                            : Colors.grey[400],
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+                // ── Continue button ───────────────────────────────────────
+                _ContinueButton(
+                  isLoading: _isLoading,
+                  isOnline: isOnline,
+                  onPressed: () => _handleLogin(user),
+                ),
+
+                SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+                // ── Already have an account row ───────────────────────────
+                _SignUpRow(isOnline: isOnline),
+
+                const Spacer(),
+
+                // ── CBN / NDIC footer ─────────────────────────────────────
+                const _LicensingFooter(),
+                SizedBox(height: AppLayout.scaleHeight(context, 20)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Top bar — Logo (left) + Link new device (right)
+// =============================================================================
+class _TopBar extends ConsumerWidget {
+  final bool isOnline;
+  const _TopBar({required this.isOnline});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        // ── Logo ─────────────────────────────────────────────────────────────
+        // Uses Image.asset so you can swap the path to any asset file later.
+        // The real Kudikit teal iconmark is already in the assets folder and
+        // referenced below. errorBuilder provides a branded fallback just in
+        // case the path ever changes during development.
+        //
+        // TO CHANGE THE LOGO: update only this one path string:
+        //   'assets/images/Kudikit Iconmark teal.png'
+        // ─────────────────────────────────────────────────────────────────────
         SizedBox(
-          width: AppLayout.scaleWidth(context, 36),
-          height: AppLayout.scaleWidth(context, 36),
-          child: Image.asset('assets/images/kudikit_logo.png', fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => CustomPaint(painter: _KudiKitLogoPainter())),
+          width: AppLayout.scaleWidth(context, 40),
+          height: AppLayout.scaleWidth(context, 40),
+          child: Image.asset(
+            'assets/images/Kudikit_teal_logo.png',
+            fit: BoxFit.contain,
+            // Fallback: drawn chevron mark rendered if the asset path is wrong
+            errorBuilder: (_, __, ___) => CustomPaint(
+              painter: _KudiKitLogoPainter(),
+            ),
+          ),
         ),
-        TextButton(
-          onPressed: isOnline
-              ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => const LinkDeviceScreen()))
+
+        // ── Link new device ──────────────────────────────────────────────────
+        GestureDetector(
+          onTap: isOnline
+              ? () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const LinkDeviceScreen()),
+                  )
               : () => ConnectivitySnackBar.showNoInternet(context),
-          child: Text('Link new device', style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14), fontWeight: FontWeight.w500,
-            color: isOnline ? const Color(0xFF069494) : Colors.grey)),
+          child: Text(
+            'Link new device',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              fontWeight: FontWeight.w500,
+              color: isOnline ? const Color(0xFF389165) : Colors.grey[400],
+            ),
+          ),
         ),
       ],
     );
   }
+}
 
-  Widget _buildPhoneField(BuildContext context, bool isOnline) {
-    return Container(
-      decoration: BoxDecoration(color: Colors.white,
-        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))]),
-      child: TextFormField(
-        controller: _phoneController,
-        keyboardType: TextInputType.phone,
-        enabled: !_isLoading && isOnline,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        style: TextStyle(fontSize: AppLayout.fontSize(context, 16), fontWeight: FontWeight.w500, color: Colors.black87),
-        decoration: InputDecoration(
-          prefixIcon: Padding(
-            padding: EdgeInsets.only(left: AppLayout.scaleWidth(context, 14), right: AppLayout.scaleWidth(context, 10)),
-            child: Icon(Icons.person_outline, color: Colors.grey[500], size: AppLayout.scaleWidth(context, 22))),
-          prefixIconConstraints: const BoxConstraints(),
-          suffixIcon: Icon(Icons.keyboard_arrow_down, color: Colors.grey[500], size: AppLayout.scaleWidth(context, 22)),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16), vertical: AppLayout.scaleHeight(context, 16)),
-          hintText: 'Phone number',
-          hintStyle: TextStyle(fontSize: AppLayout.fontSize(context, 15), color: Colors.grey[400]),
+// =============================================================================
+// Identifier field — read-only, phone or email, with optional dropdown chevron
+// =============================================================================
+// This is intentionally NOT a TextField. It is a styled Container holding
+// a plain Text widget, ensuring the user cannot edit the value.
+// =============================================================================
+class _IdentifierField extends StatelessWidget {
+  final String displayValue;
+  final bool showingPhone;
+  final bool canToggle;
+  final VoidCallback onTap;
+
+  const _IdentifierField({
+    required this.displayValue,
+    required this.showingPhone,
+    required this.canToggle,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: canToggle ? onTap : null,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 14),
+          vertical: AppLayout.scaleHeight(context, 16),
         ),
-        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your phone number' : null,
-      ),
-    );
-  }
-
-  Widget _buildPasswordField(BuildContext context, bool isOnline) {
-    return Container(
-      decoration: BoxDecoration(color: Colors.white,
-        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))]),
-      child: TextFormField(
-        controller: _passwordController,
-        obscureText: !_passwordVisible,
-        enabled: !_isLoading && isOnline,
-        style: TextStyle(fontSize: AppLayout.fontSize(context, 16), fontWeight: FontWeight.w500, color: Colors.black87),
-        decoration: InputDecoration(
-          prefixIcon: Padding(
-            padding: EdgeInsets.only(left: AppLayout.scaleWidth(context, 14), right: AppLayout.scaleWidth(context, 10)),
-            child: Icon(Icons.lock_outline, color: Colors.grey[500], size: AppLayout.scaleWidth(context, 22))),
-          prefixIconConstraints: const BoxConstraints(),
-          suffixIcon: IconButton(
-            icon: Icon(_passwordVisible ? Icons.visibility : Icons.visibility_off, color: Colors.grey[500], size: AppLayout.scaleWidth(context, 22)),
-            onPressed: () => setState(() => _passwordVisible = !_passwordVisible)),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16), vertical: AppLayout.scaleHeight(context, 16)),
-          hintText: 'Password',
-          hintStyle: TextStyle(fontSize: AppLayout.fontSize(context, 15), color: Colors.grey[400]),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+          border: Border.all(color: const Color(0xFFCEE5D8), width: 1),
         ),
-        validator: (v) => (v == null || v.trim().isEmpty) ? 'Enter your password' : null,
+        child: Row(
+          children: [
+            Icon(
+              showingPhone
+                  ? Icons.person_outline_rounded
+                  : Icons.email_outlined,
+              color: Colors.grey[500],
+              size: AppLayout.scaleWidth(context, 20),
+            ),
+            SizedBox(width: AppLayout.scaleWidth(context, 10)),
+            Expanded(
+              child: Text(
+                displayValue,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 15),
+                  fontWeight: FontWeight.w500,
+                  color: Colors.black87,
+                  letterSpacing: 0.1,
+                ),
+              ),
+            ),
+            if (canToggle) ...[
+              SizedBox(width: AppLayout.scaleWidth(context, 4)),
+              Icon(
+                Icons.keyboard_arrow_down_rounded,
+                color: Colors.grey[500],
+                size: AppLayout.scaleWidth(context, 22),
+              ),
+            ],
+          ],
+        ),
       ),
     );
-  }
-
-  Widget _buildContinueButton(BuildContext context, bool isOnline) {
-    return SizedBox(
-      width: double.infinity, height: AppLayout.scaleHeight(context, 56),
-      child: ElevatedButton(
-        onPressed: (_isLoading || !isOnline) ? null : _handleLogin,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF8EC8A5),
-          disabledBackgroundColor: const Color(0xFF8EC8A5).withOpacity(0.6),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 28))),
-          elevation: 0),
-        child: _isLoading
-            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5))
-            : Text(isOnline ? 'Continue' : 'No Internet Connection', style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 17), fontWeight: FontWeight.w600, color: Colors.white)),
-      ),
-    );
-  }
-
-  Widget _buildSignUpRow(BuildContext context, bool isOnline) {
-    return Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-      Text('Already have an account? ', style: TextStyle(fontSize: AppLayout.fontSize(context, 14), color: Colors.black54)),
-      TextButton(
-        onPressed: isOnline ? () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const SignUpScreen())) : null,
-        style: TextButton.styleFrom(padding: EdgeInsets.zero, minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap),
-        child: Text('Log in', style: TextStyle(
-          fontSize: AppLayout.fontSize(context, 14), fontWeight: FontWeight.w700,
-          color: isOnline ? const Color(0xFF069494) : Colors.grey)),
-      ),
-    ]);
-  }
-
-  Widget _buildOfflineBanner(BuildContext context) {
-    return Container(
-      width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      color: Colors.red.shade700,
-      child: Row(children: [
-        const Icon(Icons.wifi_off, color: Colors.white, size: 20),
-        const SizedBox(width: 8),
-        const Expanded(child: Text('No internet — Login requires a connection', style: TextStyle(color: Colors.white, fontSize: 13))),
-        TextButton(onPressed: () => ref.read(connectivityStateProvider.notifier).refresh(),
-          child: const Text('Retry', style: TextStyle(color: Colors.white))),
-      ]),
-    );
-  }
-
-  Widget _buildLicensingFooter(BuildContext context) {
-    return Wrap(alignment: WrapAlignment.center, crossAxisAlignment: WrapCrossAlignment.center, spacing: 4, children: [
-      Container(width: 24, height: 24, padding: const EdgeInsets.all(2),
-        child: Image.asset('assets/images/cbn.png', fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => const Icon(Icons.account_balance, size: 16, color: Color(0xFF2C2C2C)))),
-      const Text('Licensed by the ', style: TextStyle(color: Colors.black54, fontSize: 11)),
-      const Text('CBN', style: TextStyle(color: Colors.black54, fontSize: 11, fontWeight: FontWeight.bold)),
-      const Text(' and insured by the', style: TextStyle(color: Colors.black54, fontSize: 11)),
-      Container(height: 20, padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Image.asset('assets/images/ndicc.png', fit: BoxFit.contain,
-          errorBuilder: (_, __, ___) => const Icon(Icons.account_balance, size: 16, color: Color(0xFF2C2C2C)))),
-    ]);
-  }
-
-  void _handleForgotPin() {
-    showModalBottomSheet(context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
-      builder: (_) => _ForgotPinSheet());
   }
 }
 
-class _ForgotPinSheet extends StatelessWidget {
+// =============================================================================
+// Password field — the ONLY editable input on this screen
+// =============================================================================
+class _PasswordField extends StatelessWidget {
+  final TextEditingController controller;
+  final bool visible;
+  final bool enabled;
+  final VoidCallback onToggleVisibility;
+  final VoidCallback onSubmitted;
+
+  const _PasswordField({
+    required this.controller,
+    required this.visible,
+    required this.enabled,
+    required this.onToggleVisibility,
+    required this.onSubmitted,
+  });
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(color: Colors.white, borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      padding: const EdgeInsets.all(24),
-      child: SafeArea(child: Column(mainAxisSize: MainAxisSize.min, children: [
-        Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-        const SizedBox(height: 24),
-        Container(width: 64, height: 64,
-          decoration: BoxDecoration(color: const Color(0xFF069494).withOpacity(0.1), shape: BoxShape.circle),
-          child: const Icon(Icons.lock_reset, color: Color(0xFF069494), size: 32)),
-        const SizedBox(height: 16),
-        const Text('Forgot PIN?', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
-        const SizedBox(height: 8),
-        Text('To reset your PIN, log in using your email and create a new one, or contact our support team.',
-          textAlign: TextAlign.center, style: TextStyle(fontSize: 14, color: Colors.grey[600])),
-        const SizedBox(height: 28),
-        SizedBox(width: double.infinity, height: 52,
-          child: ElevatedButton(
-            onPressed: () { Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('PIN reset coming soon'), backgroundColor: Color(0xFF069494))); },
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF069494),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)), elevation: 0),
-            child: const Text('Reset via Email', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)))),
-        const SizedBox(height: 12),
-        SizedBox(width: double.infinity, height: 52,
-          child: OutlinedButton(onPressed: () => Navigator.pop(context),
-            style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFF069494)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28))),
-            child: const Text('Cancel', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF069494))))),
-      ])),
+      decoration: BoxDecoration(
+        color: enabled ? Colors.white : const Color(0xFFF8F8F8),
+        borderRadius:
+            BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        border: Border.all(color: const Color(0xFFD6EAE0), width: 1),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: !visible,
+        enabled: enabled,
+        textInputAction: TextInputAction.done,
+        onSubmitted: (_) => onSubmitted(),
+        style: TextStyle(
+          fontSize: AppLayout.fontSize(context, 15),
+          fontWeight: FontWeight.w500,
+          color: Colors.black87,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Password',
+          hintStyle: TextStyle(
+            fontSize: AppLayout.fontSize(context, 15),
+            color: Colors.grey[400],
+            fontWeight: FontWeight.w400,
+          ),
+          prefixIcon: Padding(
+            padding: EdgeInsets.only(
+              left: AppLayout.scaleWidth(context, 14),
+              right: AppLayout.scaleWidth(context, 10),
+            ),
+            child: Icon(
+              Icons.lock_outline_rounded,
+              color: Colors.grey[500],
+              size: AppLayout.scaleWidth(context, 20),
+            ),
+          ),
+          prefixIconConstraints: const BoxConstraints(),
+          suffixIcon: IconButton(
+            icon: Icon(
+              visible
+                  ? Icons.visibility_outlined
+                  : Icons.visibility_off_outlined,
+              color: Colors.grey[500],
+              size: AppLayout.scaleWidth(context, 20),
+            ),
+            splashRadius: AppLayout.scaleWidth(context, 18),
+            onPressed: onToggleVisibility,
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: AppLayout.scaleWidth(context, 14),
+            vertical: AppLayout.scaleHeight(context, 16),
+          ),
+        ),
+      ),
     );
   }
 }
 
+// =============================================================================
+// Continue button
+// =============================================================================
+class _ContinueButton extends StatelessWidget {
+  final bool isLoading;
+  final bool isOnline;
+  final VoidCallback onPressed;
+
+  const _ContinueButton({
+    required this.isLoading,
+    required this.isOnline,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final disabled = isLoading || !isOnline;
+    return SizedBox(
+      width: double.infinity,
+      height: AppLayout.scaleHeight(context, 54),
+      child: ElevatedButton(
+        onPressed: disabled ? null : onPressed,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF069494),
+          disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.5),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppLayout.scaleWidth(context, 32)),
+          ),
+        ),
+        child: isLoading
+            ? SizedBox(
+                width: AppLayout.scaleWidth(context, 22),
+                height: AppLayout.scaleWidth(context, 22),
+                child: const CircularProgressIndicator(
+                    color: Colors.white, strokeWidth: 2.5),
+              )
+            : Text(
+                isOnline ? 'Continue' : 'No Internet Connection',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 16),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// "Already have an account? Log in" row
+// =============================================================================
+class _SignUpRow extends StatelessWidget {
+  final bool isOnline;
+  const _SignUpRow({required this.isOnline});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            "Don't have an account? ",
+            style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 14),
+                color: Colors.black54),
+          ),
+          GestureDetector(
+            onTap: isOnline
+                ? () => Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const SignUpScreen()),
+                    )
+                : null,
+            child: Text(
+              'Sign up',
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 14),
+                fontWeight: FontWeight.w700,
+                color: isOnline
+                    ? const Color(0xFF389165)
+                    : Colors.grey[400],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Offline banner
+// =============================================================================
+class _OfflineBanner extends StatelessWidget {
+  final VoidCallback onRetry;
+  const _OfflineBanner({required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      color: Colors.red.shade700,
+      padding: EdgeInsets.symmetric(
+        vertical: AppLayout.scaleHeight(context, 8),
+        horizontal: AppLayout.scaleWidth(context, 16),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.wifi_off,
+              color: Colors.white,
+              size: AppLayout.scaleWidth(context, 18)),
+          SizedBox(width: AppLayout.scaleWidth(context, 8)),
+          Expanded(
+            child: Text(
+              'No internet — Login requires a connection',
+              style: TextStyle(
+                  color: Colors.white,
+                  fontSize: AppLayout.fontSize(context, 13)),
+            ),
+          ),
+          TextButton(
+            onPressed: onRetry,
+            style: TextButton.styleFrom(
+              minimumSize: Size.zero,
+              padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 8)),
+            ),
+            child: Text('Retry',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: AppLayout.fontSize(context, 13),
+                    fontWeight: FontWeight.w600)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// CBN / NDIC licensing footer
+// =============================================================================
+class _LicensingFooter extends StatelessWidget {
+  const _LicensingFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    final iconH = AppLayout.scaleWidth(context, 22);
+    final fs = AppLayout.fontSize(context, 11);
+
+    return Padding(
+      padding:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 8)),
+      child: Wrap(
+        alignment: WrapAlignment.center,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 4,
+        runSpacing: 4,
+        children: [
+          SizedBox(
+            width: iconH,
+            height: iconH,
+            child: Image.asset(
+              'assets/images/cbn.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Icon(Icons.account_balance,
+                  size: iconH * 0.75, color: Colors.grey[600]),
+            ),
+          ),
+          Text('Licensed by the ',
+              style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: fs,
+                  fontWeight: FontWeight.w400)),
+          Text('CBN',
+              style: TextStyle(
+                  color: Colors.grey[800],
+                  fontSize: fs,
+                  fontWeight: FontWeight.bold)),
+          Text(' and insured by the',
+              style: TextStyle(
+                  color: Colors.grey[700],
+                  fontSize: fs,
+                  fontWeight: FontWeight.w400)),
+          SizedBox(
+            height: iconH,
+            child: Image.asset(
+              'assets/images/ndicc.png',
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Icon(Icons.account_balance,
+                  size: iconH * 0.75, color: Colors.grey[600]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// Forgot PIN bottom sheet
+// =============================================================================
+class _ForgotPinSheet extends StatelessWidget {
+  const _ForgotPinSheet();
+
+  @override
+  Widget build(BuildContext context) {
+    const brand = Color(0xFF3069494);
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 24),
+        AppLayout.scaleHeight(context, 12),
+        AppLayout.scaleWidth(context, 24),
+        AppLayout.scaleHeight(context, 32),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: AppLayout.scaleWidth(context, 40),
+              height: 4,
+              decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2)),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+            Container(
+              width: AppLayout.scaleWidth(context, 64),
+              height: AppLayout.scaleWidth(context, 64),
+              decoration: BoxDecoration(
+                  color: brand.withOpacity(0.1), shape: BoxShape.circle),
+              child: Icon(Icons.lock_reset_rounded,
+                  color: brand, size: AppLayout.scaleWidth(context, 32)),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            Text('Forgot PIN?',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 22),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87)),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            Text(
+              'To reset your PIN, log in using your email and '
+              'create a new one, or contact our support team.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
+                  color: Colors.grey[600],
+                  height: 1.5),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 28)),
+            SizedBox(
+              width: double.infinity,
+              height: AppLayout.scaleHeight(context, 52),
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                    content: Text('PIN reset via email coming soon'),
+                    backgroundColor: brand,
+                  ));
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: brand,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppLayout.scaleWidth(context, 32))),
+                ),
+                child: Text('Reset via Email',
+                    style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 16),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
+              ),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+            SizedBox(
+              width: double.infinity,
+              height: AppLayout.scaleHeight(context, 52),
+              child: OutlinedButton(
+                onPressed: () => Navigator.pop(context),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: brand, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppLayout.scaleWidth(context, 32))),
+                ),
+                child: Text('Cancel',
+                    style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 16),
+                        fontWeight: FontWeight.w600,
+                        color: brand)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// _KudiKitLogoPainter — fallback only
+// =============================================================================
+// Draws the Kudikit double-chevron "KK" mark in brand teal.
+// Only used as Image.asset errorBuilder when the asset file path is wrong.
+// Once 'assets/images/Kudikit Iconmark teal.png' resolves correctly, this
+// painter is never called.
+// =============================================================================
 class _KudiKitLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = const Color(0xFF069494)..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.12..strokeCap = StrokeCap.round..strokeJoin = StrokeJoin.round;
-    final w = size.width; final h = size.height;
-    canvas.drawPath(Path()..moveTo(w*0.18,h*0.2)..lineTo(w*0.42,h*0.5)..lineTo(w*0.18,h*0.8), paint);
-    canvas.drawPath(Path()..moveTo(w*0.42,h*0.2)..lineTo(w*0.66,h*0.5)..lineTo(w*0.42,h*0.8), paint);
+    final p = Paint()
+      ..color = const Color(0xFF389165)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.12
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final w = size.width;
+    final h = size.height;
+
+    canvas.drawPath(
+        Path()
+          ..moveTo(w * 0.14, h * 0.22)
+          ..lineTo(w * 0.40, h * 0.50)
+          ..lineTo(w * 0.14, h * 0.78),
+        p);
+
+    canvas.drawPath(
+        Path()
+          ..moveTo(w * 0.42, h * 0.22)
+          ..lineTo(w * 0.68, h * 0.50)
+          ..lineTo(w * 0.42, h * 0.78),
+        p);
   }
-  @override bool shouldRepaint(_) => false;
+
+  @override
+  bool shouldRepaint(_KudiKitLogoPainter _) => false;
 }

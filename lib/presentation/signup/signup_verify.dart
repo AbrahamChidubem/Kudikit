@@ -234,7 +234,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Account verified successfully!'),
-              backgroundColor: Color(0xFF069494),
+              backgroundColor: Color.fromARGB(255, 6, 148, 42),
             ),
           );
         }

@@ -102,7 +102,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         Row(
                           children: [
                             Text(
-                              'Hi, $firstName',
+                              'Hi, $user',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,

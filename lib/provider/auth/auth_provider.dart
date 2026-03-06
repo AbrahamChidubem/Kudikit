@@ -172,12 +172,22 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
       if (response['success'] == true) {
         // Save the passcode securely so the user can log in after verification.
-        // savePin() is an alias for savePasscode() — validates complexity,
-        // hashes the passcode, and stores "salt:hash:iterations" encrypted.
         await _storageService.savePin(password);
 
+        // Persist a partial UserModel right away so the LoginPage can read
+        // back the user's phone number and email from local storage.
+        // This is intentionally incomplete (not yet authenticated).
+        final partialUser = UserModel(
+          userId: (response['userId'] as String?) ?? '',
+          email: email,
+          phoneNumber: phoneNumber,
+          isEmailVerified: false,
+          createdAt: DateTime.now(),
+          lastLogin: DateTime.now(),
+        );
+        await _storageService.saveUserModel(partialUser);
+
         // Don't authenticate yet — user must verify their email first.
-        // Passing a message to unauthenticated() lets the UI show a hint.
         state = state.unauthenticated('Please verify your email to continue.');
       } else {
         throw Exception(response['message'] ?? 'Signup failed. Please try again.');

@@ -121,8 +121,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 fit: BoxFit.scaleDown,
                 child: Image.asset(
                   'assets/images/kudikit_white_logo.png',
-                  width: logoSize,
-                  height: logoSize,
+                  width: 100,
+                  height: 100,
                   fit: BoxFit.contain,
                 ),
               ),
