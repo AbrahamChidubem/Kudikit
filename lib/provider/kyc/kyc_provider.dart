@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/model/id&document/document_data.dart';
+import 'package:kudipay/model/IDdocument/document_data.dart';
 import 'package:kudipay/model/address/nigeria_state.dart';
 import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/usecases/selfie_state.dart';

@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart' as firebase_auth;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
-import 'package:kudipay/model/id&document/document_data.dart';
+import 'package:kudipay/model/IDdocument/document_data.dart';
 import 'package:kudipay/model/address/nigeria_state.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/model/user/user_info.dart';

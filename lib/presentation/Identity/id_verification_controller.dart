@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/constant/id_type.dart';
-import 'package:kudipay/model/id&document/id_verification_state.dart';
+import 'package:kudipay/model/IDdocument/id_verification_state.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
 
 final idVerificationProvider =

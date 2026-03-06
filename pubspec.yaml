@@ -26,8 +26,8 @@ dependencies:
   form_field_validator:
   pinput: 
 
-  # UI Components
-  flutter_swiper_null_safety_flutter3:
+   # UI Components
+  card_swiper:
   flutter_clean_calendar:
 
   # Network & API
