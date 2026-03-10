@@ -37,7 +37,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -102,7 +102,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         Row(
                           children: [
                             Text(
-                              'Hi, $user',
+                              'Hi $firstName',
                               style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
@@ -670,7 +670,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            child: const Text('Log out'),
+            child: const Text('Log out',style: TextStyle(color: Color(0xFFF9F9F9)),),
           ),
         ],
       ),

@@ -103,7 +103,7 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => RequestMoneyScr
     final screenHeight = mediaQuery.size.height;
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundGreen,
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [

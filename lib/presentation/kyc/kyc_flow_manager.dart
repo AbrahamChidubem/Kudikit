@@ -20,7 +20,7 @@ class KycFlowManager extends ConsumerWidget {
     // Check internet connection first
     if (!connectivityState.isConnected) {
       return Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: Color(0xFFF9F9F9),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),

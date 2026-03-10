@@ -14,9 +14,9 @@ class UpgradeSuccessScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE8F5E9),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFE8F5E9),
+        backgroundColor: const Color(0xFFF9F9F9),
         elevation: 0,
         leading: const SizedBox(), // No back button
         actions: [

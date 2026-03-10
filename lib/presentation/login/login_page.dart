@@ -13,11 +13,6 @@ import 'package:kudipay/services/storage_services.dart';
 
 // =============================================================================
 // storedUserProvider
-// -----------------------------------------------------------------------------
-// Loads the UserModel that was persisted at signup time (email + phone number).
-// The LoginPage watches this to pre-fill the identifier field without any
-// user input — both values are read-only on this screen.
-// autoDispose ensures a fresh read every time the page is opened.
 // =============================================================================
 final storedUserProvider = FutureProvider.autoDispose<UserModel?>((ref) async {
   return StorageService.instance.getUserModel();
@@ -26,39 +21,7 @@ final storedUserProvider = FutureProvider.autoDispose<UserModel?>((ref) async {
 // =============================================================================
 // LoginPage
 // =============================================================================
-//
-// Layout (matches mockup):
-//   ─────────────────────────────────────────────
-//   [Logo image]                   Link new device
-//
-//   Login into your Kudikit Account
-//
-//   ┌─ [icon]  08124608695              [▾] ────┐  ← read-only, dropdown
-//   └────────────────────────────────────────────┘
-//   ┌─ [🔒]  Password                      [👁] ┐  ← only editable field
-//   └────────────────────────────────────────────┘
-//                                      Forgot PIN
-//
-//           [         Continue         ]
-//
-//     Already have an account?  Log in
-//
-//   [CBN logo] Licensed by the CBN and insured by [NDIC logo]
-//   ─────────────────────────────────────────────
-//
-// Key behaviours:
-//  • Phone number and email are pre-filled from StorageService (saved at signup)
-//  • A dropdown lets the user toggle which identifier is displayed (phone/email)
-//  • Neither the phone nor email field is editable — plain Text inside a Container
-//  • The password field is the only editable input
-//  • Password verified locally via StorageService.verifyPin(), then forwarded
-//    to AuthNotifier.login() to create the remote session
-//  • Full offline-banner + ConnectivitySnackBar support
-//  • Logo uses Image.asset — swap path when final asset is ready
-// =============================================================================
-
 class LoginPage extends ConsumerStatefulWidget {
-  /// Optional overrides — used when navigating here directly from SignUpScreen
   final String? email;
   final String? phoneNumber;
 
@@ -69,17 +32,14 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  // ─── Controllers & UI state ────────────────────────────────────────────────
   final TextEditingController _passwordCtrl = TextEditingController();
   bool _passwordVisible = false;
-
-  /// true = showing phone number, false = showing email address
   bool _showingPhone = true;
-
   bool _isLoading = false;
-  String? _errorText;
 
-  // ─── Lifecycle ──────────────────────────────────────────────────────────────
+  // ── FIX 1: Store error as a ValueNotifier so it always triggers rebuild ──
+  final ValueNotifier<String?> _errorNotifier = ValueNotifier<String?>(null);
+
   @override
   void initState() {
     super.initState();
@@ -93,11 +53,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void dispose() {
     _passwordCtrl.removeListener(_clearErrorOnType);
     _passwordCtrl.dispose();
+    _errorNotifier.dispose();
     super.dispose();
   }
 
   void _clearErrorOnType() {
-    if (_errorText != null && mounted) setState(() => _errorText = null);
+    if (_errorNotifier.value != null) {
+      _errorNotifier.value = null;
+    }
   }
 
   void _setupConnectivityListener() {
@@ -107,7 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (wasConnected && !isConnected) {
           ConnectivitySnackBar.showNoInternet(context);
           _passwordCtrl.clear();
-          if (mounted) setState(() => _errorText = null);
+          _errorNotifier.value = null;
         } else if (!wasConnected && isConnected) {
           ConnectivitySnackBar.showConnectionRestored(context);
         }
@@ -115,7 +78,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     });
   }
 
-  // ─── Data helpers ───────────────────────────────────────────────────────────
   String _formatPhone(String raw) {
     if (raw.startsWith('+234') && raw.length >= 13) {
       return '0${raw.substring(4)}';
@@ -138,7 +100,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _hasEmail(UserModel? user) =>
       (widget.email ?? user?.email ?? '').isNotEmpty;
 
-  // ─── Login ──────────────────────────────────────────────────────────────────
+  // ── FIX 2: Proper error handling that always sets the error notifier ──
   Future<void> _handleLogin(UserModel? user) async {
     final isConnected = ref.read(currentConnectivityProvider);
     if (!isConnected) {
@@ -148,30 +110,25 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final password = _passwordCtrl.text.trim();
     if (password.isEmpty) {
-      setState(() => _errorText = 'Please enter your password');
+      _errorNotifier.value = 'Please enter your password';
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-      _errorText = null;
-    });
+    if (mounted) setState(() => _isLoading = true);
+    _errorNotifier.value = null;
 
     try {
-      // Step 1: local hash check — fast, works offline for this step
       final isValid = await StorageService.instance.verifyPin(password);
       if (!mounted) return;
 
       if (!isValid) {
-        setState(() {
-          _isLoading = false;
-          _errorText = 'Incorrect password. Please try again.';
-        });
+        // ── FIX 3: Set error via notifier, matching exact mockup text ──
+        _errorNotifier.value = 'Incorrect password, kindly try again';
         _passwordCtrl.clear();
+        if (mounted) setState(() => _isLoading = false);
         return;
       }
 
-      // Step 2: remote login — creates session token
       final email =
           widget.email ?? user?.email ?? ref.read(userEmailProvider) ?? '';
       await ref.read(authProvider.notifier).login(
@@ -189,17 +146,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     } on NoInternetException {
       if (mounted) ConnectivitySnackBar.showNoInternet(context);
     } on TimeoutException catch (e) {
-      if (mounted) setState(() => _errorText = e.toString());
+      _errorNotifier.value = e.toString();
     } catch (e) {
-      if (mounted) {
-        setState(() => _errorText = 'Login failed. Please try again.');
-      }
+      _errorNotifier.value = 'Login failed. Please try again.';
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  // ─── Dropdown ───────────────────────────────────────────────────────────────
   void _showIdentifierMenu(BuildContext context, UserModel? user) {
     final phone = widget.phoneNumber ?? user?.phoneNumber ?? '';
     final email = widget.email ?? user?.email ?? '';
@@ -245,7 +199,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (value == null || !mounted) return;
       setState(() {
         _showingPhone = value == 'phone';
-        _errorText = null;
+        _errorNotifier.value = null;
       });
     });
   }
@@ -257,7 +211,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     required String label,
     required bool selected,
   }) {
-    const brand = Color(0xFF389165);
+    const brand = Color(0xFF069494);
     return PopupMenuItem<String>(
       value: value,
       padding: EdgeInsets.symmetric(
@@ -277,7 +231,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                color: selected ? brand : Colors.black87,
+                color: selected ? brand : Color(0xFF171515),
               ),
             ),
           ),
@@ -300,7 +254,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     );
   }
 
-  // ─── Build ───────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     final connectivityState = ref.watch(connectivityStateProvider);
@@ -308,7 +261,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final userAsync = ref.watch(storedUserProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFECF5F0),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [
@@ -317,6 +270,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 onRetry: () =>
                     ref.read(connectivityStateProvider.notifier).refresh(),
               ),
+            SizedBox(width: AppLayout.scaleWidth(context, 50)),
             Expanded(
               child: userAsync.when(
                 loading: () => _buildBody(context, null, isOnline),
@@ -342,27 +296,65 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         child: IntrinsicHeight(
           child: Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: AppLayout.scaleWidth(context, 24)),
+              horizontal: AppLayout.scaleWidth(context, 24),
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: AppLayout.scaleHeight(context, 18)),
+                SizedBox(height: AppLayout.scaleHeight(context, 23)),
 
-                // ── Top bar ───────────────────────────────────────────────
+                // ── Top bar ──────────────────────────────────────────────
                 _TopBar(isOnline: isOnline),
 
-                // ── Heading ───────────────────────────────────────────────
-                SizedBox(height: AppLayout.scaleHeight(context, 48)),
+                // Generous whitespace between top bar and heading — matches mockup
+                SizedBox(height: AppLayout.scaleHeight(context, 150)),
+
+                // ── Heading ──────────────────────────────────────────────
                 Text(
                   'Login into your Kudikit Account',
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 26),
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1A1A),
+                    color: const Color(0xFF171515),
                     height: 1.25,
                   ),
                 ),
-                SizedBox(height: AppLayout.scaleHeight(context, 28)),
+
+                // ── Error message slot ────────────────────────────────────
+                // Always reserves the same height (20px text line + 8px top
+                // gap + 16px bottom gap = fixed block) so the fields below
+                // never shift position whether or not there is an error.
+                // Matches mockup: red text, directly under the heading.
+                SizedBox(height: AppLayout.scaleHeight(context, 8)),
+                ValueListenableBuilder<String?>(
+                  valueListenable: _errorNotifier,
+                  builder: (context, errorText, _) {
+                    return SizedBox(
+                      height: AppLayout.scaleHeight(context, 22),
+                      width: double.infinity,
+                      child: AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 180),
+                        child: errorText != null
+                            ? Align(
+                                key: const ValueKey('err'),
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  errorText,
+                                  style: TextStyle(
+                                    fontSize: AppLayout.fontSize(context, 14),
+                                    fontWeight: FontWeight.w400,
+                                    color: const Color(0xFFE53935),
+                                    height: 1.2,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(key: ValueKey('none')),
+                      ),
+                    );
+                  },
+                ),
+
+                SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
                 // ── Identifier field ──────────────────────────────────────
                 _IdentifierField(
@@ -371,6 +363,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   canToggle: _hasPhone(user) && _hasEmail(user),
                   onTap: () => _showIdentifierMenu(context, user),
                 ),
+
                 SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
                 // ── Password field ────────────────────────────────────────
@@ -383,18 +376,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   onSubmitted: () => _handleLogin(user),
                 ),
 
-                // ── Inline error ──────────────────────────────────────────
-                if (_errorText != null) ...[
-                  SizedBox(height: AppLayout.scaleHeight(context, 6)),
-                  Text(
-                    _errorText!,
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 12),
-                      color: Colors.red[600],
-                    ),
-                  ),
-                ],
-
                 // ── Forgot PIN ────────────────────────────────────────────
                 Align(
                   alignment: Alignment.centerRight,
@@ -403,7 +384,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     style: TextButton.styleFrom(
                       minimumSize: Size.zero,
                       padding: EdgeInsets.symmetric(
-                          vertical: AppLayout.scaleHeight(context, 6)),
+                        vertical: AppLayout.scaleHeight(context, 8),
+                      ),
                       tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                     child: Text(
@@ -412,7 +394,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         fontSize: AppLayout.fontSize(context, 14),
                         fontWeight: FontWeight.w600,
                         color: isOnline
-                            ? const Color(0xFF5C7C6F)
+                            ? const Color(0xFF069494)
                             : Colors.grey[400],
                       ),
                     ),
@@ -430,10 +412,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                 SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-                // ── Already have an account row ───────────────────────────
+                // ── Sign-up row ───────────────────────────────────────────
                 _SignUpRow(isOnline: isOnline),
 
-                const Spacer(),
+                SizedBox(height: AppLayout.scaleHeight(context, 40)),
 
                 // ── CBN / NDIC footer ─────────────────────────────────────
                 const _LicensingFooter(),
@@ -448,7 +430,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 }
 
 // =============================================================================
-// Top bar — Logo (left) + Link new device (right)
+// Top bar
 // =============================================================================
 class _TopBar extends ConsumerWidget {
   final bool isOnline;
@@ -460,35 +442,22 @@ class _TopBar extends ConsumerWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // ── Logo ─────────────────────────────────────────────────────────────
-        // Uses Image.asset so you can swap the path to any asset file later.
-        // The real Kudikit teal iconmark is already in the assets folder and
-        // referenced below. errorBuilder provides a branded fallback just in
-        // case the path ever changes during development.
-        //
-        // TO CHANGE THE LOGO: update only this one path string:
-        //   'assets/images/Kudikit Iconmark teal.png'
-        // ─────────────────────────────────────────────────────────────────────
         SizedBox(
-          width: AppLayout.scaleWidth(context, 40),
-          height: AppLayout.scaleWidth(context, 40),
+          width: AppLayout.scaleWidth(context, 30),
+          height: AppLayout.scaleWidth(context, 30),
           child: Image.asset(
             'assets/images/Kudikit_teal_logo.png',
             fit: BoxFit.contain,
-            // Fallback: drawn chevron mark rendered if the asset path is wrong
             errorBuilder: (_, __, ___) => CustomPaint(
               painter: _KudiKitLogoPainter(),
             ),
           ),
         ),
-
-        // ── Link new device ──────────────────────────────────────────────────
         GestureDetector(
           onTap: isOnline
               ? () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                        builder: (_) => const LinkDeviceScreen()),
+                    MaterialPageRoute(builder: (_) => const LinkDeviceScreen()),
                   )
               : () => ConnectivitySnackBar.showNoInternet(context),
           child: Text(
@@ -496,7 +465,7 @@ class _TopBar extends ConsumerWidget {
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 14),
               fontWeight: FontWeight.w500,
-              color: isOnline ? const Color(0xFF389165) : Colors.grey[400],
+              color: isOnline ? const Color(0xFF069494) : Colors.grey[400],
             ),
           ),
         ),
@@ -506,10 +475,7 @@ class _TopBar extends ConsumerWidget {
 }
 
 // =============================================================================
-// Identifier field — read-only, phone or email, with optional dropdown chevron
-// =============================================================================
-// This is intentionally NOT a TextField. It is a styled Container holding
-// a plain Text widget, ensuring the user cannot edit the value.
+// Identifier field — read-only
 // =============================================================================
 class _IdentifierField extends StatelessWidget {
   final String displayValue;
@@ -531,8 +497,8 @@ class _IdentifierField extends StatelessWidget {
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(
-          horizontal: AppLayout.scaleWidth(context, 14),
-          vertical: AppLayout.scaleHeight(context, 16),
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 17),
         ),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -546,7 +512,7 @@ class _IdentifierField extends StatelessWidget {
               showingPhone
                   ? Icons.person_outline_rounded
                   : Icons.email_outlined,
-              color: Colors.grey[500],
+              color: Colors.grey[400],
               size: AppLayout.scaleWidth(context, 20),
             ),
             SizedBox(width: AppLayout.scaleWidth(context, 10)),
@@ -566,7 +532,7 @@ class _IdentifierField extends StatelessWidget {
               SizedBox(width: AppLayout.scaleWidth(context, 4)),
               Icon(
                 Icons.keyboard_arrow_down_rounded,
-                color: Colors.grey[500],
+                color: Colors.grey[400],
                 size: AppLayout.scaleWidth(context, 22),
               ),
             ],
@@ -578,7 +544,7 @@ class _IdentifierField extends StatelessWidget {
 }
 
 // =============================================================================
-// Password field — the ONLY editable input on this screen
+// Password field
 // =============================================================================
 class _PasswordField extends StatelessWidget {
   final TextEditingController controller;
@@ -600,8 +566,7 @@ class _PasswordField extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: enabled ? Colors.white : const Color(0xFFF8F8F8),
-        borderRadius:
-            BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         border: Border.all(color: const Color(0xFFD6EAE0), width: 1),
       ),
       child: TextField(
@@ -613,7 +578,7 @@ class _PasswordField extends StatelessWidget {
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 15),
           fontWeight: FontWeight.w500,
-          color: Colors.black87,
+          color: Color(0xFF171515),
         ),
         decoration: InputDecoration(
           hintText: 'Password',
@@ -624,13 +589,13 @@ class _PasswordField extends StatelessWidget {
           ),
           prefixIcon: Padding(
             padding: EdgeInsets.only(
-              left: AppLayout.scaleWidth(context, 14),
+              left: AppLayout.scaleWidth(context, 16),
               right: AppLayout.scaleWidth(context, 10),
             ),
             child: Icon(
               Icons.lock_outline_rounded,
-              color: Colors.grey[500],
-              size: AppLayout.scaleWidth(context, 20),
+              color: Colors.grey[400],
+              size: AppLayout.scaleWidth(context, 18),
             ),
           ),
           prefixIconConstraints: const BoxConstraints(),
@@ -639,7 +604,7 @@ class _PasswordField extends StatelessWidget {
               visible
                   ? Icons.visibility_outlined
                   : Icons.visibility_off_outlined,
-              color: Colors.grey[500],
+              color: Colors.grey[400],
               size: AppLayout.scaleWidth(context, 20),
             ),
             splashRadius: AppLayout.scaleWidth(context, 18),
@@ -647,8 +612,8 @@ class _PasswordField extends StatelessWidget {
           ),
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
-            horizontal: AppLayout.scaleWidth(context, 14),
-            vertical: AppLayout.scaleHeight(context, 16),
+            horizontal: AppLayout.scaleWidth(context, 16),
+            vertical: AppLayout.scaleHeight(context, 17),
           ),
         ),
       ),
@@ -692,7 +657,7 @@ class _ContinueButton extends StatelessWidget {
                 width: AppLayout.scaleWidth(context, 22),
                 height: AppLayout.scaleWidth(context, 22),
                 child: const CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 2.5),
+                    color: Colors.white, strokeWidth: 1),
               )
             : Text(
                 isOnline ? 'Continue' : 'No Internet Connection',
@@ -708,7 +673,7 @@ class _ContinueButton extends StatelessWidget {
 }
 
 // =============================================================================
-// "Already have an account? Log in" row
+// Sign-up row — "Already have an account? Log in"
 // =============================================================================
 class _SignUpRow extends StatelessWidget {
   final bool isOnline;
@@ -724,14 +689,13 @@ class _SignUpRow extends StatelessWidget {
             "Don't have an account? ",
             style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
-                color: Colors.black54),
+                color: const Color(0xFF171515)),
           ),
           GestureDetector(
             onTap: isOnline
                 ? () => Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const SignUpScreen()),
+                      MaterialPageRoute(builder: (_) => const SignUpScreen()),
                     )
                 : null,
             child: Text(
@@ -739,9 +703,7 @@ class _SignUpRow extends StatelessWidget {
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
                 fontWeight: FontWeight.w700,
-                color: isOnline
-                    ? const Color(0xFF389165)
-                    : Colors.grey[400],
+                color: isOnline ? const Color(0xFF069494) : Colors.grey[400],
               ),
             ),
           ),
@@ -770,8 +732,7 @@ class _OfflineBanner extends StatelessWidget {
       child: Row(
         children: [
           Icon(Icons.wifi_off,
-              color: Colors.white,
-              size: AppLayout.scaleWidth(context, 18)),
+              color: Colors.white, size: AppLayout.scaleWidth(context, 18)),
           SizedBox(width: AppLayout.scaleWidth(context, 8)),
           Expanded(
             child: Text(
@@ -808,53 +769,55 @@ class _LicensingFooter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconH = AppLayout.scaleWidth(context, 22);
+    final iconH = AppLayout.scaleWidth(context, 20);
     final fs = AppLayout.fontSize(context, 11);
 
-    return Padding(
-      padding:
-          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 8)),
-      child: Wrap(
-        alignment: WrapAlignment.center,
-        crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: 4,
-        runSpacing: 4,
-        children: [
-          SizedBox(
-            width: iconH,
-            height: iconH,
-            child: Image.asset(
-              'assets/images/cbn.png',
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Icon(Icons.account_balance,
-                  size: iconH * 0.75, color: Colors.grey[600]),
+    return Center(
+      child: Padding(
+        padding:
+            EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 8)),
+        child: Wrap(
+          alignment: WrapAlignment.center,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          spacing: 4,
+          runSpacing: 4,
+          children: [
+            SizedBox(
+              width: iconH,
+              height: iconH,
+              child: Image.asset(
+                'assets/images/cbn.png',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Icon(Icons.account_balance,
+                    size: iconH * 0.75, color: Colors.grey[600]),
+              ),
             ),
-          ),
-          Text('Licensed by the ',
-              style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: fs,
-                  fontWeight: FontWeight.w400)),
-          Text('CBN',
-              style: TextStyle(
-                  color: Colors.grey[800],
-                  fontSize: fs,
-                  fontWeight: FontWeight.bold)),
-          Text(' and insured by the',
-              style: TextStyle(
-                  color: Colors.grey[700],
-                  fontSize: fs,
-                  fontWeight: FontWeight.w400)),
-          SizedBox(
-            height: iconH,
-            child: Image.asset(
-              'assets/images/ndicc.png',
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Icon(Icons.account_balance,
-                  size: iconH * 0.75, color: Colors.grey[600]),
+            Text('Licensed by the ',
+                style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: fs,
+                    fontWeight: FontWeight.w400)),
+            Text('CBN',
+                style: TextStyle(
+                    color: Colors.grey[800],
+                    fontSize: fs,
+                    fontWeight: FontWeight.bold)),
+            Text(' and insured by the',
+                style: TextStyle(
+                    color: Colors.grey[700],
+                    fontSize: fs,
+                    fontWeight: FontWeight.w400)),
+            SizedBox(
+              height: iconH,
+              child: Image.asset(
+                'assets/images/ndicc.png',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => Icon(Icons.account_balance,
+                    size: iconH * 0.75, color: Colors.grey[600]),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -868,7 +831,7 @@ class _ForgotPinSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const brand = Color(0xFF3069494);
+    const brand = Color(0xFF069494);
 
     return Container(
       decoration: const BoxDecoration(
@@ -971,11 +934,6 @@ class _ForgotPinSheet extends StatelessWidget {
 
 // =============================================================================
 // _KudiKitLogoPainter — fallback only
-// =============================================================================
-// Draws the Kudikit double-chevron "KK" mark in brand teal.
-// Only used as Image.asset errorBuilder when the asset file path is wrong.
-// Once 'assets/images/Kudikit Iconmark teal.png' resolves correctly, this
-// painter is never called.
 // =============================================================================
 class _KudiKitLogoPainter extends CustomPainter {
   @override

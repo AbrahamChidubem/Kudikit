@@ -16,7 +16,7 @@ class VerificationInProgressScreen extends ConsumerWidget {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFFF5F9F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),

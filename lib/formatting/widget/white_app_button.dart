@@ -12,17 +12,17 @@ class WhiteAppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 50,
-      width: 350,
+      height: 56,
+      width: 320,
       child: ElevatedButton(
         style: TextButton.styleFrom(
-          padding: EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
           backgroundColor: Colors.white,
-          shape: const RoundedRectangleBorder(
+          shape:  const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(28)),
             side: BorderSide(
               color: Color(0xFF069494), // 👈 border color
-              width: 1, // 👈 border width
+              width: 0.5, // 👈 border width
             ),
           ),
         ),

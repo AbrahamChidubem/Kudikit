@@ -36,7 +36,7 @@ class UploadIdCardScreen extends ConsumerWidget {
     final documentData = ref.watch(documentUploadProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Padding(
           padding: AppLayout.pagePadding(context),

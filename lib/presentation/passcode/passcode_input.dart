@@ -41,7 +41,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
               ),
               child: const Icon(
                 Icons.check_circle,
-                color: Colors.green,
+                color: Color(0xFF069494),
                 size: 50,
               ),
             ),
@@ -121,7 +121,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFf9f9f9),
       body: Stack(
         children: [
           SafeArea(

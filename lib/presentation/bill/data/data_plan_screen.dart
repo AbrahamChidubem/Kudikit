@@ -117,7 +117,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
     final monthlyPlans = _filterPlans(state.plans, DataValidity.monthly);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F7F2),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [

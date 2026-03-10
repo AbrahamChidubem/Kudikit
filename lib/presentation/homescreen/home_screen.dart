@@ -72,7 +72,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final firstName = userInfo?.firstName ?? 'User';
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [

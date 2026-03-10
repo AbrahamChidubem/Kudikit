@@ -32,47 +32,216 @@ class _TransactionSuccessBottomSheetState
     decimalDigits: 2,
   );
 
+  // ── Shared decoration so both states look the same ──────────────────────
+  static const _sheetDecoration = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.only(
+      topLeft: Radius.circular(24),
+      topRight: Radius.circular(24),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(p2pTransferProvider);
-    
-    // Comprehensive null checks
+
+    // transactionResult is nullable — only this check is valid
     if (state.transactionResult == null) {
-      return _buildErrorState(
-        context,
-        'Transaction data is not available',
-      );
+      return _buildErrorState(context, 'Transaction data is not available');
+    }
+
+    // recipient is nullable — valid check
+    if (state.transferData.recipient == null) {
+      return _buildErrorState(context, 'Recipient information is missing');
     }
 
     final result = state.transactionResult!;
-    
-    if (state.transferData.recipient == null) {
-      return _buildErrorState(
-        context,
-        'Recipient information is missing',
-      );
-    }
-
     final recipient = state.transferData.recipient!;
 
-    // Validate required fields
-    if (result.amount == null) {
-      return _buildErrorState(
-        context,
-        'Transaction amount is missing',
-      );
-    }
+    // NOTE: result.amount, result.transactionType, result.payingBank,
+    // result.payingBankAccount are all non-nullable (required fields on
+    // TransactionResult), so null checks on them are incorrect and cause
+    // analysis errors / red screens. They are used directly below.
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: _sheetDecoration,
+        child: SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+                  // ── Success icon ─────────────────────────────────────
+                  Container(
+                    width: AppLayout.scaleWidth(context, 64),
+                    height: AppLayout.scaleWidth(context, 64),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFF389165),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: AppLayout.scaleWidth(context, 36),
+                    ),
+                  ),
+
+                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+                  // ── Amount ───────────────────────────────────────────
+                  Text(
+                    '-${_currencyFormat.format(result.amount)}',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 32),
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+                  // ── Success message ──────────────────────────────────
+                  Text(
+                    'Transfer to ${recipient.name.toUpperCase()} is successfully completed',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 14),
+                      color: Colors.black54,
+                      height: 1.4,
+                    ),
+                  ),
+
+                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+                  // ── Transaction details summary ───────────────────────
+                  // transactionType is non-nullable String — used directly
+                  _buildDetailRow(
+                    context,
+                    'Transaction Type',
+                    result.transactionType,
+                  ),
+                  // payingBank & payingBankAccount are non-nullable — used directly
+                  _buildDetailRow(
+                    context,
+                    'Paying Bank',
+                    '${result.payingBank}\n(${result.payingBankAccount})',
+                  ),
+
+                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+                  // ── Add to favourite toggle ───────────────────────────
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.scaleWidth(context, 16),
+                      vertical: AppLayout.scaleHeight(context, 12),
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5F5),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Add to favourite',
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 14),
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        Switch(
+                          value: _addToFavourite,
+                          onChanged: (value) {
+                            setState(() => _addToFavourite = value);
+                          },
+                          activeColor: const Color(0xFF389165),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+                  // ── Action buttons ────────────────────────────────────
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => _navigateToDetails(context),
+                          style: OutlinedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppLayout.scaleHeight(context, 14),
+                            ),
+                            side: const BorderSide(
+                              color: Color(0xFF389165),
+                              width: 1.5,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                          ),
+                          child: Text(
+                            'Details',
+                            style: TextStyle(
+                              fontSize: AppLayout.fontSize(context, 15),
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF389165),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: AppLayout.scaleWidth(context, 12)),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () => _handleDone(context),
+                          style: ElevatedButton.styleFrom(
+                            padding: EdgeInsets.symmetric(
+                              vertical: AppLayout.scaleHeight(context, 14),
+                            ),
+                            backgroundColor: const Color(0xFF389165),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            'Done',
+                            style: TextStyle(
+                              fontSize: AppLayout.fontSize(context, 15),
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      child: SafeArea(
-        child: SingleChildScrollView(
+    );
+  }
+
+  // ── Error state ─────────────────────────────────────────────────────────
+  // Must be wrapped in Material — showModalBottomSheet uses a transparent
+  // background so there is no Material ancestor for Text/Button widgets.
+  Widget _buildErrorState(BuildContext context, String message) {
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        decoration: _sheetDecoration,
+        child: SafeArea(
           child: Padding(
             padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
             child: Column(
@@ -80,16 +249,15 @@ class _TransactionSuccessBottomSheetState
               children: [
                 SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-                // Success icon
                 Container(
                   width: AppLayout.scaleWidth(context, 64),
                   height: AppLayout.scaleWidth(context, 64),
                   decoration: const BoxDecoration(
-                    color: Color(0xFF069494),
+                    color: Color(0xFFF44336),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
-                    Icons.check,
+                    Icons.error_outline,
                     color: Colors.white,
                     size: AppLayout.scaleWidth(context, 36),
                   ),
@@ -97,11 +265,10 @@ class _TransactionSuccessBottomSheetState
 
                 SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-                // Amount
                 Text(
-                  '-${_currencyFormat.format(result.amount)}',
+                  'Error',
                   style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 32),
+                    fontSize: AppLayout.fontSize(context, 24),
                     fontWeight: FontWeight.w700,
                     color: Colors.black87,
                   ),
@@ -109,9 +276,8 @@ class _TransactionSuccessBottomSheetState
 
                 SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-                // Success message with safe name handling
                 Text(
-                  'Transfer to ${_getRecipientName(recipient.name)} is successfully completed',
+                  message,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 14),
@@ -122,208 +288,35 @@ class _TransactionSuccessBottomSheetState
 
                 SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-                // Transaction details summary
-                if (result.transactionType != null)
-                  _buildDetailRow(
-                    context,
-                    'Transaction Type',
-                    result.transactionType!,
-                  ),
-                if (result.payingBank != null || result.payingBankAccount != null)
-                  _buildDetailRow(
-                    context,
-                    'Paying Bank',
-                    _formatBankInfo(result.payingBank, result.payingBankAccount),
-                  ),
-
-                SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
-                // Add to favourite toggle
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 16),
-                    vertical: AppLayout.scaleHeight(context, 12),
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Add to favourite',
-                        style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 14),
-                          color: Colors.black87,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      Switch(
-                        value: _addToFavourite,
-                        onChanged: (value) {
-                          setState(() {
-                            _addToFavourite = value;
-                          });
-                        },
-                        activeColor: const Color(0xFF069494),
-                      ),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
-                // Action buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => _navigateToDetails(context),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                            vertical: AppLayout.scaleHeight(context, 14),
-                          ),
-                          side: const BorderSide(
-                            color: Color(0xFF069494),
-                            width: 1.5,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                        ),
-                        child: Text(
-                          'Details',
-                          style: TextStyle(
-                            fontSize: AppLayout.fontSize(context, 15),
-                            fontWeight: FontWeight.w600,
-                            color: const Color(0xFF069494),
-                          ),
-                        ),
-                      ),
+                ElevatedButton(
+                  onPressed: () {
+                    ref.read(p2pTransferProvider.notifier).reset();
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.scaleWidth(context, 32),
+                      vertical: AppLayout.scaleHeight(context, 14),
                     ),
-                    SizedBox(width: AppLayout.scaleWidth(context, 12)),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () => _handleDone(context),
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(
-                            vertical: AppLayout.scaleHeight(context, 14),
-                          ),
-                          backgroundColor: const Color(0xFF069494),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(24),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: Text(
-                          'Done',
-                          style: TextStyle(
-                            fontSize: AppLayout.fontSize(context, 15),
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
+                    backgroundColor: const Color(0xFF389165),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(24),
                     ),
-                  ],
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    'Go Home',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 15),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
 
                 SizedBox(height: AppLayout.scaleHeight(context, 16)),
               ],
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // Error state widget
-  Widget _buildErrorState(BuildContext context, String message) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(height: AppLayout.scaleHeight(context, 16)),
-              
-              // Error icon
-              Container(
-                width: AppLayout.scaleWidth(context, 64),
-                height: AppLayout.scaleWidth(context, 64),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF44336),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.error_outline,
-                  color: Colors.white,
-                  size: AppLayout.scaleWidth(context, 36),
-                ),
-              ),
-              
-              SizedBox(height: AppLayout.scaleHeight(context, 24)),
-              
-              Text(
-                'Error',
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 24),
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black87,
-                ),
-              ),
-              
-              SizedBox(height: AppLayout.scaleHeight(context, 16)),
-              
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 14),
-                  color: Colors.black54,
-                  height: 1.4,
-                ),
-              ),
-              
-              SizedBox(height: AppLayout.scaleHeight(context, 24)),
-              
-              ElevatedButton(
-                onPressed: () {
-                  ref.read(p2pTransferProvider.notifier).reset();
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 32),
-                    vertical: AppLayout.scaleHeight(context, 14),
-                  ),
-                  backgroundColor: const Color(0xFF069494),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(24),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  'Go Home',
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 15),
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-              
-              SizedBox(height: AppLayout.scaleHeight(context, 16)),
-            ],
           ),
         ),
       ),
@@ -363,27 +356,6 @@ class _TransactionSuccessBottomSheetState
     );
   }
 
-  // Helper method to safely get recipient name
-  String _getRecipientName(String? name) {
-    if (name == null || name.isEmpty) {
-      return 'RECIPIENT';
-    }
-    return name.toUpperCase();
-  }
-
-  // Helper method to format bank info
-  String _formatBankInfo(String? bankName, String? accountNumber) {
-    if (bankName != null && accountNumber != null) {
-      return '$bankName\n($accountNumber)';
-    } else if (bankName != null) {
-      return bankName;
-    } else if (accountNumber != null) {
-      return accountNumber;
-    }
-    return 'N/A';
-  }
-
-  // Navigate to details with error handling
   void _navigateToDetails(BuildContext context) {
     try {
       Navigator.pop(context);
@@ -394,7 +366,6 @@ class _TransactionSuccessBottomSheetState
         ),
       );
     } catch (e) {
-      // Handle navigation error
       debugPrint('Navigation error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -405,20 +376,15 @@ class _TransactionSuccessBottomSheetState
     }
   }
 
-  // Handle done button with error handling
   void _handleDone(BuildContext context) {
     try {
-      // Save to favourites if toggled
       if (_addToFavourite) {
         // TODO: Implement save to favourites
         debugPrint('Saving to favourites...');
       }
-
-      // Navigate back to home or reset flow
       ref.read(p2pTransferProvider.notifier).reset();
       Navigator.of(context).popUntil((route) => route.isFirst);
     } catch (e) {
-      // Handle error gracefully
       debugPrint('Error in done handler: $e');
       Navigator.of(context).pop();
     }

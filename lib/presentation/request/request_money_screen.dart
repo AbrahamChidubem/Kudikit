@@ -7,7 +7,6 @@ import 'package:kudipay/presentation/request/select_reciept_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
 import 'package:provider/provider.dart';
 
-
 class RequestMoneyScreen extends StatefulWidget {
   const RequestMoneyScreen({super.key});
 
@@ -26,7 +25,14 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
   bool _isPrivate = true;
   bool _useTodayDate = true;
 
-  final List<String> _reasons = ['Dinner', 'Rent', 'Utilities', 'Transportation', 'Gift', 'Other'];
+  final List<String> _reasons = [
+    'Dinner',
+    'Rent',
+    'Utilities',
+    'Transportation',
+    'Gift',
+    'Other'
+  ];
   final List<String> _categories = [
     'Entertainment',
     'Food & Dining',
@@ -77,7 +83,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
 
   void _continue() {
     final provider = Provider.of<RequestProvider>(context, listen: false);
-    
+
     // Validate amount
     final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
     if (amount == null || amount <= 0) {
@@ -91,7 +97,8 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     provider.setAmount(amount);
     provider.setReason(_selectedReason);
     provider.setCategory(_selectedCategory);
-    provider.setNote(_noteController.text.isEmpty ? null : _noteController.text);
+    provider
+        .setNote(_noteController.text.isEmpty ? null : _noteController.text);
     provider.setDueDate(_useTodayDate ? DateTime.now() : _selectedDate);
     provider.setPrivacy(_isPrivate);
 
@@ -111,22 +118,22 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFf9f9f9),
       appBar: AppBar(
-      backgroundColor: Colors.white,
-      elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
-        onPressed: () => Navigator.pop(context),
-      ),
-      title: Text(
-        'Request Money',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: AppLayout.fontSize(context, 18),
-          fontWeight: FontWeight.w600,
+        backgroundColor: Color(0xFFF9F9F9),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+          onPressed: () => Navigator.pop(context),
         ),
+        title: Text(
+          'Request Money',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: AppLayout.fontSize(context, 18),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        centerTitle: true,
       ),
-      centerTitle: true,
-    ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Container(
@@ -208,9 +215,8 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFFE8F5E9)
-                            : Colors.white,
+                        color:
+                            isSelected ? const Color(0xFFE8F5E9) : Colors.white,
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF069494)

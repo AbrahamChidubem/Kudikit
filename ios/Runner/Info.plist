@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Kudipay</string>
+	<string>Kudikit</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -13,7 +13,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>kudipay</string>
+	<string>Kudikit</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -49,7 +49,7 @@
 <string>This app needs camera access to capture selfies for verification.</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <key>NSContactsUsageDescription</key>
-<string>KudiPay needs access to your contacts to help you send airtime and data faster.</string>
+<string>Kudikit needs access to your contacts to help you send airtime and data faster.</string>
 <string>We need access to select documents</string>
 <key>NSAppTransportSecurity</key>
   <dict>

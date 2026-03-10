@@ -20,7 +20,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFF9F9F9),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),

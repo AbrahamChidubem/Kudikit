@@ -38,7 +38,7 @@ class _PasscodeCreationScreenState extends ConsumerState<PasscodeCreationScreen>
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: BoxDecoration(
-                color: Colors.green.withOpacity(0.1),
+                color: Color(0xFF069494).withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -125,7 +125,7 @@ class _PasscodeCreationScreenState extends ConsumerState<PasscodeCreationScreen>
     }
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF9F9F9),
       body: Stack(
         children: [
           SafeArea(

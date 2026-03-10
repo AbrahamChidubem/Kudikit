@@ -235,7 +235,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final isOnline = connectivityState.isConnected;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F0),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context, isOnline),
       body: Column(
         children: [

@@ -42,7 +42,7 @@ class _UploadSelfieScreenState extends ConsumerState<UploadSelfieScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
       body: Stack(
         children: [

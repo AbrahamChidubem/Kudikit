@@ -17,7 +17,7 @@ class AddressVerificationScreen extends ConsumerWidget {
     final availableLgas = ref.watch(availableLgasProvider);
 
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF9F9F9),
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,

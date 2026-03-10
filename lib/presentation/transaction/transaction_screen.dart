@@ -50,7 +50,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final groupedTransactions = ref.watch(groupedTransactionsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
       body: Column(
         children: [
@@ -71,7 +71,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Color(0xFFF9F9F9),
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black),

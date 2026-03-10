@@ -131,7 +131,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
     final isProcessing = state.step == AirtimeStep.processing;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F7F2),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [

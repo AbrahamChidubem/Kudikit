@@ -69,7 +69,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
   }
 
   void _buyForSelf() {
-    const selfPhone = '08124608695';
+    const selfPhone = '08104532643';
     _phoneController.text = _formatPhoneDisplay(selfPhone);
     ref.read(dataProvider.notifier).setPhoneNumber(selfPhone);
   }
@@ -105,7 +105,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
     final isInputEmpty = _phoneController.text.isEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F7F2),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [

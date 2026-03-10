@@ -74,7 +74,7 @@ flutter_icons:
   ios: true
   image_path: "assets/images/kudikit_teal_logo.png"
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/images/kudikit_android_logo.png"
+  adaptive_icon_foreground: "assets/images/Kudikit_android_logo.png"
 
 flutter:
   uses-material-design: true

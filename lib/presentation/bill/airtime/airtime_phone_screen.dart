@@ -78,7 +78,7 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
   }
 
   void _buyForSelf() {
-    const selfPhone = '08124608695'; // TODO: pull from userInfo.phoneNumber
+    const selfPhone = '08104532643'; // TODO: pull from userInfo.phoneNumber
     _phoneController.text = _formatPhoneDisplay(selfPhone);
     ref.read(airtimeProvider.notifier).setPhoneNumber(selfPhone);
   }
@@ -111,7 +111,7 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
     final isInputEmpty = _phoneController.text.isEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF0F7F2),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: SafeArea(
         child: Column(
           children: [

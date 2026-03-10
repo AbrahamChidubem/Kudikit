@@ -52,7 +52,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     final isOnline = connectivityState.isConnected;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context, isOnline),
       body: Stack(
         children: [
