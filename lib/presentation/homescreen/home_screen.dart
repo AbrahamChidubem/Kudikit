@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
-import 'package:kudipay/presentation/bill/airtime/airtime_amount_screen.dart';
 import 'package:kudipay/presentation/bill/airtime/airtime_phone_screen.dart';
 import 'package:kudipay/presentation/bill/data/data_phone_screen.dart';
 // import 'package:kudipay/presentation/request/request_menu_screen.dart';
@@ -22,10 +22,18 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isBalanceVisible = true;
+  // Drives shimmer on balance card and recent transactions.
+  // TODO: replace with a real isLoading flag from a wallet/home provider once
+  // balance fetching is wired up. The delay here mimics an async fetch.
+  bool _isLoadingHome = true;
 
   @override
   void initState() {
     super.initState();
+    // Simulate initial data fetch — remove once real provider is in place
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) setState(() => _isLoadingHome = false);
+    });
     // Listen to connectivity changes and show feedback
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
@@ -49,8 +57,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _copyAccountNumber() {
-    Clipboard.setData(
-        const ClipboardData(text: '8124608695 Michael Asuquo Toluwalase'));
+    final userInfo = ref.read(userInfoProvider);
+    // TODO: replace hardcoded values with real account number from wallet provider
+    final accountNumber = '8104532643';
+    final accountName = userInfo != null
+        ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'.trim()
+        : 'John Doe Byran';
+    Clipboard.setData(ClipboardData(text: '$accountNumber $accountName'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Account details copied!'),
@@ -223,7 +236,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   height: AppLayout.scaleWidth(context, 8),
                                   decoration: BoxDecoration(
                                     color: connectivityState.isConnected
-                                        ? Color(0xFF069494)
+                                        ? Colors.green
                                         : Colors.red,
                                     shape: BoxShape.circle,
                                     border: Border.all(
@@ -241,199 +254,233 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-                    // Balance Card
-                    Container(
-                      margin: EdgeInsets.symmetric(
-                        horizontal: AppLayout.scaleWidth(context, 16),
-                      ),
-                      padding:
-                          EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xFF069494),
-                            Color(0xFF013838),
-                          ],
-                        ),
-                        borderRadius: BorderRadius.circular(
-                          AppLayout.scaleWidth(context, 20),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF069494).withOpacity(0.3),
-                            blurRadius: AppLayout.scaleWidth(context, 20),
-                            offset:
-                                Offset(0, AppLayout.scaleHeight(context, 8)),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Available Balance',
-                                style: TextStyle(
-                                  fontSize: AppLayout.fontSize(context, 13),
-                                  color: Colors.white70,
-                                ),
+                    // Balance Card — shows shimmer until home data loads
+                    _isLoadingHome
+                        ? Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: AppLayout.scaleWidth(context, 16),
+                            ),
+                            child: const HomeBalanceCardShimmer(),
+                          )
+                        : Container(
+                            margin: EdgeInsets.symmetric(
+                              horizontal: AppLayout.scaleWidth(context, 16),
+                            ),
+                            padding: EdgeInsets.all(
+                                AppLayout.scaleWidth(context, 20)),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Color(0xFF069494),
+                                  Color(0xFF013838),
+                                ],
                               ),
-                              // Add Money Button
-                              InkWell(
-                                onTap: () {
-                                  if (connectivityState.isConnected) {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) =>
-                                            const AddMoneyScreen(),
+                              borderRadius: BorderRadius.circular(
+                                AppLayout.scaleWidth(context, 20),
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color:
+                                      const Color(0xFF069494).withOpacity(0.3),
+                                  blurRadius: AppLayout.scaleWidth(context, 20),
+                                  offset: Offset(
+                                      0, AppLayout.scaleHeight(context, 8)),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      'Available Balance',
+                                      style: TextStyle(
+                                        fontSize:
+                                            AppLayout.fontSize(context, 13),
+                                        color: Colors.white70,
                                       ),
-                                    );
-                                  } else {
-                                    ConnectivitySnackBar.showNoInternet(
-                                        context);
-                                  }
-                                },
-                                child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal:
-                                        AppLayout.scaleWidth(context, 12),
-                                    vertical: AppLayout.scaleHeight(context, 6),
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(
-                                      AppLayout.scaleWidth(context, 16),
                                     ),
-                                  ),
+                                    // Add Money Button
+                                    InkWell(
+                                      onTap: () {
+                                        if (connectivityState.isConnected) {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) =>
+                                                  const AddMoneyScreen(),
+                                            ),
+                                          );
+                                        } else {
+                                          ConnectivitySnackBar.showNoInternet(
+                                              context);
+                                        }
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal:
+                                              AppLayout.scaleWidth(context, 12),
+                                          vertical:
+                                              AppLayout.scaleHeight(context, 6),
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(
+                                            AppLayout.scaleWidth(context, 16),
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              Icons.add,
+                                              color: const Color(0xFF069494),
+                                              size: AppLayout.scaleWidth(
+                                                  context, 16),
+                                            ),
+                                            SizedBox(
+                                                width: AppLayout.scaleWidth(
+                                                    context, 4)),
+                                            Text(
+                                              'Add money',
+                                              style: TextStyle(
+                                                fontSize: AppLayout.fontSize(
+                                                    context, 12),
+                                                color: const Color(0xFF069494),
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                    height: AppLayout.scaleHeight(context, 8)),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        _isBalanceVisible
+                                            // TODO: replace with real balance from wallet provider
+                                            ? '₦135,780.00'
+                                            : '₦**********',
+                                        style: TextStyle(
+                                          fontSize:
+                                              AppLayout.fontSize(context, 32),
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                        width:
+                                            AppLayout.scaleWidth(context, 12)),
+                                    InkWell(
+                                      onTap: () {
+                                        setState(() {
+                                          _isBalanceVisible =
+                                              !_isBalanceVisible;
+                                        });
+                                      },
+                                      child: Icon(
+                                        _isBalanceVisible
+                                            ? Icons.visibility_outlined
+                                            : Icons.visibility_off_outlined,
+                                        color: Colors.white70,
+                                        size: AppLayout.scaleWidth(context, 20),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                    height: AppLayout.scaleHeight(context, 16)),
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        // TODO: replace with real last-synced timestamp from wallet provider
+                                        connectivityState.isConnected
+                                            ? 'Last updated recently'
+                                            : 'Offline — showing cached balance',
+                                        style: TextStyle(
+                                          fontSize:
+                                              AppLayout.fontSize(context, 11),
+                                          color: Colors.white.withOpacity(0.7),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(
+                                    height: AppLayout.scaleHeight(context, 8)),
+                                InkWell(
+                                  onTap: _copyAccountNumber,
                                   child: Row(
-                                    mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Icon(
-                                        Icons.add,
-                                        color: const Color(0xFF069494),
-                                        size: AppLayout.scaleWidth(context, 16),
+                                      Text(
+                                        // TODO: replace with real account number from wallet provider
+                                        '8104532643',
+                                        style: TextStyle(
+                                          fontSize:
+                                              AppLayout.fontSize(context, 12),
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontWeight: FontWeight.w500,
+                                        ),
                                       ),
                                       SizedBox(
                                           width:
                                               AppLayout.scaleWidth(context, 4)),
                                       Text(
-                                        'Add money',
+                                        '|',
                                         style: TextStyle(
                                           fontSize:
                                               AppLayout.fontSize(context, 12),
-                                          color: const Color(0xFF069494),
-                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white.withOpacity(0.5),
                                         ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              AppLayout.scaleWidth(context, 4)),
+                                      Flexible(
+                                        child: Text(
+                                          // Use real name from userInfo if available,
+                                          // else fall back to placeholder
+                                          userInfo != null
+                                              ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'
+                                                  .trim()
+                                              : 'John Doe Byran',
+                                          style: TextStyle(
+                                            fontSize:
+                                                AppLayout.fontSize(context, 12),
+                                            color:
+                                                Colors.white.withOpacity(0.9),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          width:
+                                              AppLayout.scaleWidth(context, 8)),
+                                      Icon(
+                                        Icons.copy,
+                                        size: AppLayout.scaleWidth(context, 14),
+                                        color: Colors.white.withOpacity(0.7),
                                       ),
                                     ],
                                   ),
                                 ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  _isBalanceVisible
-                                      ? '₦135,780.00'
-                                      : '₦**********',
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 32),
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              SizedBox(
-                                  width: AppLayout.scaleWidth(context, 12)),
-                              InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _isBalanceVisible = !_isBalanceVisible;
-                                  });
-                                },
-                                child: Icon(
-                                  _isBalanceVisible
-                                      ? Icons.visibility_outlined
-                                      : Icons.visibility_off_outlined,
-                                  color: Colors.white70,
-                                  size: AppLayout.scaleWidth(context, 20),
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: AppLayout.scaleHeight(context, 16)),
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  connectivityState.isConnected
-                                      ? 'Last updated 2 minutes ago'
-                                      : 'Offline - Last sync 2 minutes ago',
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 11),
-                                    color: Colors.white.withOpacity(0.7),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                          InkWell(
-                            onTap: _copyAccountNumber,
-                            child: Row(
-                              children: [
-                                Text(
-                                  '8104532643',
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 12),
-                                    color: Colors.white.withOpacity(0.9),
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                SizedBox(
-                                    width: AppLayout.scaleWidth(context, 4)),
-                                Text(
-                                  '|',
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 12),
-                                    color: Colors.white.withOpacity(0.5),
-                                  ),
-                                ),
-                                SizedBox(
-                                    width: AppLayout.scaleWidth(context, 4)),
-                                Flexible(
-                                  child: Text(
-                                    'John Doe Byran',
-                                    style: TextStyle(
-                                      fontSize: AppLayout.fontSize(context, 12),
-                                      color: Colors.white.withOpacity(0.9),
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                SizedBox(
-                                    width: AppLayout.scaleWidth(context, 8)),
-                                Icon(
-                                  Icons.copy,
-                                  size: AppLayout.scaleWidth(context, 14),
-                                  color: Colors.white.withOpacity(0.7),
-                                ),
                               ],
                             ),
                           ),
-                        ],
-                      ),
-                    ),
 
                     SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
@@ -512,17 +559,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
                                 icon: Icons.wifi,
                                 label: 'Data',
                                 onTap: () {
-                                  _handleQuickAction(context, 'Request',
+                                  _handleQuickAction(context, 'Data',
                                       navigateTo: const DataPhoneScreen());
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
                                 icon: Icons.tv,
                                 label: 'TV',
@@ -535,7 +584,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
                                 icon: Icons.bolt_outlined,
                                 label: 'Electricity',
@@ -550,7 +600,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ],
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: AppLayout.scaleHeight(context, 12)),
                           Row(
                             children: [
                               _buildServiceCard(
@@ -565,7 +615,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
                                 icon: Icons.sports_soccer_outlined,
                                 label: 'Betting',
@@ -578,7 +629,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
                                 icon: Icons.savings_outlined,
                                 label: 'Savings',
@@ -591,7 +643,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(
+                                  width: AppLayout.scaleWidth(context, 12)),
                               const Expanded(child: SizedBox()),
                             ],
                           ),
@@ -599,18 +652,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
                     // Recent Transactions
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 16),
+                      ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
                             'Recent Transaction',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: AppLayout.fontSize(context, 14),
                               fontWeight: FontWeight.w600,
                               color: Colors.grey[800],
                             ),
@@ -627,7 +682,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: Text(
                               'View All',
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: AppLayout.fontSize(context, 12),
                                 color: connectivityState.isConnected
                                     ? const Color(0xFF069494)
                                     : Colors.grey,
@@ -642,11 +697,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     // Transaction List (with offline indicator if needed)
                     if (!connectivityState.isConnected)
                       Container(
-                        margin: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                        margin: EdgeInsets.symmetric(
+                          horizontal: AppLayout.scaleWidth(context, 16),
+                          vertical: AppLayout.scaleHeight(context, 8),
                         ),
-                        padding: const EdgeInsets.all(12),
+                        padding:
+                            EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
                         decoration: BoxDecoration(
                           color: Colors.orange.shade50,
                           borderRadius: BorderRadius.circular(12),
@@ -660,14 +716,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             Icon(
                               Icons.info_outline,
                               color: Colors.orange.shade700,
-                              size: 20,
+                              size: AppLayout.scaleWidth(context, 20),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: AppLayout.scaleWidth(context, 12)),
                             Expanded(
                               child: Text(
                                 'You\'re viewing cached transactions. Connect to internet for latest updates.',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: AppLayout.fontSize(context, 12),
                                   color: Colors.orange.shade900,
                                 ),
                               ),
@@ -676,26 +732,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
 
-                    _buildTransactionItem(
-                      title: 'Transfer to POS Transfer - TEMI...',
-                      date: 'Dec 20th, 10:39:25',
-                      amount: '-₦10,200.00',
-                      isSuccess: true,
-                    ),
-                    _buildTransactionItem(
-                      title: 'Transfer to POS Transfer - TEMI...',
-                      date: 'Dec 20th, 10:39:25',
-                      amount: '-₦10,200.00',
-                      isSuccess: true,
-                    ),
-                    _buildTransactionItem(
-                      title: 'Transfer to POS Transfer - TEMI...',
-                      date: 'Dec 20th, 10:39:25',
-                      amount: '-₦10,200.00',
-                      isSuccess: true,
-                    ),
+                    // Fix 1: shimmer while loading, real rows once loaded
+                    // TODO: replace _isLoadingHome with real transactions provider
+                    // and map actual transaction data to _buildTransactionItem
+                    if (_isLoadingHome)
+                      const HomeRecentTransactionsShimmer(itemCount: 3)
+                    else ...[
+                      _buildTransactionItem(
+                        title: 'Transfer to POS Transfer - TEMI...',
+                        date: 'Dec 20th, 10:39:25',
+                        amount: '-₦10,200.00',
+                        isSuccess: true,
+                      ),
+                      _buildTransactionItem(
+                        title: 'Transfer to POS Transfer - TEMI...',
+                        date: 'Dec 20th, 10:39:25',
+                        amount: '-₦10,200.00',
+                        isSuccess: true,
+                      ),
+                      _buildTransactionItem(
+                        title: 'Transfer to POS Transfer - TEMI...',
+                        date: 'Dec 20th, 10:39:25',
+                        amount: '-₦10,200.00',
+                        isSuccess: false,
+                      ),
+                    ],
 
-                    const SizedBox(height: 100),
+                    SizedBox(height: AppLayout.scaleHeight(context, 100)),
                   ],
                 ),
               ),
@@ -956,16 +1019,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   vertical: AppLayout.scaleHeight(context, 2),
                 ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF069494).withOpacity(0.1),
+                  // Fix: badge colour was always teal regardless of isSuccess
+                  color: isSuccess
+                      ? const Color(0xFF069494).withOpacity(0.1)
+                      : Colors.red.shade50,
                   borderRadius: BorderRadius.circular(
                     AppLayout.scaleWidth(context, 8),
                   ),
                 ),
                 child: Text(
-                  'Successful',
+                  // Fix: text was always 'Successful' regardless of isSuccess
+                  isSuccess ? 'Successful' : 'Failed',
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 9),
-                    color: const Color(0xFF069494),
+                    color: isSuccess
+                        ? const Color(0xFF069494)
+                        : Colors.red.shade700,
                     fontWeight: FontWeight.w600,
                   ),
                 ),

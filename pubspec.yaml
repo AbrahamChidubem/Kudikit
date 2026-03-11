@@ -62,6 +62,7 @@ dependencies:
   intl:
   flutter_lints: 
   crypto: 
+  shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
@@ -74,7 +75,7 @@ flutter_icons:
   ios: true
   image_path: "assets/images/kudikit_teal_logo.png"
   adaptive_icon_background: "#ffffff"
-  adaptive_icon_foreground: "assets/images/Kudikit_android_logo.png"
+  adaptive_icon_foreground: "assets/icons/kudikit_android_logo.png"
 
 flutter:
   uses-material-design: true

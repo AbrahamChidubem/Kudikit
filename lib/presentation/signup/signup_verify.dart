@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/color_app_button.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/provider/provider.dart';
@@ -155,7 +156,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification code sent to ${widget.email}'),
-            backgroundColor:Color(0xFF069494),
+            backgroundColor: Color(0xFF069494),
           ),
         );
       }
@@ -470,9 +471,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
 
                       // Verify Button
                       if (isLoading)
-                        const CircularProgressIndicator(
-                          color: Color(0xFF069494),
-                        )
+                        const AppLoadingIndicator()
                       else if (!isOnline)
                         Opacity(
                           opacity: 0.5,
@@ -505,13 +504,9 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                           ),
                           if (isResending)
                             const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Color(0xFF069494),
-                              ),
-                            )
+                                width: 16,
+                                height: 16,
+                                child: AppLoadingIndicator.button())
                           else
                             TextButton(
                               onPressed: isOnline

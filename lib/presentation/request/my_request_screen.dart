@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/request/request_detail_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
 import '../../model/request/request_model.dart';
@@ -22,9 +23,8 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
-    
-    // Load mock data
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Using ref.read is correct here — one-shot call, not watching for rebuilds
       ref.read(requestProvider).loadMockData();
     });
   }
@@ -141,24 +141,35 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
 
           // Tab Content
           Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildReceivedTab(provider),
-                _buildSentTab(provider),
-                _buildPaidTab(provider),
-                _buildExpiredTab(provider),
-              ],
-            ),
+            child: provider.isLoading
+                // Shimmer while requests load
+                ? const RequestListShimmer(itemCount: 5)
+                : TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildReceivedTab(provider),
+                      _buildSentTab(provider),
+                      _buildPaidTab(provider),
+                      _buildExpiredTab(provider),
+                    ],
+                  ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.pop(context);
+          // TODO: navigate to the create-request flow
+          // Navigator.push(context, MaterialPageRoute(builder: (_) => const RequestMoneyMainScreen()));
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('New request feature coming soon'),
+              backgroundColor: Color(0xFF069494),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
         },
         backgroundColor: const Color(0xFF069494),
-        child: Icon(Icons.add, 
+        child: Icon(Icons.add,
           color: Colors.white,
           size: AppLayout.scaleWidth(context, 24),
         ),
@@ -227,9 +238,11 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
   }
 
   Widget _buildPaidTab(RequestProvider provider) {
-    final requests = provider.receivedRequests
-        .where((r) => r.status == RequestStatus.paid)
-        .toList();
+    // Fix 3: include paid requests from both received AND sent lists
+    final requests = [
+      ...provider.receivedRequests.where((r) => r.status == RequestStatus.paid),
+      ...provider.sentRequests.where((r) => r.status == RequestStatus.paid),
+    ];
 
     if (requests.isEmpty) {
       return _buildEmptyState('No paid requests');
@@ -248,9 +261,11 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
   }
 
   Widget _buildExpiredTab(RequestProvider provider) {
-    final requests = provider.receivedRequests
-        .where((r) => r.status == RequestStatus.expired)
-        .toList();
+    // Fix 3: include expired requests from both received AND sent lists
+    final requests = [
+      ...provider.receivedRequests.where((r) => r.status == RequestStatus.expired),
+      ...provider.sentRequests.where((r) => r.status == RequestStatus.expired),
+    ];
 
     if (requests.isEmpty) {
       return _buildEmptyState('No expired requests');
@@ -361,7 +376,12 @@ class _RequestCard extends StatelessWidget {
                 radius: AppLayout.scaleWidth(context, 20),
                 backgroundColor: _getAvatarColor(),
                 child: Text(
-                  request.requesterName.substring(0, 2).toUpperCase(),
+                  // Fix 4: substring(0,2) crashes if name is < 2 chars
+                  request.requesterName.length >= 2
+                      ? request.requesterName.substring(0, 2).toUpperCase()
+                      : request.requesterName.isNotEmpty
+                          ? request.requesterName[0].toUpperCase()
+                          : '?',
                   style: GoogleFonts.openSans(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

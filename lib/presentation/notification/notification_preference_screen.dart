@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/notification/notification_category_screen.dart';
+import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/provider/provider.dart';
-
 
 class NotificationPreferenceScreen extends ConsumerWidget {
   const NotificationPreferenceScreen({super.key});
@@ -33,37 +34,67 @@ class NotificationPreferenceScreen extends ConsumerWidget {
       ),
       body: SafeArea(
         child: preferencesState.when(
+          // Fix 2: typed as NotificationPreferences instead of dynamic
           data: (preferences) => _buildContent(context, preferences),
-          loading: () => const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF069494),
-            ),
-          ),
+          // Fix 1: shimmer instead of spinner
+          loading: () => const NotificationPrefsShimmer(),
+          // Fix 3: proper error state with icon, message, and retry button
           error: (error, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.error_outline,
-                  size: AppLayout.scaleWidth(context, 48),
-                  color: Colors.red,
-                ),
-                SizedBox(height: AppLayout.scaleHeight(context, 16)),
-                Text(
-                  'Failed to load preferences',
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 16),
-                    color: Colors.black87,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.notifications_off_outlined,
+                    size: AppLayout.scaleWidth(context, 64),
+                    color: Colors.grey[400],
                   ),
-                ),
-                SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                TextButton(
-                  onPressed: () {
-                    ref.read(notificationPreferencesProvider.notifier).loadPreferences();
-                  },
-                  child: const Text('Retry'),
-                ),
-              ],
+                  SizedBox(height: AppLayout.scaleHeight(context, 16)),
+                  Text(
+                    'Unable to load preferences',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 8)),
+                  Text(
+                    'Your notification settings could not be loaded. Please try again.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 14),
+                      color: Colors.grey[500],
+                      height: 1.5,
+                    ),
+                  ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 24)),
+                  ElevatedButton.icon(
+                    onPressed: () => ref
+                        .read(notificationPreferencesProvider.notifier)
+                        .loadPreferences(),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF069494),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            AppLayout.scaleWidth(context, 32)),
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 32),
+                        vertical: AppLayout.scaleHeight(context, 12),
+                      ),
+                    ),
+                    icon: const Icon(Icons.refresh,
+                        color: Colors.white, size: 18),
+                    label: const Text(
+                      'Try Again',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -71,7 +102,9 @@ class NotificationPreferenceScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildContent(BuildContext context, dynamic preferences) {
+  // Fix 2: explicit NotificationPreferences type instead of dynamic
+  Widget _buildContent(
+      BuildContext context, NotificationPreferences preferences) {
     return Padding(
       padding: AppLayout.pagePadding(context),
       child: Column(

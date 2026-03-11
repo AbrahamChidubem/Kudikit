@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/email/change_email_screen.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
@@ -31,8 +32,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     // The name comes from the BVN/NIN verification!
     final firstName = userInfo?.firstName ?? 'User';
     if (user == null) {
+      // Fix 6: show ProfileShimmer while auth resolves instead of a jarring
+      // 'Not logged in' flash. If the user is genuinely unauthenticated,
+      // the auth provider should redirect — this state is transient.
       return const Scaffold(
-        body: Center(child: Text('Not logged in')),
+        backgroundColor: Color(0xFFF9F9F9),
+        body: SafeArea(child: ProfileShimmer()),
       );
     }
 
@@ -251,16 +256,12 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                   ),
                   TextButton(
                     onPressed: () {
+                      // Fix 10: removed duplicate SnackBar — navigate is the action,
+                      // showing a "coming soon" toast at the same time is confusing
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => UpgradeTierScreen(tier: currentTierObject,),
-                        ),
-                      );
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Upgrade tier feature coming soon'),
-                          backgroundColor: Color(0xFF069494),
+                          builder: (context) => UpgradeTierScreen(tier: currentTierObject),
                         ),
                       );
                     },
@@ -278,7 +279,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       'Upgrade Tier',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF069494),
+                        color: Color(0xFF151717),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -305,7 +306,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
             _buildInfoTile(
               icon: Icons.person_outline,
-              title: user.name ?? 'Michael Taluwalase Asuquo',
+              // Fix 7: use userInfo name if available, fall back to user.name,
+              // avoid hardcoding 'Michael Taluwalase Asuquo' as a fallback
+              title: userInfo != null
+                  ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'.trim()
+                  : user.name ?? 'Full name not set',
               subtitle: 'Full name',
             ),
             _buildInfoTile(
@@ -573,8 +578,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      padding: const EdgeInsets.all(16),
+      margin: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 16),
+        vertical: AppLayout.scaleHeight(context, 4),
+      ),
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),

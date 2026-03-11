@@ -22,11 +22,12 @@
 import 'package:flutter/material.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/services/contact_service.dart';
 
 // ============================================================================
 // Public entry point
-// Call this from _pickFromContacts() in your phone screens.
+// Call this from _pickFromContacts() in phone screens.
 // Returns the selected NigerianPhoneNumber, or null if dismissed.
 // ============================================================================
 
@@ -155,6 +156,9 @@ class _ContactPickerBottomSheetState
   // ── Alphabet Index Navigation ─────────────────────────────────────────────
 
   void _scrollToLetter(String letter) {
+    // Fix 6: guard against the controller not yet having a scroll position
+    if (!_scrollController.hasClients) return;
+
     // Find the first contact with this index letter
     final index = _filteredContacts.indexWhere(
       (c) => c.indexLetter == letter,
@@ -287,19 +291,35 @@ class _ContactPickerBottomSheetState
                     fontSize: 14,
                     color: Color(0xFF1A1A2E),
                   ),
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Search name or number...',
-                    hintStyle: TextStyle(
+                    hintStyle: const TextStyle(
                       fontSize: 14,
                       color: Color(0xFF9E9E9E),
                     ),
-                    prefixIcon: Icon(
+                    prefixIcon: const Icon(
                       Icons.search,
                       color: Color(0xFF9E9E9E),
                       size: 20,
                     ),
+                    // Fix 4: clear button — matches the pattern from select_bank.dart
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () {
+                              _searchController.clear();
+                              // _onSearchChanged fires via the listener,
+                              // but we also call setState to hide the icon
+                              setState(() {});
+                            },
+                            child: const Icon(
+                              Icons.clear,
+                              color: Color(0xFF9E9E9E),
+                              size: 18,
+                            ),
+                          )
+                        : null,
                     border: InputBorder.none,
-                    contentPadding: EdgeInsets.symmetric(vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   ),
                 ),
               ),
@@ -337,33 +357,11 @@ class _ContactPickerBottomSheetState
   // ── Loading state ──────────────────────────────────────────────────────────
 
   Widget _buildLoading() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const CircularProgressIndicator(
-            color: Color(0xFF069494),
-            strokeWidth: 2.5,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Loading contacts...',
-            style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 14),
-              color: const Color(0xFF9E9E9E),
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Filtering to Nigerian numbers only',
-            style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 12),
-              color: const Color(0xFFBDBDBD),
-            ),
-          ),
-        ],
-      ),
-    );
+    // Fix 1: ContactListShimmer replaces the spinner — matches the exact
+    // row layout (avatar + name/number) so the transition to real data is
+    // seamless. Fix 5: removed misleading "Filtering to Nigerian numbers only"
+    // subtitle — this state also covers the permission-check phase.
+    return const ContactListShimmer(itemCount: 10);
   }
 
   // ── Permission denied state ─────────────────────────────────────────────
@@ -805,8 +803,11 @@ class _ContactTile extends StatelessWidget {
                     const SizedBox(height: 3),
                     Row(
                       children: [
-                        NetworkLogo(network: number.network!, size: 16),
-                        const SizedBox(width: 6),
+                        // Fix 2: network is nullable — guard before passing to NetworkLogo
+                        if (number.network != null) ...[
+                          NetworkLogo(network: number.network!, size: 16),
+                          const SizedBox(width: 6),
+                        ],
                         Text(
                           number.displayNumber,
                           style: const TextStyle(
@@ -862,8 +863,11 @@ class _ContactTile extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(54, 6, 20, 6),
               child: Row(
                 children: [
-                  NetworkLogo(network: number.network!, size: 18),
-                  const SizedBox(width: 10),
+                  // Fix 2: network is nullable — guard before passing to NetworkLogo
+                  if (number.network != null) ...[
+                    NetworkLogo(network: number.network!, size: 18),
+                    const SizedBox(width: 10),
+                  ],
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -877,7 +881,9 @@ class _ContactTile extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          '${number.network!.displayName} • ${number.label}',
+                          number.network != null
+                              ? '${number.network!.displayName} • ${number.label}'
+                              : number.label,
                           style: const TextStyle(
                             fontSize: 11,
                             color: Color(0xFF9E9E9E),
@@ -924,7 +930,10 @@ class _ContactAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = _initials(name);
-    final color = _colors[name.codeUnits.first % _colors.length];
+    // Fix 3: guard against empty name — codeUnits.first throws RangeError on ''
+    final color = name.isEmpty
+        ? _colors[0]
+        : _colors[name.codeUnits.first % _colors.length];
 
     return Container(
       width: 40,

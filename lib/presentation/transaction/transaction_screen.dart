@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/formatters.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
+
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/provider/provider.dart';
 
@@ -29,8 +31,12 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
+    final state = ref.read(transactionProvider);
+    // Only fire when near the bottom, not already loading, and more pages exist
+    if (!state.isLoading &&
+        state.hasMore &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
       ref.read(transactionProvider.notifier).loadMore();
     }
   }
@@ -48,6 +54,16 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final isTablet = size.width > 600;
     final transactionState = ref.watch(transactionProvider);
     final groupedTransactions = ref.watch(groupedTransactionsProvider);
+
+    // Show SnackBar for errors that occur while data already exists
+    // (pagination failures, search failures) — not caught by the empty-state UI.
+    ref.listen<TransactionState>(transactionProvider, (previous, next) {
+      if (next.error != null &&
+          next.error != previous?.error &&
+          next.transactions.isNotEmpty) {
+        _showErrorSnackBar(_friendlyError(next.error!));
+      }
+    });
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -144,51 +160,61 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     bool isTablet,
   ) {
     if (state.isLoading && state.transactions.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF069494),
-        ),
-      );
+      return const TransactionListShimmer();
     }
 
     if (state.error != null && state.transactions.isEmpty) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red[300],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading transactions',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[600],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.wifi_off_rounded,
+                size: 64,
+                color: Colors.grey[400],
               ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              state.error!,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[500],
+              const SizedBox(height: 16),
+              Text(
+                'Unable to load transactions',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey[700],
+                ),
               ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () => ref
-                  .read(transactionProvider.notifier)
-                  .loadTransactions(refresh: true),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF069494),
+              const SizedBox(height: 8),
+              Text(
+                _friendlyError(state.error!),
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
               ),
-              child: const Text('Retry'),
-            ),
-          ],
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
+                onPressed: () => ref
+                    .read(transactionProvider.notifier)
+                    .loadTransactions(refresh: true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF069494),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(32),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 28, vertical: 12),
+                ),
+                icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
+                label: const Text(
+                  'Try Again',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            ],
+          ),
         ),
       );
     }
@@ -233,12 +259,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           ..._buildTransactionGroups(groupedTransactions, isTablet),
           if (state.isLoading)
             const Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF069494),
-                ),
-              ),
+              padding: EdgeInsets.symmetric(vertical: 16.0),
+              child: TransactionListShimmer(itemCount: 3),
             ),
         ],
       ),
@@ -395,86 +417,157 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     }
   }
 
+  /// Converts raw exception strings into user-friendly messages.
+  String _friendlyError(String raw) {
+    final lower = raw.toLowerCase();
+    if (lower.contains('socketexception') ||
+        lower.contains('network') ||
+        lower.contains('internet')) {
+      return 'No internet connection. Please check your network and try again.';
+    }
+    if (lower.contains('timeout')) {
+      return 'The request timed out. Please try again.';
+    }
+    if (lower.contains('401') || lower.contains('unauthori')) {
+      return 'Your session has expired. Please log in again.';
+    }
+    if (lower.contains('500') || lower.contains('server')) {
+      return 'Something went wrong on our end. Please try again later.';
+    }
+    return 'Something went wrong. Please try again.';
+  }
+
+  /// Shows a non-intrusive error banner for pagination / search failures.
+  void _showErrorSnackBar(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white, size: 18),
+              const SizedBox(width: 10),
+              Expanded(child: Text(message)),
+            ],
+          ),
+          backgroundColor: const Color(0xFFB00020),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          action: SnackBarAction(
+            label: 'Retry',
+            textColor: Colors.white,
+            onPressed: () =>
+                ref.read(transactionProvider.notifier).loadTransactions(refresh: true),
+          ),
+        ),
+      );
+  }
+
   Future<void> _handleDownload() async {
-    final url = await ref.read(transactionProvider.notifier).downloadTransactions();
-    if (url != null && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download started')),
-      );
-      // Open URL or download file
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Download failed')),
-      );
+    try {
+      final url =
+          await ref.read(transactionProvider.notifier).downloadTransactions();
+      if (!mounted) return;
+      if (url != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Download started'),
+            backgroundColor: const Color(0xFF069494),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
+          ),
+        );
+        // TODO: open/share the URL
+      } else {
+        _showErrorSnackBar(
+            'Could not generate your download. Please try again.');
+      }
+    } catch (e) {
+      if (mounted) _showErrorSnackBar(_friendlyError(e.toString()));
     }
   }
 
   void _showFilterDialog(BuildContext context) {
-    final currentFilter = ref.read(transactionFilterProvider);
-
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Filter Transactions'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('All Transactions'),
-              leading: Radio<TransactionStatus?>(
-                value: null,
-                groupValue: currentFilter.status,
-                onChanged: (val) {
-                  ref.read(transactionFilterProvider.notifier).state =
-                      currentFilter.copyWith(clearStatus: true);
-                  Navigator.pop(context);
-                },
-              ),
+      builder: (dialogContext) => Consumer(
+        builder: (context, ref, _) {
+          // Read filter inside the builder so radio buttons always reflect
+          // the latest state, even if it changes while the dialog is open.
+          final currentFilter = ref.watch(transactionFilterProvider);
+          return AlertDialog(
+            title: const Text('Filter Transactions'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ListTile(
+                  title: const Text('All Transactions'),
+                  leading: Radio<TransactionStatus?>(
+                    value: null,
+                    groupValue: currentFilter.status,
+                    activeColor: const Color(0xFF069494),
+                    onChanged: (val) {
+                      ref.read(transactionFilterProvider.notifier).state =
+                          currentFilter.copyWith(clearStatus: true);
+                      Navigator.pop(dialogContext);
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Successful'),
+                  leading: Radio<TransactionStatus?>(
+                    value: TransactionStatus.successful,
+                    groupValue: currentFilter.status,
+                    activeColor: const Color(0xFF069494),
+                    onChanged: (val) {
+                      ref.read(transactionFilterProvider.notifier).state =
+                          currentFilter.copyWith(status: val);
+                      Navigator.pop(dialogContext);
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Failed'),
+                  leading: Radio<TransactionStatus?>(
+                    value: TransactionStatus.failed,
+                    groupValue: currentFilter.status,
+                    activeColor: const Color(0xFF069494),
+                    onChanged: (val) {
+                      ref.read(transactionFilterProvider.notifier).state =
+                          currentFilter.copyWith(status: val);
+                      Navigator.pop(dialogContext);
+                    },
+                  ),
+                ),
+                ListTile(
+                  title: const Text('Pending'),
+                  leading: Radio<TransactionStatus?>(
+                    value: TransactionStatus.pending,
+                    groupValue: currentFilter.status,
+                    activeColor: const Color(0xFF069494),
+                    onChanged: (val) {
+                      ref.read(transactionFilterProvider.notifier).state =
+                          currentFilter.copyWith(status: val);
+                      Navigator.pop(dialogContext);
+                    },
+                  ),
+                ),
+              ],
             ),
-            ListTile(
-              title: const Text('Successful'),
-              leading: Radio<TransactionStatus?>(
-                value: TransactionStatus.successful,
-                groupValue: currentFilter.status,
-                onChanged: (val) {
-                  ref.read(transactionFilterProvider.notifier).state =
-                      currentFilter.copyWith(status: val);
-                  Navigator.pop(context);
-                },
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(color: Color(0xFF069494)),
+                ),
               ),
-            ),
-            ListTile(
-              title: const Text('Failed'),
-              leading: Radio<TransactionStatus?>(
-                value: TransactionStatus.failed,
-                groupValue: currentFilter.status,
-                onChanged: (val) {
-                  ref.read(transactionFilterProvider.notifier).state =
-                      currentFilter.copyWith(status: val);
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-            ListTile(
-              title: const Text('Pending'),
-              leading: Radio<TransactionStatus?>(
-                value: TransactionStatus.pending,
-                groupValue: currentFilter.status,
-                onChanged: (val) {
-                  ref.read(transactionFilterProvider.notifier).state =
-                      currentFilter.copyWith(status: val);
-                  Navigator.pop(context);
-                },
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
+            ],
+          );
+        },
       ),
     );
   }

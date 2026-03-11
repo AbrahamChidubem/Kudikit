@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
@@ -178,9 +178,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
             Container(
               color: Colors.grey[900],
               child: const Center(
-                child: CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
-                ),
+                child: AppLoadingIndicator(),
               ),
             ),
           CustomPaint(
@@ -270,11 +268,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                         ? Padding(
                             padding: EdgeInsets.all(
                                 AppLayout.scaleWidth(context, 12)),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 3,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
+                            child: const AppLoadingIndicator.button(),
                           )
                         : Container(
                             margin: EdgeInsets.all(
@@ -303,10 +297,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(
-                      valueColor:
-                          AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
-                    ),
+                    const AppLoadingIndicator(),
                     SizedBox(height: AppLayout.scaleHeight(context, 16)),
                     Text(
                       'Validating your photo...',

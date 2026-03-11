@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/model/user/user_model.dart';
@@ -653,12 +654,7 @@ class _ContinueButton extends StatelessWidget {
           ),
         ),
         child: isLoading
-            ? SizedBox(
-                width: AppLayout.scaleWidth(context, 22),
-                height: AppLayout.scaleWidth(context, 22),
-                child: const CircularProgressIndicator(
-                    color: Colors.white, strokeWidth: 1),
-              )
+            ? const AppLoadingIndicator.button()
             : Text(
                 isOnline ? 'Continue' : 'No Internet Connection',
                 style: TextStyle(

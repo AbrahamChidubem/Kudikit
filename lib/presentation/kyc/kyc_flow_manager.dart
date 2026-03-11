@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/presentation/Identity/chooseID.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
@@ -168,10 +169,8 @@ class KycFlowManager extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              CircularProgressIndicator(
-                color: Color(0xFF069494),
-              ),
-              SizedBox(height: 16),
+              const AppLoadingIndicator(),
+              const SizedBox(height: 16),
               Text(
                 'Loading your information...',
                 style: TextStyle(
@@ -222,9 +221,7 @@ class KycFlowManager extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const CircularProgressIndicator(
-              color: Color(0xFF069494),
-            ),
+            const AppLoadingIndicator(),
             const SizedBox(height: 16),
             Text(
               _getLoadingMessage(user),

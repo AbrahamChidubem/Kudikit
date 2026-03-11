@@ -36,8 +36,8 @@ class BulkTransferScreen extends ConsumerWidget {
               child: Stack(
                 children: [
                   SizedBox(
-                    width: AppLayout.scaleWidth(context, 40),
-                    height: AppLayout.scaleWidth(context, 40),
+                    width: AppLayout.scaleWidth(context, 30),
+                    height: AppLayout.scaleWidth(context, 30),
                     child: CircularProgressIndicator(
                       value: 0.36,
                       strokeWidth: AppLayout.scaleWidth(context, 2),
@@ -104,7 +104,7 @@ class BulkTransferScreen extends ConsumerWidget {
                 title: 'Add manually',
                 subtitle: 'Add recipient one by one by adding their details',
                 badgeText: 'Most flexible',
-                badgeColor: Color(0xFF069494),
+                badgeColor: const Color(0xFF069494),
                 recommendedText: 'Best for 1-5 recipients',
                 onTap: () {
                   Navigator.push(

@@ -18,6 +18,10 @@ class RequestProvider extends ChangeNotifier {
   final List<MoneyRequest> _sentRequests = [];
   final List<MoneyRequest> _receivedRequests = [];
 
+  // Loading state — drives shimmer in MyRequestsScreen
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
   // Contacts
   final List<Contact> _recentContacts = [];
   final List<Contact> _allContacts = [];
@@ -143,7 +147,14 @@ class RequestProvider extends ChangeNotifier {
   }
 
   // ✅ Fixed: all Contact() calls now include required `status` and `avatarColor`
-  void loadMockData() {
+  // isLoading set during fetch so UI can show RequestListShimmer
+  Future<void> loadMockData() async {
+    if (_isLoading) return; // prevent double-load
+    _isLoading = true;
+    notifyListeners();
+
+    // Simulate network latency — remove when wired to real API
+    await Future.delayed(const Duration(milliseconds: 800));
     _allContacts.addAll([
       Contact(
         id: '1',
@@ -266,6 +277,7 @@ class RequestProvider extends ChangeNotifier {
       ),
     );
 
+    _isLoading = false;
     notifyListeners();
   }
 

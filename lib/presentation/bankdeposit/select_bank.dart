@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
 import 'package:kudipay/provider/provider.dart';
 
@@ -25,6 +26,8 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
   @override
   void dispose() {
     _searchController.dispose();
+    // Clear search state so stale query doesn't persist when returning to this screen
+    ref.read(bankSearchQueryProvider.notifier).state = '';
     super.dispose();
   }
 
@@ -33,10 +36,15 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
     final banksState = ref.watch(banksProvider);
     final searchQuery = ref.watch(bankSearchQueryProvider);
 
-    // Filter banks based on search
+    // Pure computation off watched state — reacts correctly when either
+    // the bank list or the query changes. Previously used ref.read(notifier)
+    // which would not recompute when banks updated while search was active.
     final filteredBanks = searchQuery.isEmpty
         ? banksState.banks
-        : ref.read(banksProvider.notifier).searchBanks(searchQuery);
+        : banksState.banks
+            .where((b) =>
+                b.name.toLowerCase().contains(searchQuery.toLowerCase()))
+            .toList();
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -93,6 +101,7 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
   }
 
   Widget _buildSearchBar(BuildContext context) {
+    final searchQuery = ref.watch(bankSearchQueryProvider);
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFE8F5E9),
@@ -114,6 +123,20 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
             color: const Color(0xFFB0BEC5),
             size: AppLayout.scaleWidth(context, 20),
           ),
+          // Fix 4: clear button — only shows when there is text
+          suffixIcon: searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: Icon(
+                    Icons.clear,
+                    color: Colors.grey[500],
+                    size: AppLayout.scaleWidth(context, 18),
+                  ),
+                  onPressed: () {
+                    _searchController.clear();
+                    ref.read(bankSearchQueryProvider.notifier).state = '';
+                  },
+                )
+              : null,
           border: InputBorder.none,
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppLayout.scaleWidth(context, 16),
@@ -130,9 +153,7 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
     List<Bank> filteredBanks,
   ) {
     if (banksState.isLoading && banksState.banks.isEmpty) {
-      return const Center(
-        child: CircularProgressIndicator(color: Color(0xFF069494)),
-      );
+      return const BankListShimmer();
     }
 
     if (banksState.error != null && banksState.banks.isEmpty) {
@@ -226,6 +247,27 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
   }
 
   Widget _buildErrorView(BuildContext context, AddMoneyError error) {
+    // Pick icon and title based on the classified error type
+    final IconData icon;
+    final String title;
+    switch (error.type) {
+      case AddMoneyErrorType.network:
+        icon = Icons.wifi_off_rounded;
+        title = 'No internet connection';
+        break;
+      case AddMoneyErrorType.timeout:
+        icon = Icons.timer_off_rounded;
+        title = 'Request timed out';
+        break;
+      case AddMoneyErrorType.authentication:
+        icon = Icons.lock_outline_rounded;
+        title = 'Session expired';
+        break;
+      default:
+        icon = Icons.cloud_off_rounded;
+        title = 'Unable to load banks';
+    }
+
     return Center(
       child: Padding(
         padding: AppLayout.pagePadding(context),
@@ -233,16 +275,27 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.error_outline,
+              icon,
               size: AppLayout.scaleWidth(context, 64),
-              color: Colors.red[300],
+              color: Colors.grey[400],
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Text(
-              error.message,
+              title,
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 16),
+                fontWeight: FontWeight.w600,
                 color: Colors.grey[700],
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            Text(
+              error.message,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 14),
+                color: Colors.grey[500],
+                height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
@@ -252,10 +305,18 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
                 onPressed: () {
                   ref.read(banksProvider.notifier).loadBanks();
                 },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Retry'),
+                icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
+                label: const Text(
+                  'Try Again',
+                  style: TextStyle(color: Colors.white),
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF069494),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 32)),
+                  ),
                   padding: EdgeInsets.symmetric(
                     horizontal: AppLayout.scaleWidth(context, 32),
                     vertical: AppLayout.scaleHeight(context, 12),

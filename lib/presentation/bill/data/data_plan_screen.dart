@@ -1,5 +1,4 @@
 // ============================================================================
-// lib/presentation/bills/data/data_plans_screen.dart
 //
 // Screen 2 of the Buy Data flow.
 //
@@ -17,6 +16,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
+import 'package:kudipay/formatting/widget/shimmer_widget.dart';
+
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/provider/bill/bill_provider.dart';
 
@@ -62,17 +63,18 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
         phoneNumber: state.phoneNumber,
         network: state.selectedNetwork!,
         plan: state.selectedPlan!,
-        onSend: () {
+        onSend: () async {
           Navigator.pop(context); // close confirm
-          ref.read(dataProvider.notifier).processData().then((_) {
-            if (mounted) _showSuccessOrError();
-          });
+          await ref.read(dataProvider.notifier).processData();
+          // Guard against widget being unmounted during the async gap
+          if (mounted) _showSuccessOrError();
         },
       ),
     );
   }
 
   void _showSuccessOrError() {
+    if (!mounted) return; // explicit guard at entry point
     final state = ref.read(dataProvider);
     if (state.step == DataStep.success) {
       showModalBottomSheet(
@@ -95,22 +97,35 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
         ),
       );
     } else if (state.step == DataStep.failed) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(state.error ?? 'Transaction failed. Please try again.'),
-          backgroundColor: Colors.red.shade700,
-          behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      );
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error_outline, color: Colors.white, size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                      state.error ?? 'Transaction failed. Please try again.'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red.shade700,
+            behavior: SnackBarBehavior.floating,
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          ),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(dataProvider);
-    final isProcessing = state.step == DataStep.processing;
+    // Use the dedicated isProcessing field — more reliable than comparing
+    // DataStep, which may not stay in sync if state transitions change.
+    final isProcessing = state.isProcessing;
 
     final dailyPlans = _filterPlans(state.plans, DataValidity.daily);
     final weeklyPlans = _filterPlans(state.plans, DataValidity.weekly);
@@ -283,53 +298,130 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
                   // ── Plans list ───────────────────────────────────────
                   Expanded(
                     child: state.isLoadingPlans
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                              color: Color(0xFF069494),
-                              strokeWidth: 2,
-                            ),
-                          )
-                        : state.plans.isEmpty
+                        // Fix 1: shimmer skeleton instead of spinner
+                        ? const DataPlanShimmer()
+                        : state.error != null && state.plans.isEmpty
+                            // Fix 2: error state with a retry button instead
+                            // of a dead-end message forcing back navigation
                             ? Center(
-                                child: Text(
-                                  'Failed to load plans.\nPlease go back and try again.',
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 14),
-                                    color: const Color(0xFF9E9E9E),
-                                    height: 1.5,
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal:
+                                          AppLayout.scaleWidth(context, 32)),
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.wifi_off_rounded,
+                                          size:
+                                              AppLayout.scaleWidth(context, 56),
+                                          color: Colors.grey[400]),
+                                      SizedBox(
+                                          height: AppLayout.scaleHeight(
+                                              context, 16)),
+                                      Text(
+                                        'Failed to load plans',
+                                        style: TextStyle(
+                                          fontSize:
+                                              AppLayout.fontSize(context, 16),
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey[700],
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          height: AppLayout.scaleHeight(
+                                              context, 8)),
+                                      Text(
+                                        // Sanitise: the generic catch in the
+                                        // notifier may write e.toString() which
+                                        // leaks internal exception details.
+                                        (state.error != null &&
+                                                !state.error!.toLowerCase().contains('exception') &&
+                                                !state.error!.toLowerCase().contains('error:'))
+                                            ? state.error!
+                                            : 'Could not load plans. Please check your connection and try again.',
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize:
+                                              AppLayout.fontSize(context, 13),
+                                          color: const Color(0xFF9E9E9E),
+                                          height: 1.5,
+                                        ),
+                                      ),
+                                      SizedBox(
+                                          height: AppLayout.scaleHeight(
+                                              context, 20)),
+                                      ElevatedButton.icon(
+                                        onPressed: () => ref
+                                            .read(dataProvider.notifier)
+                                            .proceedToSelectPlan(),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              const Color(0xFF069494),
+                                          elevation: 0,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                                AppLayout.scaleWidth(
+                                                    context, 28)),
+                                          ),
+                                        ),
+                                        icon: const Icon(Icons.refresh,
+                                            color: Colors.white, size: 18),
+                                        label: const Text('Try Again',
+                                            style: TextStyle(
+                                                color: Colors.white)),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               )
-                            : TabBarView(
-                                controller: _validityTab,
-                                children: [
-                                  _PlanList(
-                                    plans: dailyPlans,
-                                    selectedPlanId: state.selectedPlan?.id,
-                                    onSelect: (p) => ref
-                                        .read(dataProvider.notifier)
-                                        .selectPlan(p),
-                                    emptyMessage: 'No daily plans available',
+                            : state.plans.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'No plans available for this network.',
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize:
+                                            AppLayout.fontSize(context, 14),
+                                        color: const Color(0xFF9E9E9E),
+                                        height: 1.5,
+                                      ),
+                                    ),
+                                  )
+                                : TabBarView(
+                                    controller: _validityTab,
+                                    children: [
+                                      _PlanList(
+                                        plans: dailyPlans,
+                                        selectedPlanId:
+                                            state.selectedPlan?.id,
+                                        onSelect: (p) => ref
+                                            .read(dataProvider.notifier)
+                                            .selectPlan(p),
+                                        emptyMessage:
+                                            'No daily plans available',
+                                      ),
+                                      _PlanList(
+                                        plans: weeklyPlans,
+                                        selectedPlanId:
+                                            state.selectedPlan?.id,
+                                        onSelect: (p) => ref
+                                            .read(dataProvider.notifier)
+                                            .selectPlan(p),
+                                        emptyMessage:
+                                            'No weekly plans available',
+                                      ),
+                                      _PlanList(
+                                        plans: monthlyPlans,
+                                        selectedPlanId:
+                                            state.selectedPlan?.id,
+                                        onSelect: (p) => ref
+                                            .read(dataProvider.notifier)
+                                            .selectPlan(p),
+                                        emptyMessage:
+                                            'No monthly plans available',
+                                      ),
+                                    ],
                                   ),
-                                  _PlanList(
-                                    plans: weeklyPlans,
-                                    selectedPlanId: state.selectedPlan?.id,
-                                    onSelect: (p) => ref
-                                        .read(dataProvider.notifier)
-                                        .selectPlan(p),
-                                    emptyMessage: 'No weekly plans available',
-                                  ),
-                                  _PlanList(
-                                    plans: monthlyPlans,
-                                    selectedPlanId: state.selectedPlan?.id,
-                                    onSelect: (p) => ref
-                                        .read(dataProvider.notifier)
-                                        .selectPlan(p),
-                                    emptyMessage: 'No monthly plans available',
-                                  ),
-                                ],
-                              ),
                   ),
                 ],
               ),
@@ -345,7 +437,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
               ),
               child: SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: AppLayout.scaleHeight(context, 52),
                 child: ElevatedButton(
                   onPressed: state.canProceedFromPlan && !isProcessing
                       ? _onContinue
@@ -839,6 +931,7 @@ class _PayingFromRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
+                      // TODO: replace with real account number and balance from userInfoProvider
                       '$displayName  8123456789',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 12),
@@ -849,6 +942,7 @@ class _PayingFromRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
+                    // TODO: replace with real balance from wallet provider
                     const Text('₦ 5,000.00',
                         style:
                             TextStyle(fontSize: 12, color: Color(0xFF9E9E9E))),
