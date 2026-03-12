@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 
@@ -451,14 +452,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
                     ),
                   ),
                   child: isProcessing
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const AppLoadingIndicator.button()
                       : Text(
                           'Continue',
                           style: TextStyle(

@@ -6,7 +6,7 @@ import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/email/change_email_screen.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
-import 'package:kudipay/presentation/teir/upgrade_teir_screen.dart';
+import 'package:kudipay/presentation/tier/upgrade_teir_screen.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/provider/provider.dart';
 
 
@@ -176,14 +177,7 @@ class _EnterNewEmailScreenState extends ConsumerState<EnterNewEmailScreen> {
                       disabledBackgroundColor: Colors.grey[300],
                     ),
                     child: emailChangeState.isLoading
-                        ? SizedBox(
-                            height: AppLayout.scaleHeight(context, 20),
-                            width: AppLayout.scaleHeight(context, 20),
-                            child: const CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
+                        ? const AppLoadingIndicator.button()
                         : Text(
                             'Change',
                             style: TextStyle(

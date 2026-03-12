@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/contact_picker_buttom_sheet.dart';
 
 import 'package:kudipay/formatting/widget/network_logo.dart';
@@ -419,14 +420,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
                     ),
                   ),
                   child: state.isLoadingPlans
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const AppLoadingIndicator.button()
                       : Text(
                           'Continue',
                           style: TextStyle(

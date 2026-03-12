@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/model/teir/teir_model.dart';
+import 'package:kudipay/model/tier/tier_model.dart';
 
 
 

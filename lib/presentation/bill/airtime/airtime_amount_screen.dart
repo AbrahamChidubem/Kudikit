@@ -19,6 +19,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/provider/bill/bill_provider.dart';
@@ -29,7 +30,8 @@ class AirtimeAmountScreen extends ConsumerStatefulWidget {
   const AirtimeAmountScreen({Key? key}) : super(key: key);
 
   @override
-  ConsumerState<AirtimeAmountScreen> createState() => _AirtimeAmountScreenState();
+  ConsumerState<AirtimeAmountScreen> createState() =>
+      _AirtimeAmountScreenState();
 }
 
 class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
@@ -119,7 +121,8 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
           content: Text(state.error ?? 'Transaction failed. Please try again.'),
           backgroundColor: Colors.red.shade700,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       );
     }
@@ -291,7 +294,8 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
 
                     // ── Amount input card ────────────────────────────────
                     Container(
-                      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+                      padding:
+                          EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
@@ -324,9 +328,10 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                                 style: TextStyle(
                                   fontSize: AppLayout.fontSize(context, 22),
                                   fontWeight: FontWeight.w600,
-                                  color: state.amount != null && state.amount! > 0
-                                      ? const Color(0xFF1A1A2E)
-                                      : const Color(0xFFBDBDBD),
+                                  color:
+                                      state.amount != null && state.amount! > 0
+                                          ? const Color(0xFF1A1A2E)
+                                          : const Color(0xFFBDBDBD),
                                 ),
                               ),
                               const SizedBox(width: 4),
@@ -407,7 +412,8 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                                     child: Text(
                                       '₦${_fmt.format(preset)}',
                                       style: TextStyle(
-                                        fontSize: AppLayout.fontSize(context, 13),
+                                        fontSize:
+                                            AppLayout.fontSize(context, 13),
                                         fontWeight: FontWeight.w600,
                                         color: isSelected
                                             ? Colors.white
@@ -439,10 +445,11 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
               ),
               child: SizedBox(
                 width: double.infinity,
-                height: 52,
+                height: AppLayout.scaleHeight(context, 54),
                 child: ElevatedButton(
-                  onPressed:
-                      state.canProceedFromAmount && !isProcessing ? _onContinue : null,
+                  onPressed: state.canProceedFromAmount && !isProcessing
+                      ? _onContinue
+                      : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
                     disabledBackgroundColor: const Color(0xFFA8D5BF),
@@ -452,14 +459,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                     ),
                   ),
                   child: isProcessing
-                      ? const SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: Colors.white,
-                          ),
-                        )
+                      ? const AppLoadingIndicator.button()
                       : Text(
                           'Continue',
                           style: TextStyle(
@@ -559,7 +559,8 @@ class ConfirmAirtimeBottomSheet extends ConsumerWidget {
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.close, size: 22, color: Color(0xFF9E9E9E)),
+                    child: const Icon(Icons.close,
+                        size: 22, color: Color(0xFF9E9E9E)),
                   ),
                 ],
               ),
@@ -617,7 +618,8 @@ class ConfirmAirtimeBottomSheet extends ConsumerWidget {
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
                             vertical: AppLayout.scaleHeight(context, 14)),
-                        side: const BorderSide(color: Color(0xFF069494), width: 1.5),
+                        side: const BorderSide(
+                            color: Color(0xFF069494), width: 1.5),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(24)),
                       ),

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/model/teir/teir_model.dart';
-import 'package:kudipay/presentation/teir/upgrade_teir_screen.dart';
+import 'package:kudipay/model/tier/tier_model.dart';
+import 'package:kudipay/presentation/tier/upgrade_teir_screen.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
 
 

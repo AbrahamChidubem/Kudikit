@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/model/teir/teir_model.dart';
+import 'package:kudipay/model/tier/tier_model.dart';
 import 'package:kudipay/services/storage_services.dart';
 
 /// State class for Tier management

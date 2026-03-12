@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_screen.dart';
 
-import 'package:kudipay/presentation/transfer/single_transfer/transfer_reciept_screen.dart';
+import 'package:kudipay/presentation/transfer/single_transfer/transfer_receipt_screen.dart';
 
 class TransferMenuScreen extends StatelessWidget {
   const TransferMenuScreen({Key? key}) : super(key: key);
