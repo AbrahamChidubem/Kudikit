@@ -35,46 +35,33 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // ---------------------------------------------------------------------------
   // CONTROLLERS
   // ---------------------------------------------------------------------------
-  // Each TextEditingController is linked to one text field.
-  // It lets you read what the user typed (controller.text) and clear it.
-  //
-  // NOTE: passwordController is used for the Passcode field.
-  //       Previously the code referenced `pinController` which was undefined —
-  //       that was a bug. It is now correctly named `passwordController`.
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController numberController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController(); // ✅ Fixed: was `pinController` (undefined)
+  final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController = TextEditingController();
 
   // ---------------------------------------------------------------------------
   // FORM KEY
   // ---------------------------------------------------------------------------
-  // Used to trigger validation on all fields at once when the user taps Continue.
 
   final _formKey = GlobalKey<FormState>();
 
   // ---------------------------------------------------------------------------
   // LOCAL TERMS ACCEPTANCE STATE
   // ---------------------------------------------------------------------------
-  // This StateProvider lives only within this widget's lifecycle.
-  // It tracks whether the checkbox is checked.
 
   final _termsAcceptedProvider = StateProvider<bool>((ref) => false);
 
   // ---------------------------------------------------------------------------
   // PASSCODE CRITERIA STATE
   // ---------------------------------------------------------------------------
-  // These booleans track whether each rule is met in real time as the user types.
-  // They power the checklist shown below the passcode field.
 
   bool _hasMinLength = false;
   bool _hasUppercase = false;
   bool _hasLowercase = false;
   bool _hasNumber = false;
   bool _hasSpecialChar = false;
-
-  // Only show the criteria checklist after the user starts typing.
   bool _passcodeFieldTouched = false;
 
   // ---------------------------------------------------------------------------
@@ -84,8 +71,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   void initState() {
     super.initState();
-    // addPostFrameCallback ensures the widget is fully built before we
-    // start listening to connectivity changes.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
     });
@@ -93,8 +78,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   @override
   void dispose() {
-    // ALWAYS dispose controllers when the widget is removed from the tree.
-    // Forgetting this causes memory leaks.
     emailController.dispose();
     numberController.dispose();
     passwordController.dispose();
@@ -105,7 +88,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // ---------------------------------------------------------------------------
   // CONNECTIVITY LISTENER
   // ---------------------------------------------------------------------------
-  // Watches for changes in network status and shows snackbars accordingly.
 
   void _setupConnectivityListener() {
     ref.listen(connectivityProvider, (previous, next) {
@@ -123,8 +105,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // ---------------------------------------------------------------------------
   // PASSCODE CRITERIA UPDATER
   // ---------------------------------------------------------------------------
-  // Called every time the user types in the passcode field (via onChanged).
-  // Updates the boolean flags that drive the criteria checklist UI.
 
   void _updatePasscodeCriteria(String value) {
     setState(() {
@@ -140,27 +120,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // ---------------------------------------------------------------------------
   // HANDLE SIGN UP
   // ---------------------------------------------------------------------------
-  // This runs when the user taps "Continue".
-  //
-  // Steps:
-  //   1. Check internet connection.
-  //   2. Validate the form (all field validators run).
-  //   3. Check terms are accepted.
-  //   4. Call AuthNotifier.signup().
-  //   5. Navigate to the email verification screen.
 
   Future<void> _handleSignUp() async {
-    // Step 1 — Check connectivity.
     final isConnected = ref.read(currentConnectivityProvider);
     if (!isConnected) {
       await NoInternetDialog.show(context);
       return;
     }
 
-    // Step 2 — Validate all form fields.
     if (!_formKey.currentState!.validate()) return;
 
-    // Step 3 — Check terms checkbox.
     final termsAccepted = ref.read(_termsAcceptedProvider);
     if (!termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -172,32 +141,26 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
-    // Read values from controllers.
     final email = emailController.text.trim();
     final phoneNumber = '+234${numberController.text.trim()}';
-    final password = passwordController.text.trim(); // ✅ Fixed: was `passwordController.text` but referenced as `pin`
+    final password = passwordController.text.trim();
 
     try {
-      // Step 4 — Call the signup method in AuthNotifier.
       await ref.read(authProvider.notifier).signup(
             email: email,
             phoneNumber: phoneNumber,
             password: password,
           );
 
-      // Guard: if the widget was removed while awaiting, don't navigate.
       if (!mounted) return;
 
-      // Step 5 — Navigate to email verification screen.
-      // We pass the email, phone, and password so the verification screen
-      // can use them if needed (e.g. to resend the code or complete login).
       Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) => EmailVerifySignup(
             email: email,
             phoneNumber: phoneNumber,
-            pin: password, // ✅ Fixed: was `pin` (undefined variable) — now correctly passes `password`
+            pin: password,
           ),
         ),
       );
@@ -239,9 +202,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       appBar: _buildAppBar(context, isOnline),
       body: Column(
         children: [
-          // Offline banner — shown at top when no internet.
           if (!isOnline) _buildOfflineBanner(context),
-
           Expanded(
             child: SingleChildScrollView(
               child: SafeArea(
@@ -254,7 +215,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                       children: [
                         SizedBox(height: AppLayout.scaleHeight(context, 25)),
 
-                        // Page title
                         Text(
                           'Create an account with KudiKit',
                           style: TextStyle(
@@ -317,7 +277,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
                           context,
-                          controller: passwordController, // ✅ Fixed: was `pinController`
+                          controller: passwordController,
                           obscureText: !ref.watch(pinVisibilityProvider),
                           enabled: !isLoading && isOnline,
                           onChanged: _updatePasscodeCriteria,
@@ -346,7 +306,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           },
                         ),
 
-                        // Criteria checklist shown live as the user types.
                         SizedBox(height: AppLayout.scaleHeight(context, 10)),
                         _buildPasscodeCriteria(context),
 
@@ -357,7 +316,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildTextField(
                           context,
-                          controller: confirmPasswordController, // ✅ Fixed: was `confirmPinController`
+                          controller: confirmPasswordController,
                           obscureText: !ref.watch(confirmPinVisibilityProvider),
                           enabled: !isLoading && isOnline,
                           suffixIcon: IconButton(
@@ -376,7 +335,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                             if (value == null || value.trim().isEmpty) {
                               return 'Please confirm your passcode';
                             }
-                            if (value != passwordController.text) { // ✅ Fixed: was `pinController.text`
+                            if (value != passwordController.text) {
                               return 'Passcodes do not match';
                             }
                             return null;
@@ -390,7 +349,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
                         SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
-                        // ── Submit Button ──────────────────────────────────
+                        // ── Submit Button — full-width, responsive ─────────
                         _buildSubmitButton(context, isLoading, isOnline),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 24)),
@@ -417,8 +376,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // =============================================================================
   // EXTRACTED WIDGET BUILDERS
   // =============================================================================
-  // Breaking the UI into small private methods keeps `build()` readable.
 
+  // FIX 1: Removed the ConnectivityIndicator action from the AppBar.
+  //         Only the 25% progress ring remains in the trailing actions.
   AppBar _buildAppBar(BuildContext context, bool isOnline) {
     return AppBar(
       backgroundColor: const Color(0xFFF5F5F0),
@@ -432,11 +392,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       actions: [
-        if (!isOnline)
-          Padding(
-            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
-            child: const Center(child: ConnectivityIndicator()),
-          ),
         Padding(
           padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
           child: Center(
@@ -552,6 +507,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     );
   }
 
+  // FIX 2: Wrapped ColorAppButton in SizedBox(width: double.infinity) so it
+  //         always stretches to the full available width — responsive across
+  //         all screen sizes. The loading spinner stays centered as before.
   Widget _buildSubmitButton(BuildContext context, bool isLoading, bool isOnline) {
     if (isLoading) {
       return Center(
@@ -562,17 +520,23 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       );
     }
     if (!isOnline) {
-      return Opacity(
-        opacity: 0.5,
-        child: ColorAppButton(
-          press: () => ConnectivitySnackBar.showNoInternet(context),
-          text: 'No Internet Connection',
+      return SizedBox(
+        width: double.infinity,
+        child: Opacity(
+          opacity: 0.5,
+          child: ColorAppButton(
+            press: () => ConnectivitySnackBar.showNoInternet(context),
+            text: 'No Internet Connection',
+          ),
         ),
       );
     }
-    return ColorAppButton(
-      press: _handleSignUp,
-      text: 'Continue',
+    return SizedBox(
+      width: double.infinity,
+      child: ColorAppButton(
+        press: _handleSignUp,
+        text: 'Continue',
+      ),
     );
   }
 
