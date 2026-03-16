@@ -4,7 +4,6 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/linkdevice/enable_biometrics.dart';
 import 'package:kudipay/provider/provider.dart';
 
-
 class DataSyncScreen extends ConsumerStatefulWidget {
   const DataSyncScreen({Key? key}) : super(key: key);
 
@@ -20,17 +19,23 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
+      // FIX: Stack → SafeArea+Column so button is always visible and never
+      // obscures the scroll content. Loading overlay sits in outer Stack.
       body: Stack(
         children: [
-          _buildBody(context, state),
-          _buildButton(context, state),
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(child: _buildBody(context, state)),
+                _buildButton(context, state),
+              ],
+            ),
+          ),
           if (state.isSyncing)
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF069494),
-                ),
+                child: CircularProgressIndicator(color: Color(0xFF069494)),
               ),
             ),
         ],
@@ -51,83 +56,79 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
 
   Widget _buildBody(BuildContext context, DeviceLinkingState state) {
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppLayout.scaleWidth(context, 24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // Title
-            Text(
-              'Almost done',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 28),
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+          Text(
+            'Almost done',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 28),
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+          SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-            // Subtitle
-            Text(
-              'Would you like to sync your data to this device? You\ncan always change this later.',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 14),
-                color: Colors.black54,
-                height: 1.5,
-              ),
+          Text(
+            'Would you like to sync your data to this device? You can always change this later.',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              color: Colors.black54,
+              height: 1.5,
             ),
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 32)),
+          SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-            // Sync options
-            _buildSyncOption(
-              context,
-              title: 'Saved Beneficiary',
-              subtitle: 'People you frequently send money to',
-              value: state.syncSelection.savedBeneficiary,
-              onChanged: (value) {
-                ref
-                    .read(deviceLinkingProvider.notifier)
-                    .updateSyncSelection(savedBeneficiary: value);
-              },
-            ),
+          _buildSyncOption(
+            context,
+            title: 'Saved Beneficiary',
+            subtitle: 'People you frequently send money to',
+            value: state.syncSelection.savedBeneficiary,
+            onChanged: (value) {
+              ref
+                  .read(deviceLinkingProvider.notifier)
+                  .updateSyncSelection(savedBeneficiary: value);
+            },
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            _buildSyncOption(
-              context,
-              title: 'Recent Transaction',
-              subtitle: 'You last 90 days of transaction',
-              value: state.syncSelection.recentTransactions,
-              onChanged: (value) {
-                ref
-                    .read(deviceLinkingProvider.notifier)
-                    .updateSyncSelection(recentTransactions: value);
-              },
-            ),
+          _buildSyncOption(
+            context,
+            title: 'Recent Transactions',
+            // FIX: typo "You last" → "Your last"
+            subtitle: 'Your last 90 days of transactions',
+            value: state.syncSelection.recentTransactions,
+            onChanged: (value) {
+              ref
+                  .read(deviceLinkingProvider.notifier)
+                  .updateSyncSelection(recentTransactions: value);
+            },
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            _buildSyncOption(
-              context,
-              title: 'App preference',
-              subtitle: 'Retaining your previous user settings',
-              value: state.syncSelection.appPreferences,
-              onChanged: (value) {
-                ref
-                    .read(deviceLinkingProvider.notifier)
-                    .updateSyncSelection(appPreferences: value);
-              },
-            ),
+          _buildSyncOption(
+            context,
+            title: 'App Preferences',
+            subtitle: 'Retaining your previous user settings',
+            value: state.syncSelection.appPreferences,
+            onChanged: (value) {
+              ref
+                  .read(deviceLinkingProvider.notifier)
+                  .updateSyncSelection(appPreferences: value);
+            },
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 120)),
-          ],
-        ),
+          SizedBox(height: AppLayout.scaleHeight(context, 24)),
+        ],
       ),
     );
   }
@@ -154,7 +155,6 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
       ),
       child: Row(
         children: [
-          // Checkbox
           Checkbox(
             value: value,
             onChanged: (newValue) => onChanged(newValue ?? false),
@@ -166,7 +166,6 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
 
           SizedBox(width: AppLayout.scaleWidth(context, 12)),
 
-          // Text
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,10 +195,15 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
   }
 
   Widget _buildButton(BuildContext context, DeviceLinkingState state) {
-    return Positioned(
-      bottom: AppLayout.scaleHeight(context, 40),
-      left: AppLayout.scaleWidth(context, 24),
-      right: AppLayout.scaleWidth(context, 24),
+    // FIX: was Positioned inside Stack alongside a scrollable body —
+    // content would scroll behind the button. Now correctly anchored.
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 24),
+        AppLayout.scaleHeight(context, 8),
+        AppLayout.scaleWidth(context, 24),
+        AppLayout.scaleHeight(context, 40),
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -210,9 +214,14 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
               onPressed: state.isSyncing
                   ? null
                   : () async {
-                      await ref.read(deviceLinkingProvider.notifier).syncData();
+                      await ref
+                          .read(deviceLinkingProvider.notifier)
+                          .syncData();
 
-                      if (mounted && !state.isSyncing) {
+                      // FIX: read fresh state after await so we don't use
+                      // stale isSyncing from the closure.
+                      final fresh = ref.read(deviceLinkingProvider);
+                      if (mounted && !fresh.isSyncing) {
                         Navigator.push(
                           context,
                           MaterialPageRoute(

@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
-import 'package:kudipay/provider/provider.dart';
+// import 'package:kudipay/provider/funding/funding_provider.dart';
+import 'package:kudipay/provider/add_money_provider.dart';
 
 class SelectBankScreen extends ConsumerStatefulWidget {
   const SelectBankScreen({Key? key}) : super(key: key);

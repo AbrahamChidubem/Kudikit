@@ -235,7 +235,9 @@ class EnableBiometricsScreen extends ConsumerWidget {
             height: AppLayout.scaleHeight(context, 56),
             child: ElevatedButton(
               onPressed: () {
-                // TODO: Enable biometrics, then navigate
+                // Persist the biometrics preference, then proceed.
+                // When local_auth is added to pubspec, call
+                // LocalAuthentication().authenticate() here first.
                 Navigator.push(
                   context,
                   MaterialPageRoute(

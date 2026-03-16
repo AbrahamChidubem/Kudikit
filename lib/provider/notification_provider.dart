@@ -2,43 +2,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/services/notification_preference_services.dart';
 
-/// ==================== NOTIFICATION PROVIDERS ====================
-/// 
-/// This file contains all notification preference related state providers:
-/// - Notification settings management
-/// - Preference synchronization
-/// - Toggle controls for different notification types
+// ==================== NOTIFICATION PROVIDERS ====================
 
-// ==================== SERVICE PROVIDER ====================
-
-/// Provider for notification preferences service
 final notificationPreferencesServiceProvider = Provider<NotificationPreferencesService>((ref) {
   return NotificationPreferencesService();
 });
 
-// ==================== STATE MANAGEMENT ====================
-
-/// State notifier for notification preferences
-class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<NotificationPreferences>> {
+// State notifier for notification preferences
+class NotificationPreferencesNotifier
+    extends StateNotifier<AsyncValue<NotificationPreferences>> {
   final NotificationPreferencesService _service;
 
-  NotificationPreferencesNotifier(this._service) : super(const AsyncValue.loading()) {
+  NotificationPreferencesNotifier(this._service)
+      : super(const AsyncValue.loading()) {
     loadPreferences();
   }
 
   /// Load preferences from server or local storage
   Future<void> loadPreferences() async {
     state = const AsyncValue.loading();
-    
+
     try {
       // Try to load from local storage first for instant UI
       final localPrefs = await _service.loadLocalPreferences();
       state = AsyncValue.data(localPrefs);
-      
+
       // Then fetch from server to sync
       final serverPrefs = await _service.fetchPreferences();
       state = AsyncValue.data(serverPrefs);
-      
+
       // Save to local storage
       await _service.savePreferencesLocally(serverPrefs);
     } catch (e, stackTrace) {
@@ -58,7 +50,7 @@ class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<Notificat
     try {
       // Update on server
       final success = await _service.updateSinglePreference(key, value);
-      
+
       if (success) {
         // Save to local storage
         await _service.savePreferencesLocally(updatedPrefs);
@@ -75,10 +67,10 @@ class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<Notificat
   /// Update all preferences at once
   Future<void> updateAllPreferences(NotificationPreferences preferences) async {
     state = const AsyncValue.loading();
-    
+
     try {
       final success = await _service.updatePreferences(preferences);
-      
+
       if (success) {
         state = AsyncValue.data(preferences);
         await _service.savePreferencesLocally(preferences);
@@ -106,13 +98,13 @@ class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<Notificat
         return prefs.copyWith(withdrawalNotification: value);
       case 'largeTransactionAlert':
         return prefs.copyWith(largeTransactionAlert: value);
-      
+
       // Bills & Reminders
       case 'billPaymentReminder':
         return prefs.copyWith(billPaymentReminder: value);
       case 'failedBillPaymentAlert':
         return prefs.copyWith(failedBillPaymentAlert: value);
-      
+
       // Rewards & Offers
       case 'rewardEarnedAlert':
         return prefs.copyWith(rewardEarnedAlert: value);
@@ -122,7 +114,7 @@ class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<Notificat
         return prefs.copyWith(promotionalOffers: value);
       case 'partnerOffers':
         return prefs.copyWith(partnerOffers: value);
-      
+
       // App Updates & Tips
       case 'newFeatureAnnouncements':
         return prefs.copyWith(newFeatureAnnouncements: value);
@@ -132,18 +124,17 @@ class NotificationPreferencesNotifier extends StateNotifier<AsyncValue<Notificat
         return prefs.copyWith(feedbackRequest: value);
       case 'announcementBanners':
         return prefs.copyWith(announcementBanners: value);
-      
+
       default:
         return prefs;
     }
   }
 }
 
-// ==================== PROVIDER ====================
-
-/// Provider for notification preferences
-final notificationPreferencesProvider = 
-    StateNotifierProvider<NotificationPreferencesNotifier, AsyncValue<NotificationPreferences>>((ref) {
+// Provider for notification preferences
+final notificationPreferencesProvider =
+    StateNotifierProvider<NotificationPreferencesNotifier,
+        AsyncValue<NotificationPreferences>>((ref) {
   final service = ref.watch(notificationPreferencesServiceProvider);
   return NotificationPreferencesNotifier(service);
 });

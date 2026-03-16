@@ -75,7 +75,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
         _simulateFaceDetection();
       }
     } catch (e) {
-      print('Error initializing camera: $e');
+      debugPrint('Error initializing camera: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to initialize camera: $e')),
@@ -134,7 +134,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
       final XFile photo = await _cameraController!.takePicture();
       _processImage(photo.path);
     } catch (e) {
-      print('Error capturing photo: $e');
+      debugPrint('Error capturing photo: $e');
     }
   }
 

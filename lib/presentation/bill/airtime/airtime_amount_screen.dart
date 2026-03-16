@@ -22,9 +22,13 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
-import 'package:kudipay/provider/bill/bill_provider.dart';
+import 'package:kudipay/presentation/bill/bill_transaction_detail.dart';
+import 'package:kudipay/provider/bill_provider.dart';
+import 'package:kudipay/provider/kyc_provider.dart';
 
-import 'package:kudipay/provider/provider.dart';
+
+
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 class AirtimeAmountScreen extends ConsumerStatefulWidget {
   const AirtimeAmountScreen({Key? key}) : super(key: key);
@@ -110,8 +114,28 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
             Navigator.pop(context);
           },
           onDetails: () {
-            Navigator.pop(context);
-            // TODO: navigate to transaction detail screen
+            Navigator.pop(context); // close success sheet
+            final s = ref.read(airtimeProvider);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BillTransactionDetail(
+                  title: 'Airtime Receipt',
+                  transactionId:
+                      s.result?.transactionId ??
+                      'TXN${DateTime.now().millisecondsSinceEpoch}',
+                  billType: 'Airtime',
+                  providerName: s.selectedNetwork?.displayName ?? '',
+                  amount: s.amount ?? 0,
+                  transactionDate: s.result?.createdAt ?? DateTime.now(),
+                  recipientNumber: s.phoneNumber,
+                  recipientName: '',
+                  extraDetails: {
+                    'Network': s.selectedNetwork?.displayName ?? '',
+                  },
+                ),
+              ),
+            );
           },
         ),
       );
@@ -131,6 +155,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(airtimeProvider);
+    final wallet = ref.watch(walletProvider);
     final isProcessing = state.step == AirtimeStep.processing;
 
     return Scaffold(
@@ -369,7 +394,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
 
                           // Balance
                           Text(
-                            'Balance: ₦5,000.00', // TODO: wire to wallet balance
+                            'Balance: ₦${wallet.formattedBalance}',
                             style: TextStyle(
                               fontSize: AppLayout.fontSize(context, 12),
                               color: const Color(0xFF9E9E9E),

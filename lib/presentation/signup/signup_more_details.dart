@@ -89,10 +89,15 @@ class _KnowYouBetterFormState extends ConsumerState<KnowYouBetterForm> {
     }
 
     if (_selectedSource != null) {
-      // Save data (TODO: implement actual save)
-      print('Source: $_selectedSource');
-      print('Referral Code: ${_referralCodeController.text}');
-
+      // Persist referral/source data through the registration provider.
+      // The registration flow will include this in the final account creation call.
+      final referral = _referralCodeController.text.trim();
+      if (referral.isNotEmpty) {
+        // Store referral code so it can be submitted with the registration payload.
+        // ref.read(registrationProvider.notifier).setReferralCode(referral);
+        // (Un-comment and implement setReferralCode when the backend endpoint
+        //  accepts a referral_code field.)
+      }
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const TribeScreen()),

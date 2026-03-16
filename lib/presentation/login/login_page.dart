@@ -7,7 +7,7 @@ import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/presentation/linkdevice/link_device_screen.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
-import 'package:kudipay/provider/auth/auth_provider.dart';
+import 'package:kudipay/presentation/support/support_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/api_services.dart';
 import 'package:kudipay/services/storage_services.dart';
@@ -883,10 +883,97 @@ class _ForgotPinSheet extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                    content: Text('PIN reset via email coming soon'),
-                    backgroundColor: brand,
-                  ));
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(24)),
+                    ),
+                    builder: (_) => SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 28),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: brand.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              child: Icon(Icons.lock_reset,
+                                  color: brand, size: 28),
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'PIN Reset via Email',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: Color(0xFF1A1A2E),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              'Self-service PIN reset via email is coming soon. '
+                              'For now, contact our support team to reset your PIN.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Color(0xFF9E9E9E),
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => const SupportScreen(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: brand,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(28),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Contact Support',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text(
+                                'Dismiss',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  color: Color(0xFF9E9E9E),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: brand,

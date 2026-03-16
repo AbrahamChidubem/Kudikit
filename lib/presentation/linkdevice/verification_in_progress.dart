@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/presentation/support/support_screen.dart';
 
 class VerificationInProgressScreen extends ConsumerWidget {
   const VerificationInProgressScreen({Key? key}) : super(key: key);
@@ -270,7 +271,12 @@ class VerificationInProgressScreen extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                // TODO: Navigate to support
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const SupportScreen(),
+                  ),
+                );
               },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,

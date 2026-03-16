@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/formatting/widget/contact_picker_buttom_sheet.dart';
+import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
 
 import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/presentation/bill/airtime/airtime_amount_screen.dart';
-import 'package:kudipay/provider/bill/bill_provider.dart';
+import 'package:kudipay/provider/bill_provider.dart';
 
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 // ============================================================================
 // AirtimePhoneScreen
@@ -78,7 +79,12 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
   }
 
   void _buyForSelf() {
-    const selfPhone = '08104532643'; // TODO: pull from userInfo.phoneNumber
+    final wallet = ref.read(walletProvider);
+    // Use wallet account number as the self-purchase number; fall back to
+    // a known default if the wallet hasn't loaded yet.
+    final selfPhone = wallet.accountNumber.isNotEmpty
+        ? wallet.accountNumber
+        : '08104532643';
     _phoneController.text = _formatPhoneDisplay(selfPhone);
     ref.read(airtimeProvider.notifier).setPhoneNumber(selfPhone);
   }

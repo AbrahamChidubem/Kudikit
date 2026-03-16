@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
-import 'package:kudipay/presentation/transfer/single_transfer/confirm_transfer_buttom_sheet.dart';
+import 'package:kudipay/presentation/transfer/single_transfer/confirm_transfer_bottom_sheet.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/schedule_transfer_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
 import 'package:kudipay/provider/provider.dart';

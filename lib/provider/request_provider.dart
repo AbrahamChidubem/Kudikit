@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
-import '../../model/request/request_model.dart';
+import '../model/request/request_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class RequestProvider extends ChangeNotifier {

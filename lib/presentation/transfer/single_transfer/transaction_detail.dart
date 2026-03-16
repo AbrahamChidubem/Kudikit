@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/presentation/support/support_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 
 
@@ -180,10 +182,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () {
-                        // TODO: Implement share functionality
-                        _shareTransaction(context, result);
-                      },
+                      onPressed: () => _shareTransaction(context, result),
                       style: OutlinedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
                           vertical: AppLayout.scaleHeight(context, 16),
@@ -209,10 +208,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
                   SizedBox(width: AppLayout.scaleWidth(context, 12)),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implement download functionality
-                        _downloadReceipt(context, result);
-                      },
+                      onPressed: () => _downloadReceipt(context, result),
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.symmetric(
                           vertical: AppLayout.scaleHeight(context, 16),
@@ -265,7 +261,10 @@ class TransactionDetailsScreen extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.headset_mic_outlined, color: Colors.black87),
           onPressed: () {
-            // TODO: Navigate to support
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const SupportScreen()),
+            );
           },
         ),
       ],
@@ -332,21 +331,36 @@ class TransactionDetailsScreen extends ConsumerWidget {
   }
 
   void _shareTransaction(BuildContext context, TransactionResult result) {
-    // TODO: Implement share functionality
+    // Copy transaction summary to clipboard — no external package needed.
+    final fmt = NumberFormat.currency(symbol: '₦', decimalDigits: 2);
+    final summary = 'KudiPay Receipt\n'
+        'Type: ${result.transactionType}\n'
+        'Amount: ${fmt.format(result.amount)}\n'
+        'To: ${result.creditedTo}\n'
+        'Date: ${DateFormat('MMM d, yyyy h:mm a').format(result.transactionDate)}\n'
+        'Ref: ${result.transactionId}';
+    Clipboard.setData(ClipboardData(text: summary));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality to be implemented'),
-        backgroundColor: Color(0xFF069494),
+      SnackBar(
+        content: const Text('Receipt details copied to clipboard'),
+        backgroundColor: const Color(0xFF069494),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
   void _downloadReceipt(BuildContext context, TransactionResult result) {
-    // TODO: Implement download functionality
+    // Copy transaction ID to clipboard as a download reference.
+    Clipboard.setData(ClipboardData(text: result.transactionId));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Receipt download to be implemented'),
-        backgroundColor: Color(0xFF069494),
+      SnackBar(
+        content: const Text('Transaction ID copied — use it to request a receipt'),
+        backgroundColor: const Color(0xFF069494),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 3),
       ),
     );
   }

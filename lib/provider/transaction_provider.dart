@@ -2,26 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/services/transaction_service.dart';
 
-/// ==================== TRANSACTION PROVIDERS ====================
-///
-/// This file contains all transaction-related state providers:
-/// - Transaction list management
-/// - Filtering and search
-/// - Statistics and grouping
-/// - Transaction service
+// ==================== TRANSACTION PROVIDERS ====================
 
-// ==================== SERVICE PROVIDER ====================
-
-/// Provider for transaction service
 final transactionServiceProvider = Provider<TransactionService>((ref) {
   return TransactionService(
     baseUrl: 'https://api.kudipay.com/api/v1',
   );
 });
 
-// ==================== TRANSACTION STATE ====================
-
-/// State class for transaction list
 class TransactionState {
   final List<Transaction> transactions;
   final bool isLoading;
@@ -50,13 +38,11 @@ class TransactionState {
   }
 }
 
-/// State notifier for managing transactions
 class TransactionNotifier extends StateNotifier<TransactionState> {
   final TransactionService _service;
 
   TransactionNotifier(this._service) : super(const TransactionState());
 
-  /// Loads transactions with optional status filter
   Future<void> loadTransactions({
     bool refresh = false,
     TransactionStatus? status,
@@ -86,7 +72,6 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     }
   }
 
-  /// Loads more transactions for pagination
   Future<void> loadMore() async {
     if (state.isLoading || !state.hasMore) return;
 
@@ -105,7 +90,6 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     }
   }
 
-  /// Searches transactions by query
   Future<void> searchTransactions(String query) async {
     if (query.isEmpty) {
       await loadTransactions(refresh: true);
@@ -129,7 +113,6 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
     }
   }
 
-  /// Downloads transactions in specified format
   Future<String?> downloadTransactions({
     String format = 'pdf',
     DateTime? startDate,
@@ -148,7 +131,6 @@ class TransactionNotifier extends StateNotifier<TransactionState> {
   }
 }
 
-/// Main transaction provider
 final transactionProvider =
     StateNotifierProvider<TransactionNotifier, TransactionState>((ref) {
   final service = ref.watch(transactionServiceProvider);
@@ -157,7 +139,6 @@ final transactionProvider =
 
 // ==================== TRANSACTION FILTER ====================
 
-/// Filter criteria for transactions
 class TransactionFilter {
   final TransactionStatus? status;
   final DateTime? startDate;
@@ -185,11 +166,9 @@ class TransactionFilter {
   }
 }
 
-/// Provider for transaction filter state
 final transactionFilterProvider =
     StateProvider<TransactionFilter>((ref) => const TransactionFilter());
 
-/// Provider for filtered transactions
 final filteredTransactionsProvider = Provider<List<Transaction>>((ref) {
   final state = ref.watch(transactionProvider);
   final filter = ref.watch(transactionFilterProvider);
@@ -207,7 +186,6 @@ final filteredTransactionsProvider = Provider<List<Transaction>>((ref) {
         .where((transaction) => transaction.date.isAfter(filter.startDate!))
         .toList();
   }
-
   if (filter.endDate != null) {
     transactions = transactions
         .where((transaction) => transaction.date.isBefore(filter.endDate!))
@@ -217,9 +195,6 @@ final filteredTransactionsProvider = Provider<List<Transaction>>((ref) {
   return transactions;
 });
 
-// ==================== TRANSACTION GROUPING ====================
-
-/// Provider for transactions grouped by date
 final groupedTransactionsProvider =
     Provider<Map<String, List<Transaction>>>((ref) {
   final transactions = ref.watch(filteredTransactionsProvider);
@@ -236,7 +211,6 @@ final groupedTransactionsProvider =
   return grouped;
 });
 
-/// Formats date for grouping (e.g., "Today", "Monday, January 1st, 2024")
 String _getDateKey(DateTime date) {
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
@@ -277,7 +251,6 @@ String _getDateKey(DateTime date) {
   return '$dayName, $monthName $dayWithSuffix, ${date.year}';
 }
 
-/// Adds ordinal suffix to day number (1st, 2nd, 3rd, etc.)
 String _getDayWithSuffix(int day) {
   if (day >= 11 && day <= 13) {
     return '${day}th';
@@ -294,14 +267,10 @@ String _getDayWithSuffix(int day) {
   }
 }
 
-// ==================== TRANSACTION SEARCH ====================
-
-/// Provider for search query
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
-// ==================== TRANSACTION STATISTICS ====================
+// ==================== TRANSACTION STATS ====================
 
-/// Statistics calculated from transactions
 class TransactionStats {
   final double totalIncome;
   final double totalExpense;
@@ -319,11 +288,9 @@ class TransactionStats {
     required this.pendingCount,
   });
 
-  /// Net balance (income - expense)
   double get netBalance => totalIncome - totalExpense;
 }
 
-/// Provider for transaction statistics
 final transactionStatsProvider = Provider<TransactionStats>((ref) {
   final transactions = ref.watch(filteredTransactionsProvider);
 

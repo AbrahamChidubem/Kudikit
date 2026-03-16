@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:csv/csv.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -460,11 +461,23 @@ class _BulkTransferUploadFileScreenState
   }
 
   void _downloadTemplate(BuildContext context) {
-    // TODO: Implement template download
+    // Copy a ready-to-use CSV template to the clipboard.
+    // Users can paste this into any spreadsheet app, fill in their data,
+    // save as .csv, and upload it here.
+    const template =
+        'account_number,account_name,bank_name,amount,narration\n'
+        '0123456789,John Doe,GTBank,5000,Salary payment\n'
+        '9876543210,Jane Smith,Access Bank,10000,Invoice settlement\n';
+    Clipboard.setData(const ClipboardData(text: template));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Template download feature coming soon'),
-        backgroundColor: Color(0xFF069494),
+      SnackBar(
+        content: const Text(
+          'CSV template copied to clipboard — paste into a spreadsheet to fill in',
+        ),
+        backgroundColor: const Color(0xFF069494),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 4),
       ),
     );
   }

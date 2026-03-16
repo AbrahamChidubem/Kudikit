@@ -173,13 +173,11 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
               child: ElevatedButton(
                 onPressed: selectedTribe != null
                     ? () {
-                        // Handle continue action
                         Navigator.push(
                             context,
                             MaterialPageRoute(
                                 builder: (context) =>
                                     const SelfieInstructionsScreen()));
-                        print('Selected tribe: $selectedTribe');
                       }
                     : null,
                 style: ElevatedButton.styleFrom(

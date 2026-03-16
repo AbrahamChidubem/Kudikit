@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/request/request_detail_screen.dart';
-import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:kudipay/presentation/request/request_money_main_screen.dart';
+import 'package:kudipay/provider/request_provider.dart';
+
 import '../../model/request/request_model.dart';
 
 class MyRequestsScreen extends ConsumerStatefulWidget {
@@ -158,13 +160,10 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // TODO: navigate to the create-request flow
-          // Navigator.push(context, MaterialPageRoute(builder: (_) => const RequestMoneyMainScreen()));
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('New request feature coming soon'),
-              backgroundColor: Color(0xFF069494),
-              behavior: SnackBarBehavior.floating,
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const RequestMoneyMainScreen(),
             ),
           );
         },

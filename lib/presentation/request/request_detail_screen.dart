@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/provider/request_provider.dart';
+
 import 'package:provider/provider.dart';
 import '../../model/request/request_model.dart';
 
@@ -38,8 +40,78 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
   }
 
   void _showCounterOfferDialog() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Counter offer feature coming soon')),
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppLayout.scaleWidth(context, 24),
+            vertical: AppLayout.scaleHeight(context, 28),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5EE),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(Icons.compare_arrows_rounded,
+                    color: Color(0xFF069494), size: 26),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 14)),
+              Text(
+                'Counter Offer Coming Soon',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 18),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              Text(
+                'The ability to send a counter offer is being '
+                'built and will be available shortly.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
+                  color: const Color(0xFF9E9E9E),
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF069494),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                  ),
+                  child: Text(
+                    'Got it',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 15),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

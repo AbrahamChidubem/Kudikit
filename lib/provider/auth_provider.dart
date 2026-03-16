@@ -3,7 +3,8 @@ import 'package:kudipay/model/auth/auth_state.dart';
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/services/auth_services.dart';
 import 'package:kudipay/services/storage_services.dart';
-
+import 'package:kudipay/model/user/user.dart';
+import 'package:kudipay/model/user/user_info.dart';
 // =============================================================================
 // auth_provider.dart
 // -----------------------------------------------------------------------------
@@ -350,3 +351,21 @@ final isKycCompleteProvider = Provider<bool>((ref) {
   final user = ref.watch(currentUserProvider);
   return user?.isKycComplete ?? false;
 });
+
+// ==================== SIMPLE AUTH STATE PROVIDERS ====================
+
+final pinVisibilityProvider = StateProvider<bool>((ref) => false);
+final confirmPinVisibilityProvider = StateProvider<bool>((ref) => false);
+final userIdProvider = StateProvider<String?>((ref) => null);
+final userProvider = StateProvider<String>((ref) => 'Dubeeem');
+final userEmailProvider = StateProvider<String>((ref) => 'example@gmail.com');
+
+final userProfileProvider = Provider<UserProfile>((ref) {
+  return UserProfile(
+    userId: ref.watch(userIdProvider),
+    name: ref.watch(userProvider),
+    email: ref.watch(userEmailProvider),
+  );
+});
+
+// final userInfoProvider = StateProvider<UserInfo?>((ref) => null);

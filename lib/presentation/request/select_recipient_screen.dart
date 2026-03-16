@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/preview_request_screen.dart';
-import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:kudipay/provider/request_provider.dart';
 import 'package:provider/provider.dart';
 import '../../model/request/request_model.dart';
 

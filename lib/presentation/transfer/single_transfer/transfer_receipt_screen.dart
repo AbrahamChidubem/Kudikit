@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/formatting/widget/contact_picker_buttom_sheet.dart';
-import 'package:kudipay/provider/bill/bill_provider.dart';
+import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
+
+import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
+import 'package:kudipay/provider/bill_provider.dart';
+
 import 'package:kudipay/provider/provider.dart';
 import 'transfer_amount_screen.dart';
 import 'bank_selection_bottom_sheet.dart';
@@ -602,7 +605,12 @@ class _TransferRecipientScreenState
                   icon: Icons.qr_code_scanner,
                   label: 'QR Code',
                   onTap: () {
-                    // TODO: Implement QR code scanner
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const QrCodeScreen(),
+                      ),
+                    );
                   },
                 ),
               ),

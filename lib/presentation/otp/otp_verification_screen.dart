@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/transaction/transaction_success.dart';
+import 'package:kudipay/provider/connectivity_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/api_services.dart';
 
@@ -32,7 +33,9 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
       next.whenData((isConnected) {
         if (previous?.value != null && previous!.value! && !isConnected) {
           ConnectivitySnackBar.showNoInternet(context);
-        } else if (previous?.value != null && !previous!.value! && isConnected) {
+        } else if (previous?.value != null &&
+            !previous!.value! &&
+            isConnected) {
           ConnectivitySnackBar.showConnectionRestored(context);
         }
       });

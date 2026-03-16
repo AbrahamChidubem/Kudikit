@@ -148,8 +148,9 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
     });
 
     try {
-      // TODO: Replace with actual email service
-      // Send verification code to email
+      // Resend verification email — replace this delay with the real auth
+      // service call (e.g. ref.read(authProvider.notifier).resendVerification(widget.email))
+      // when the backend endpoint is available.
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
@@ -216,7 +217,9 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
     });
 
     try {
-      // TODO: Replace with actual verification service
+      // Verify OTP — replace this delay with the real auth service call
+      // (e.g. ref.read(authProvider.notifier).verifyEmail(widget.email, code))
+      // when the backend endpoint is available.
       await Future.delayed(const Duration(seconds: 2));
 
       if (code.isNotEmpty) {

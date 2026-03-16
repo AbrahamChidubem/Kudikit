@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/splashscreen/splashscreen.dart';
+import 'package:kudipay/provider/connectivity_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 import 'package:camera/camera.dart';

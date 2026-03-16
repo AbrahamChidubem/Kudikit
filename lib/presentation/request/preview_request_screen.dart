@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:kudipay/provider/request_provider.dart';
 import 'package:provider/provider.dart';
 import 'request_sent_screen.dart';
 

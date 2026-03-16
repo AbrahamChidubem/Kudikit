@@ -4,20 +4,25 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
 
+import 'package:kudipay/presentation/support/support_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
 
 class OtpVerificationBottomSheet extends ConsumerStatefulWidget {
   final double amount;
   final String maskedPhone;
+  final Future<void> Function()? onResend;
 
   const OtpVerificationBottomSheet({
     Key? key,
     required this.amount,
     this.maskedPhone = '*******8790',
+    this.onResend,
   }) : super(key: key);
 
   static void show(BuildContext context,
-      {required double amount, String? maskedPhone}) {
+      {required double amount,
+      String? maskedPhone,
+      Future<void> Function()? onResend}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -27,6 +32,7 @@ class OtpVerificationBottomSheet extends ConsumerStatefulWidget {
       builder: (context) => OtpVerificationBottomSheet(
         amount: amount,
         maskedPhone: maskedPhone ?? '*******8790',
+        onResend: onResend,
       ),
     );
   }
@@ -116,13 +122,21 @@ class _OtpVerificationBottomSheetState
     });
     _startCountdown();
 
-    // TODO: Implement actual OTP resend
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('OTP sent to ${widget.maskedPhone}'),
-        backgroundColor: const Color(0xFF069494),
-      ),
-    );
+    // Resend OTP — calls widget.onResend if provided, otherwise shows snackbar
+    if (widget.onResend != null) {
+      await widget.onResend!();
+    }
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('OTP sent to ${widget.maskedPhone}'),
+          backgroundColor: const Color(0xFF069494),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
   }
 
   @override
@@ -318,7 +332,12 @@ class _OtpVerificationBottomSheetState
                 // Having problem link
                 TextButton(
                   onPressed: () {
-                    // TODO: Navigate to support
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SupportScreen(),
+                      ),
+                    );
                   },
                   child: Text(
                     'Having problem?',

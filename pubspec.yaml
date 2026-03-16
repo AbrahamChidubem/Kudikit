@@ -68,9 +68,9 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   
-  flutter_launcher_icons: 
+   
 
-flutter_icons: 
+flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/images/kudikit_teal_logo.png"
@@ -85,6 +85,6 @@ flutter:
     - assets/fonts/
 
   fonts:
-    - family: Poly Sans
-      fonts:
-        - asset: assets/fonts/Polysanstrial-neutral.otf
+  - family: PolySans          # ← was "Poly Sans", changed to match code
+    fonts:
+      - asset: assets/fonts/polysanstrial-neutral.otf

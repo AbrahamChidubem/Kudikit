@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/formatting/widget/transacton_pin_bottom_sheet.dart';
+import 'package:kudipay/formatting/widget/transaction_pin_bottom_sheet.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
-import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/P2P_transfer_provider.dart';
 
 // =============================================================================
 // PinEntryBottomSheet
@@ -23,7 +23,8 @@ class PinEntryBottomSheet extends ConsumerWidget {
       onSuccess: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const TransactionSuccessBottomSheet()),
+          MaterialPageRoute(
+              builder: (_) => const TransactionSuccessBottomSheet()),
         );
       },
     );
@@ -35,11 +36,14 @@ class PinEntryBottomSheet extends ConsumerWidget {
       title: 'Enter Transaction PIN',
       subtitle: 'Authorise this transfer with your 4-digit PIN.',
       onSuccess: () async {
-        await ref.read(p2pTransferProvider.notifier).processTransfer('verified');
+        await ref
+            .read(p2pTransferProvider.notifier)
+            .processTransfer('verified');
         if (context.mounted) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const TransactionSuccessBottomSheet()),
+            MaterialPageRoute(
+                builder: (_) => const TransactionSuccessBottomSheet()),
           );
         }
       },

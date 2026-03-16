@@ -1,32 +1,22 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/services/email_change_services.dart';
 
-/// ==================== EMAIL CHANGE PROVIDERS ====================
-/// 
-/// This file contains all email change related state providers:
-/// - Multi-step email change flow
-/// - OTP verification
-/// - Email validation
+// ==================== EMAIL CHANGE PROVIDER ====================
 
-// ==================== SERVICE PROVIDER ====================
-
-/// Provider for email change service
+// Service provider
 final emailChangeServiceProvider = Provider<EmailChangeService>((ref) {
   return EmailChangeService();
 });
 
-// ==================== STATE MANAGEMENT ====================
-
-/// Steps in email change flow
+// Email change flow state
 enum EmailChangeStep {
-  initial,        // Show current email
-  requestingOtp,  // Getting OTP
-  verifyingOtp,   // Entering OTP
-  changingEmail,  // Entering new email
-  success,        // Email changed successfully
+  initial,       // Show current email
+  requestingOtp, // Getting OTP
+  verifyingOtp,  // Entering OTP
+  changingEmail, // Entering new email
+  success,       // Email changed successfully
 }
 
-/// State for email change flow
 class EmailChangeState {
   final EmailChangeStep step;
   final String? currentEmail;
@@ -67,7 +57,7 @@ class EmailChangeState {
   }
 }
 
-/// State notifier for email change
+// Email change notifier
 class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
   final EmailChangeService _service;
 
@@ -92,7 +82,7 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
 
     try {
       final result = await _service.requestOTP(state.currentEmail ?? '');
-      
+
       if (result['success']) {
         state = state.copyWith(
           step: EmailChangeStep.verifyingOtp,
@@ -122,7 +112,7 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
 
     try {
       final result = await _service.verifyOTP(otp);
-      
+
       if (result['success']) {
         state = state.copyWith(
           step: EmailChangeStep.changingEmail,
@@ -155,7 +145,7 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
         newEmail: newEmail,
         verificationToken: state.verificationToken ?? '',
       );
-      
+
       if (result['success']) {
         state = state.copyWith(
           step: EmailChangeStep.success,
@@ -185,9 +175,9 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
 
     try {
       final result = await _service.resendOTP();
-      
+
       state = state.copyWith(isLoading: false);
-      
+
       if (result['success']) {
         return true;
       } else {
@@ -226,10 +216,9 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
   }
 }
 
-// ==================== PROVIDER ====================
-
-/// Provider for email change
-final emailChangeProvider = StateNotifierProvider<EmailChangeNotifier, EmailChangeState>((ref) {
+// Provider for email change
+final emailChangeProvider =
+    StateNotifierProvider<EmailChangeNotifier, EmailChangeState>((ref) {
   final service = ref.watch(emailChangeServiceProvider);
   return EmailChangeNotifier(service);
 });

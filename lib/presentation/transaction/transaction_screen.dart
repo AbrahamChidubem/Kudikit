@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/formatters.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
-
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/provider/provider.dart';
 
@@ -471,16 +471,20 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           await ref.read(transactionProvider.notifier).downloadTransactions();
       if (!mounted) return;
       if (url != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Download started'),
-            backgroundColor: const Color(0xFF069494),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10)),
-          ),
-        );
-        // TODO: open/share the URL
+        // Copy the download URL to clipboard so the user can open it in a browser.
+        await Clipboard.setData(ClipboardData(text: url));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text(
+                  'Download link copied to clipboard'),
+              backgroundColor: const Color(0xFF069494),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+          );
+        }
       } else {
         _showErrorSnackBar(
             'Could not generate your download. Please try again.');

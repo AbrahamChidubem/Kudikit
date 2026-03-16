@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/formatting/widget/transacton_pin_bottom_sheet.dart';
+import 'package:kudipay/formatting/widget/transaction_pin_bottom_sheet.dart';
+import 'package:kudipay/provider/bulk_transfer_provider.dart';
 
-import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 // =============================================================================
 // BulkTransferPinDialog

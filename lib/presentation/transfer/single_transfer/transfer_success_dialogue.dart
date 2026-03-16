@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transaction_detail.dart';
-import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/provider_pack.dart';
 
 class TransactionSuccessBottomSheet extends ConsumerStatefulWidget {
   const TransactionSuccessBottomSheet({Key? key}) : super(key: key);
@@ -379,8 +379,7 @@ class _TransactionSuccessBottomSheetState
   void _handleDone(BuildContext context) {
     try {
       if (_addToFavourite) {
-        // TODO: Implement save to favourites
-        debugPrint('Saving to favourites...');
+        ref.read(p2pTransferProvider.notifier).addFavourite();
       }
       ref.read(p2pTransferProvider.notifier).reset();
       Navigator.of(context).popUntil((route) => route.isFirst);

@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
+import 'package:kudipay/presentation/support/support_screen.dart';
+import 'package:kudipay/provider/bulk_transfer_provider.dart';
+
 
 
 class BulkTransferDetailsScreen extends ConsumerWidget {
@@ -42,7 +44,10 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.headset_mic_outlined, color: Colors.black),
             onPressed: () {
-              // TODO: Open support
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SupportScreen()),
+              );
             },
           ),
         ],
@@ -305,7 +310,7 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
                     height: AppLayout.scaleHeight(context, 54),
                     child: OutlinedButton(
                       onPressed: () {
-                        _shareReceipt(context);
+                        _shareReceipt(context, ref);
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(
@@ -333,7 +338,7 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
                     height: AppLayout.scaleHeight(context, 54),
                     child: ElevatedButton(
                       onPressed: () {
-                        _downloadReceipt(context);
+                        _downloadReceipt(context, ref);
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF069494),
@@ -396,22 +401,41 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
     );
   }
 
-  void _shareReceipt(BuildContext context) {
-    // TODO: Implement share functionality
+  void _shareReceipt(BuildContext context, WidgetRef ref) {
+    final state = ref.read(bulkTransferProvider);
+    final fmt = NumberFormat.currency(symbol: '₦', decimalDigits: 2);
+    final summary = 'KudiPay Bulk Transfer\n'
+        'Recipients: ${state.recipientCount}\n'
+        'Total: ${fmt.format(state.totalDebit)}\n'
+        'Status: Completed';
+    Clipboard.setData(ClipboardData(text: summary));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Share functionality coming soon'),
-        backgroundColor: Color(0xFF069494),
+      SnackBar(
+        content: const Text('Transfer summary copied to clipboard'),
+        backgroundColor: const Color(0xFF069494),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
-  void _downloadReceipt(BuildContext context) {
-    // TODO: Implement download functionality
+  void _downloadReceipt(BuildContext context, WidgetRef ref) {
+    final state = ref.read(bulkTransferProvider);
+    final fmt = NumberFormat.currency(symbol: '₦', decimalDigits: 2);
+    final receipt = 'KudiPay Bulk Transfer Receipt\n'
+        'Recipients: ${state.recipientCount}\n'
+        'Total Debited: ${fmt.format(state.totalDebit)}\n'
+        '---\n'
+        '${state.recipients.map((r) => '${r.name}: ${fmt.format(r.amount)}').join('\n')}';
+    Clipboard.setData(ClipboardData(text: receipt));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Receipt downloaded successfully'),
-        backgroundColor: Color(0xFF069494),
+      SnackBar(
+        content: const Text('Receipt copied to clipboard'),
+        backgroundColor: const Color(0xFF069494),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        duration: const Duration(seconds: 2),
       ),
     );
   }

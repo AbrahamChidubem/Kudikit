@@ -6,12 +6,16 @@ import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
 import 'package:kudipay/presentation/bill/airtime/airtime_phone_screen.dart';
+import 'package:kudipay/presentation/bill/cable_tv/cable_tv_screen.dart';
 import 'package:kudipay/presentation/bill/data/data_phone_screen.dart';
-// import 'package:kudipay/presentation/request/request_menu_screen.dart';
+import 'package:kudipay/presentation/bill/electricity/electricity_screen.dart';
 import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
+import 'package:kudipay/provider/kyc_provider.dart';
 import 'package:kudipay/provider/provider.dart';
-import 'package:kudipay/provider/tier/tier_provider.dart';
+import 'package:kudipay/provider/tier_provider.dart';
+
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -22,19 +26,10 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isBalanceVisible = true;
-  // Drives shimmer on balance card and recent transactions.
-  // TODO: replace with a real isLoading flag from a wallet/home provider once
-  // balance fetching is wired up. The delay here mimics an async fetch.
-  bool _isLoadingHome = true;
 
   @override
   void initState() {
     super.initState();
-    // Simulate initial data fetch — remove once real provider is in place
-    Future.delayed(const Duration(milliseconds: 1500), () {
-      if (mounted) setState(() => _isLoadingHome = false);
-    });
-    // Listen to connectivity changes and show feedback
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
     });
@@ -44,12 +39,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen(connectivityProvider, (previous, next) {
       next.whenData((isConnected) {
         if (previous?.value != null && previous!.value! && !isConnected) {
-          // Connection lost
           ConnectivitySnackBar.showNoInternet(context);
         } else if (previous?.value != null &&
             !previous!.value! &&
             isConnected) {
-          // Connection restored
           ConnectivitySnackBar.showConnectionRestored(context);
         }
       });
@@ -57,12 +50,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _copyAccountNumber() {
-    final userInfo = ref.read(userInfoProvider);
-    // TODO: replace hardcoded values with real account number from wallet provider
-    final accountNumber = '8104532643';
-    final accountName = userInfo != null
-        ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'.trim()
-        : 'John Doe Byran';
+    final wallet = ref.read(walletProvider);
+    final accountNumber = wallet.accountNumber;
+    final accountName = wallet.accountName;
     Clipboard.setData(ClipboardData(text: '$accountNumber $accountName'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -81,8 +71,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final connectivityState = ref.watch(connectivityStateProvider);
     final tierState = ref.watch(tierProvider);
     final currentTierObject = tierState.getTierObject();
-    // The name comes from the BVN/NIN verification!
-    final firstName = userInfo?.firstName ?? 'User';
+    final wallet = ref.watch(walletProvider);
+    final firstName = userInfo?.firstName ??
+        (wallet.accountName.isNotEmpty
+            ? wallet.accountName.split(' ').first.capitalize()
+            : 'User');
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -254,8 +247,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-                    // Balance Card — shows shimmer until home data loads
-                    _isLoadingHome
+                    // Balance Card — shimmer while wallet is loading
+                    wallet.isLoading
                         ? Padding(
                             padding: EdgeInsets.symmetric(
                               horizontal: AppLayout.scaleWidth(context, 16),
@@ -368,9 +361,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     Flexible(
                                       child: Text(
                                         _isBalanceVisible
-                                            // TODO: replace with real balance from wallet provider
-                                            ? '₦135,780.00'
-                                            : '₦**********',
+                                            ? '₦${wallet.formattedBalance}'
+                                            : '₦ ••••••••••',
                                         style: TextStyle(
                                           fontSize:
                                               AppLayout.fontSize(context, 32),
@@ -406,10 +398,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   children: [
                                     Flexible(
                                       child: Text(
-                                        // TODO: replace with real last-synced timestamp from wallet provider
-                                        connectivityState.isConnected
-                                            ? 'Last updated recently'
-                                            : 'Offline — showing cached balance',
+                                        !connectivityState.isConnected
+                                            ? 'Offline — showing cached balance'
+                                            : wallet.lastUpdated != null
+                                                ? 'Updated ${_timeAgo(wallet.lastUpdated!)}'
+                                                : 'Last updated recently',
                                         style: TextStyle(
                                           fontSize:
                                               AppLayout.fontSize(context, 11),
@@ -427,8 +420,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        // TODO: replace with real account number from wallet provider
-                                        '8104532643',
+                                        wallet.accountNumber,
                                         style: TextStyle(
                                           fontSize:
                                               AppLayout.fontSize(context, 12),
@@ -452,12 +444,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               AppLayout.scaleWidth(context, 4)),
                                       Flexible(
                                         child: Text(
-                                          // Use real name from userInfo if available,
-                                          // else fall back to placeholder
                                           userInfo != null
                                               ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'
                                                   .trim()
-                                              : 'John Doe Byran',
+                                              : wallet.accountName,
                                           style: TextStyle(
                                             fontSize:
                                                 AppLayout.fontSize(context, 12),
@@ -576,11 +566,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 icon: Icons.tv,
                                 label: 'TV',
                                 onTap: () {
-                                  // _handleQuickAction(
-                                  //   context,
-                                  //   'Request',
-                                  //   navigateTo: const AirtimeAmountScreen()
-                                  // );
+                                  _handleQuickAction(
+                                    context,
+                                    'TV Cable',
+                                    navigateTo: const CableTvBillerScreen(),
+                                  );
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
@@ -590,11 +580,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 icon: Icons.bolt_outlined,
                                 label: 'Electricity',
                                 onTap: () {
-                                  // _handleQuickAction(
-                                  //   context,
-                                  //   'Request',
-                                  //   navigateTo: const AirtimeAmountScreen()
-                                  // );
+                                  _handleQuickAction(
+                                    context,
+                                    'Electricity',
+                                    navigateTo: const ElectricityScreen(),
+                                  );
                                 },
                                 isEnabled: connectivityState.isConnected,
                               ),
@@ -732,10 +722,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
 
-                    // Fix 1: shimmer while loading, real rows once loaded
-                    // TODO: replace _isLoadingHome with real transactions provider
-                    // and map actual transaction data to _buildTransactionItem
-                    if (_isLoadingHome)
+                    // Recent transactions — shimmer while wallet is loading
+                    if (wallet.isLoading)
                       const HomeRecentTransactionsShimmer(itemCount: 3)
                     else ...[
                       _buildTransactionItem(
@@ -816,13 +804,85 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         MaterialPageRoute(builder: (context) => navigateTo),
       );
     } else {
-      // Handle other actions
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$actionName feature coming soon'),
-        ),
-      );
+      _showComingSoon(context, actionName);
     }
+  }
+
+  void _showComingSoon(BuildContext context, String featureName) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppLayout.scaleWidth(context, 24),
+            vertical: AppLayout.scaleHeight(context, 28),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE8F5EE),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Icon(Icons.rocket_launch_outlined,
+                    color: Color(0xFF069494), size: 28),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 16)),
+              Text(
+                '$featureName Coming Soon',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 18),
+                  fontWeight: FontWeight.w700,
+                  color: const Color(0xFF1A1A2E),
+                  fontFamily: 'PolySans',
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              Text(
+                'We\'re working hard to bring you this feature. '
+                'Stay tuned for updates!',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
+                  color: const Color(0xFF9E9E9E),
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF069494),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(28),
+                    ),
+                  ),
+                  child: Text(
+                    'Got it',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 15),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildQuickAction({
@@ -1045,4 +1105,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
+  String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inSeconds < 60) return 'just now';
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    return '${diff.inDays}d ago';
+  }
+}
+
+extension _StringExt on String {
+  String capitalize() =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
 }

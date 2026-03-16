@@ -4,7 +4,6 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/linkdevice/verify_id.dart';
 import 'package:kudipay/provider/provider.dart';
 
-
 class GetVerificationCodeScreen extends ConsumerStatefulWidget {
   const GetVerificationCodeScreen({Key? key}) : super(key: key);
 
@@ -15,13 +14,7 @@ class GetVerificationCodeScreen extends ConsumerStatefulWidget {
 
 class _GetVerificationCodeScreenState
     extends ConsumerState<GetVerificationCodeScreen> {
-  VerificationMethod? _selectedMethod;
-
-  @override
-  void initState() {
-    super.initState();
-    _selectedMethod = VerificationMethod.email;
-  }
+  VerificationMethod _selectedMethod = VerificationMethod.email;
 
   @override
   Widget build(BuildContext context) {
@@ -30,17 +23,24 @@ class _GetVerificationCodeScreenState
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
-      body: Column(
+      // FIX: Wrap in Stack so the loading overlay can sit on top of everything.
+      // FIX: Column → SafeArea+Column so button sits at bottom without overlapping.
+      body: Stack(
         children: [
-          _buildBody(context, state),
-          _buildButton(context, state),
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(child: _buildBody(context, state)),
+                _buildButton(context, state),
+              ],
+            ),
+          ),
+          // FIX: Loading overlay is now correctly inside the Stack.
           if (state.isSendingCode)
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(
-                  color: Color(0xFF069494),
-                ),
+                child: CircularProgressIndicator(color: Color(0xFF069494)),
               ),
             ),
         ],
@@ -61,63 +61,57 @@ class _GetVerificationCodeScreenState
 
   Widget _buildBody(BuildContext context, DeviceLinkingState state) {
     return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppLayout.scaleWidth(context, 24),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // Title
-            Text(
-              'Get verification code',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 24),
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
+          Text(
+            'Get verification code',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 24),
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
             ),
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+          SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-            // Subtitle
-            Text(
-              'Choose how you\'d like to receive your code',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 14),
-                color: Colors.black54,
-              ),
+          Text(
+            'Choose how you\'d like to receive your code',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              color: Colors.black54,
             ),
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 32)),
+          SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-            // Email option
-            _buildMethodOption(
-              context,
-              method: VerificationMethod.email,
-              icon: Icons.email_outlined,
-              title: 'Send code to my registered email',
-              subtitle: state.data?.maskedEmail ?? 'u***8@gmail.com',
-              isSelected: _selectedMethod == VerificationMethod.email,
-            ),
+          _buildMethodOption(
+            context,
+            method: VerificationMethod.email,
+            icon: Icons.email_outlined,
+            title: 'Send code to my registered email',
+            subtitle: state.data?.maskedEmail ?? 'u***8@gmail.com',
+            isSelected: _selectedMethod == VerificationMethod.email,
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Old phone option
-            _buildMethodOption(
-              context,
-              method: VerificationMethod.oldDevice,
-              icon: Icons.phone_iphone,
-              title: 'Show code on my old phone',
-              subtitle: state.data?.oldDeviceName ?? 'iPhone 14 Pro',
-              isSelected: _selectedMethod == VerificationMethod.oldDevice,
-            ),
+          _buildMethodOption(
+            context,
+            method: VerificationMethod.oldDevice,
+            icon: Icons.phone_iphone,
+            title: 'Show code on my old phone',
+            subtitle: state.data?.oldDeviceName ?? 'iPhone 14 Pro',
+            isSelected: _selectedMethod == VerificationMethod.oldDevice,
+          ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 120)),
-          ],
-        ),
+          SizedBox(height: AppLayout.scaleHeight(context, 32)),
+        ],
       ),
     );
   }
@@ -132,10 +126,10 @@ class _GetVerificationCodeScreenState
   }) {
     return GestureDetector(
       onTap: () {
-        setState(() {
-          _selectedMethod = method;
-        });
-        ref.read(deviceLinkingProvider.notifier).selectVerificationMethod(method);
+        setState(() => _selectedMethod = method);
+        ref
+            .read(deviceLinkingProvider.notifier)
+            .selectVerificationMethod(method);
       },
       child: Container(
         padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
@@ -143,7 +137,8 @@ class _GetVerificationCodeScreenState
           color: isSelected ? const Color(0xFFE8F5E9) : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected ? const Color(0xFF069494) : Colors.transparent,
+            color:
+                isSelected ? const Color(0xFF069494) : Colors.transparent,
             width: 2,
           ),
           boxShadow: [
@@ -156,7 +151,6 @@ class _GetVerificationCodeScreenState
         ),
         child: Row(
           children: [
-            // Icon
             Container(
               width: AppLayout.scaleWidth(context, 48),
               height: AppLayout.scaleWidth(context, 48),
@@ -168,14 +162,14 @@ class _GetVerificationCodeScreenState
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF069494) : Colors.black54,
+                color:
+                    isSelected ? const Color(0xFF069494) : Colors.black54,
                 size: AppLayout.scaleWidth(context, 24),
               ),
             ),
 
             SizedBox(width: AppLayout.scaleWidth(context, 16)),
 
-            // Text
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -200,10 +194,11 @@ class _GetVerificationCodeScreenState
               ),
             ),
 
-            // Checkmark or arrow
             Icon(
               isSelected ? Icons.check_circle : Icons.arrow_forward_ios,
-              color: isSelected ? const Color(0xFF069494) : Colors.black26,
+              color: isSelected
+                  ? const Color(0xFF069494)
+                  : Colors.black26,
               size: AppLayout.scaleWidth(context, 20),
             ),
           ],
@@ -213,10 +208,15 @@ class _GetVerificationCodeScreenState
   }
 
   Widget _buildButton(BuildContext context, DeviceLinkingState state) {
-    return Positioned(
-      bottom: AppLayout.scaleHeight(context, 40),
-      left: AppLayout.scaleWidth(context, 24),
-      right: AppLayout.scaleWidth(context, 24),
+    // FIX: was Positioned inside a Column — Positioned only works inside Stack.
+    // Replaced with plain Padding so it sticks to the bottom of the Column.
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 24),
+        AppLayout.scaleHeight(context, 8),
+        AppLayout.scaleWidth(context, 24),
+        AppLayout.scaleHeight(context, 40),
+      ),
       child: SizedBox(
         width: double.infinity,
         height: AppLayout.scaleHeight(context, 56),
@@ -224,12 +224,14 @@ class _GetVerificationCodeScreenState
           onPressed: state.isSendingCode
               ? null
               : () async {
-                  // Send verification code
                   await ref
                       .read(deviceLinkingProvider.notifier)
                       .sendVerificationCode();
 
-                  if (mounted && state.data?.isCodeSent == true) {
+                  // FIX: read fresh state after await instead of using
+                  // stale captured state.
+                  final fresh = ref.read(deviceLinkingProvider);
+                  if (mounted && fresh.data?.isCodeSent == true) {
                     Navigator.push(
                       context,
                       MaterialPageRoute(

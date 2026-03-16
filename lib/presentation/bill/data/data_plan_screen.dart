@@ -18,11 +18,13 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
-
 import 'package:kudipay/model/bill/bill_model.dart';
-import 'package:kudipay/provider/bill/bill_provider.dart';
+import 'package:kudipay/presentation/bill/bill_transaction_detail.dart';
+import 'package:kudipay/provider/bill_provider.dart';
 
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/provider_pack.dart';
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 class DataPlansScreen extends ConsumerStatefulWidget {
   const DataPlansScreen({Key? key}) : super(key: key);
@@ -92,8 +94,29 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
             Navigator.pop(context);
           },
           onDetails: () {
-            Navigator.pop(context);
-            // TODO: navigate to transaction detail
+            Navigator.pop(context); // close success sheet
+            final s = ref.read(dataProvider);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BillTransactionDetail(
+                  title: 'Data Receipt',
+                  transactionId:
+                      s.result?.transactionId ??
+                      'TXN${DateTime.now().millisecondsSinceEpoch}',
+                  billType: 'Data',
+                  providerName: s.selectedNetwork?.displayName ?? '',
+                  amount: s.selectedPlan?.price ?? 0,
+                  transactionDate: s.result?.createdAt ?? DateTime.now(),
+                  recipientNumber: s.phoneNumber,
+                  recipientName: '',
+                  extraDetails: {
+                    'Plan': s.selectedPlan?.name ?? '',
+                    'Validity': s.selectedPlan?.validityLabel ?? '',
+                  },
+                ),
+              ),
+            );
           },
         ),
       );
@@ -678,6 +701,7 @@ class ConfirmDataBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userInfo = ref.watch(userInfoProvider);
+    final wallet = ref.watch(walletProvider);
     final displayName =
         '${(userInfo?.firstName ?? 'MICHAEL').toUpperCase()} ASUQUO TOLUWALASE';
     final fmt = NumberFormat('#,###', 'en_NG');
@@ -877,12 +901,13 @@ class _Row extends StatelessWidget {
   }
 }
 
-class _PayingFromRow extends StatelessWidget {
+class _PayingFromRow extends ConsumerWidget {
   final String displayName;
   const _PayingFromRow({required this.displayName});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final wallet = ref.watch(walletProvider);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -911,12 +936,14 @@ class _PayingFromRow extends StatelessWidget {
                   color: const Color(0xFF4CAF8A),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Center(
-                  child: Text('MA',
-                      style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white)),
+                child: Center(
+                  child: Text(
+                    wallet.initials,
+                    style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white),
+                  ),
                 ),
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 12)),
@@ -925,8 +952,7 @@ class _PayingFromRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      // TODO: replace with real account number and balance from userInfoProvider
-                      '$displayName  8123456789',
+                      '${wallet.accountName}  ${wallet.accountNumber}',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 12),
                         fontWeight: FontWeight.w600,
@@ -936,10 +962,11 @@ class _PayingFromRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    // TODO: replace with real balance from wallet provider
-                    const Text('₦ 5,000.00',
-                        style:
-                            TextStyle(fontSize: 12, color: Color(0xFF9E9E9E))),
+                    Text(
+                      '₦ ${wallet.formattedBalance}',
+                      style: const TextStyle(
+                          fontSize: 12, color: Color(0xFF9E9E9E)),
+                    ),
                   ],
                 ),
               ),

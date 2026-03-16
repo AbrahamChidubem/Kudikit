@@ -7,10 +7,12 @@ import 'package:kudipay/model/auth/auth_state.dart';
 
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/onboarding/onboarding_screen.dart';
-import 'package:kudipay/provider/auth/auth_provider.dart';
+
 import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/kyc/kyc_flow_manager.dart';
-import 'package:kudipay/provider/onboarding/onboarding_provider.dart';
+import 'package:kudipay/provider/auth_provider.dart';
+import 'package:kudipay/provider/onboarding_provider.dart';
+
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -66,26 +68,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     Widget destination;
 
     // Navigation logic:
-    // 1. If authenticated → Home (or KYC if incomplete)
+    // 1. If authenticated → Home (if KYC complete) or KYC flow
     // 2. If not authenticated but seen onboarding → Login
     // 3. If not seen onboarding → Onboarding
 
     if (authState.status == AuthStatus.authenticated) {
-      // User is logged in
-      // TODO: Check KYC status and navigate accordingly
       if (authState.user!.isKycComplete) {
         destination = const HomeScreen();
       } else {
-        destination = const KycFlowManager(); // Or continue where they left off
+        destination = const KycFlowManager();
       }
-
-      // For now, navigate to login (replace with your home screen)
-      destination = const LoginPage(); // REPLACE WITH: HomeScreen()
     } else if (hasSeenOnboarding) {
-      // User has seen onboarding but not logged in
       destination = const LoginPage();
     } else {
-      // New user - show onboarding
       destination = const OnboardingScreen();
     }
 

@@ -1,31 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 
-/// ==================== CONNECTIVITY PROVIDERS ====================
-/// 
-/// This file contains all network connectivity related state providers:
-/// - Real-time connectivity monitoring
-/// - Connection status checks
-/// - Connection type detection
-
-// ==================== SERVICE PROVIDER ====================
+// ==================== CONNECTIVITY PROVIDERS ====================
 
 /// Provider for connectivity service singleton
 final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
   final service = ConnectivityService.instance;
-  
-  // Dispose the service when the provider is disposed
+
   ref.onDispose(() {
     service.dispose();
   });
-  
+
   return service;
 });
 
-// ==================== STREAM PROVIDERS ====================
-
 /// Stream provider that monitors internet connectivity in real-time
-/// 
+///
 /// Usage:
 /// ```dart
 /// final connectivityState = ref.watch(connectivityProvider);
@@ -40,10 +30,8 @@ final connectivityProvider = StreamProvider<bool>((ref) {
   return connectivityService.connectionChange;
 });
 
-// ==================== SYNCHRONOUS PROVIDERS ====================
-
 /// Provider to get current connectivity status synchronously
-/// 
+///
 /// Usage:
 /// ```dart
 /// final isConnected = ref.watch(currentConnectivityProvider);
@@ -56,10 +44,8 @@ final currentConnectivityProvider = Provider<bool>((ref) {
   return connectivityService.hasConnection;
 });
 
-// ==================== FUTURE PROVIDERS ====================
-
 /// Future provider to check internet connection once
-/// 
+///
 /// Usage:
 /// ```dart
 /// final hasInternet = await ref.read(checkInternetProvider.future);
@@ -72,9 +58,7 @@ final checkInternetProvider = FutureProvider<bool>((ref) async {
   return await connectivityService.hasInternetConnection();
 });
 
-// ==================== STATE MANAGEMENT ====================
-
-/// State class for advanced connectivity management
+/// State notifier for more complex connectivity state management
 class ConnectivityState {
   final bool isConnected;
   final String? connectionType;
@@ -103,7 +87,6 @@ class ConnectivityState {
   }
 }
 
-/// State notifier for advanced connectivity management
 class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
   final ConnectivityService _connectivityService;
 
@@ -113,29 +96,26 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
   }
 
   void _initialize() async {
-    // Initialize connectivity service
     await _connectivityService.initialize();
-    
-    // Set initial state
+
     final isConnected = _connectivityService.hasConnection;
     final connectivityTypes = await _connectivityService.getConnectivityType();
-    
+
     state = ConnectivityState(
       isConnected: isConnected,
-      connectionType: connectivityTypes.isNotEmpty 
-          ? connectivityTypes.first.displayName 
+      connectionType: connectivityTypes.isNotEmpty
+          ? connectivityTypes.first.displayName
           : 'Unknown',
       lastChecked: DateTime.now(),
     );
 
-    // Listen to connectivity changes
     _connectivityService.connectionChange.listen((isConnected) async {
       final connectivityTypes = await _connectivityService.getConnectivityType();
-      
+
       state = ConnectivityState(
         isConnected: isConnected,
-        connectionType: connectivityTypes.isNotEmpty 
-            ? connectivityTypes.first.displayName 
+        connectionType: connectivityTypes.isNotEmpty
+            ? connectivityTypes.first.displayName
             : 'Unknown',
         lastChecked: DateTime.now(),
       );
@@ -147,11 +127,11 @@ class ConnectivityNotifier extends StateNotifier<ConnectivityState> {
     try {
       final isConnected = await _connectivityService.hasInternetConnection();
       final connectivityTypes = await _connectivityService.getConnectivityType();
-      
+
       state = ConnectivityState(
         isConnected: isConnected,
-        connectionType: connectivityTypes.isNotEmpty 
-            ? connectivityTypes.first.displayName 
+        connectionType: connectivityTypes.isNotEmpty
+            ? connectivityTypes.first.displayName
             : 'Unknown',
         lastChecked: DateTime.now(),
       );
