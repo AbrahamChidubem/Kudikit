@@ -1,10 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/color_app_button.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
-import 'package:kudipay/provider/auth_provider.dart';
 import 'package:kudipay/services/api_services.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/login/login_page.dart';

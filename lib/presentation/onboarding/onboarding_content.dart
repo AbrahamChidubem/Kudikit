@@ -24,7 +24,7 @@ final List<OnboardingContent> onboardingContents = [
         'Trusted by users across Nigeria',
     imagePath: 'assets/images/frame1.png', 
     subtext: 'Secure. Licensed. Built for everyday payments',
-    color:  Color(0x5aad82)
+    color:  Color(0xFF5aad82)
   ),
   const OnboardingContent(
     title: 'Pay bills, send money, and manage your finances',
@@ -32,11 +32,11 @@ final List<OnboardingContent> onboardingContents = [
         'Anytime, anywhere!',
     imagePath: 'assets/images/frame2.png', 
     subtext: 'Clear steps, instant confirmation and full transaction history',
-   color:  Color(0x5aad82)
+   color:  Color(0xFF5aad82)
   ),
   const OnboardingContent(
-    title: 'Send and recieve cash from a Kudikit Tribe member closest to you',
-    color:  Color(0x5aad82),
+    title: 'Send and receive cash from a Kudikit Tribe member closest to you',
+    color:  Color(0xFF5aad82),
     description:
         'No bank/POS needed',
     imagePath: 'assets/images/frame3.png', 

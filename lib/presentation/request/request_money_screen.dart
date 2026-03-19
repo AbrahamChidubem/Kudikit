@@ -4,17 +4,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/select_recipient_screen.dart';
-import 'package:kudipay/provider/request_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ✅ replaced provider/provider.dart
 
-class RequestMoneyScreen extends StatefulWidget {
+class RequestMoneyScreen extends ConsumerStatefulWidget { // ✅
   const RequestMoneyScreen({super.key});
 
   @override
-  State<RequestMoneyScreen> createState() => _RequestMoneyScreenState();
+  ConsumerState<RequestMoneyScreen> createState() => // ✅
+      _RequestMoneyScreenState();
 }
 
-class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
+class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // ✅
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
@@ -33,6 +34,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     'Gift',
     'Other'
   ];
+
   final List<String> _categories = [
     'Entertainment',
     'Food & Dining',
@@ -82,10 +84,12 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
   }
 
   void _continue() {
-    final provider = Provider.of<RequestProvider>(context, listen: false);
+    // ✅ ref.read replaces Provider.of<RequestProvider>(context, listen: false)
+    final notifier = ref.read(requestProvider.notifier);
 
-    // Validate amount
-    final amount = double.tryParse(_amountController.text.replaceAll(',', ''));
+    final amount = double.tryParse(
+      _amountController.text.replaceAll(',', ''),
+    );
     if (amount == null || amount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid amount')),
@@ -93,16 +97,15 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
       return;
     }
 
-    // Update provider
-    provider.setAmount(amount);
-    provider.setReason(_selectedReason);
-    provider.setCategory(_selectedCategory);
-    provider
-        .setNote(_noteController.text.isEmpty ? null : _noteController.text);
-    provider.setDueDate(_useTodayDate ? DateTime.now() : _selectedDate);
-    provider.setPrivacy(_isPrivate);
+    notifier.setAmount(amount);
+    notifier.setReason(_selectedReason);
+    notifier.setCategory(_selectedCategory);
+    notifier.setNote(
+      _noteController.text.isEmpty ? null : _noteController.text,
+    );
+    notifier.setDueDate(_useTodayDate ? DateTime.now() : _selectedDate);
+    notifier.setPrivacy(_isPrivate);
 
-    // Navigate to select recipients
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -118,7 +121,7 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFf9f9f9),
       appBar: AppBar(
-        backgroundColor: Color(0xFFF9F9F9),
+        backgroundColor: const Color(0xFFF9F9F9),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
@@ -215,8 +218,9 @@ class _RequestMoneyScreenState extends State<RequestMoneyScreen> {
                         vertical: 10,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            isSelected ? const Color(0xFFE8F5E9) : Colors.white,
+                        color: isSelected
+                            ? const Color(0xFFE8F5E9)
+                            : Colors.white,
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF069494)

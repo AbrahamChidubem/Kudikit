@@ -8,7 +8,7 @@ class TransactionService {
 
   TransactionService({
     required this.baseUrl,
-    http.Client? client,
+    http.Client? client, String? authToken,
   }) : client = client ?? http.Client();
 
   /// Fetch all transactions

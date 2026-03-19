@@ -18,7 +18,9 @@ class ColorAppButton extends StatelessWidget {
       child: ElevatedButton(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
-          backgroundColor: Color(0xFF069494),
+          backgroundColor: const Color(0xFF069494),
+          disabledBackgroundColor:
+                      const Color(0xFF069494).withOpacity(0.5),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(28))),
         ),

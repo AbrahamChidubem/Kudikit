@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/presentation/email/change_email_steps_screen.dart';
-import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/email/email_provider.dart';
+
 
 
 class ChangeEmailScreen extends ConsumerWidget {

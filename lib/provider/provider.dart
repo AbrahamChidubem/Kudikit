@@ -1,15 +1,23 @@
-// ==================== PROVIDER BARREL FILE ====================
-// All providers have been separated into individual files.
-// Import this file to get access to all providers, or import
-// the specific provider file you need directly.
+// lib/provider/provider.dart
+// Central barrel — import this to get access to all providers.
+// FIXED: Updated to use renamed snake_case file for P2P transfer.
 
-export 'auth_provider.dart';
-export 'selfie_provider.dart';
-export 'transaction_provider.dart';
-export 'add_money_provider.dart';
-export 'identity_verify_provider.dart';
-export 'connectivity_provider.dart';
-export 'device_linking_provider.dart';
-export 'p2p_transfer_provider.dart';
-export 'notification_provider.dart';
-export 'email_provider.dart';
+export 'auth/auth_provider.dart';
+
+export 'transaction/transaction_provider.dart';
+
+export 'Identity_verify/identity_verify_provider.dart';
+export 'connectivity/connectivity_provider.dart';
+export 'device_linking/device_linking_provider.dart';
+export 'P2P_transfer/p2p_transfer_provider.dart';         // FIXED: was p2p_transfer_provider.dart
+export 'notification/notification_provider.dart';
+export 'email/email_provider.dart';
+export 'wallet/wallet_provider.dart';
+export 'kyc/kyc_provider.dart';
+export 'tier/tier_provider.dart';
+export 'request/request_provider.dart';
+export 'bill/bill_provider.dart';
+export 'funding/funding_provider.dart';
+export 'onboarding/onboarding_provider.dart';
+export 'transfer/bulk_transfer_provider.dart';
+export 'transactionpin/transaction_pin_provider.dart';

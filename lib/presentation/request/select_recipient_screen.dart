@@ -2,20 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/request/preview_request_screen.dart';
-import 'package:kudipay/provider/request_provider.dart';
-import 'package:provider/provider.dart';
+import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ✅ replaced provider/provider.dart
 import '../../model/request/request_model.dart';
 
-
-
-class SelectRecipientsScreen extends StatefulWidget {
+class SelectRecipientsScreen extends ConsumerStatefulWidget { // ✅
   const SelectRecipientsScreen({super.key});
 
   @override
-  State<SelectRecipientsScreen> createState() => _SelectRecipientsScreenState();
+  ConsumerState<SelectRecipientsScreen> createState() => // ✅
+      _SelectRecipientsScreenState();
 }
 
-class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
+class _SelectRecipientsScreenState extends ConsumerState<SelectRecipientsScreen> // ✅
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final TextEditingController _searchController = TextEditingController();
@@ -27,10 +26,10 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
     _phoneController.text = '+234';
-    
-    // Load mock data
+
+    // ✅ ref is available directly in ConsumerState — no Provider.of needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<RequestProvider>(context, listen: false).loadMockData();
+      ref.read(requestProvider.notifier).loadMockData();
     });
   }
 
@@ -52,223 +51,230 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<RequestProvider>(
-      builder: (context, provider, child) {
-        final selectedCount = provider.selectedContacts.length;
-        
-        return Scaffold(
-          backgroundColor: const Color(0xFFF9F9F9),
-          appBar: AppBar(
-            backgroundColor: const Color(0xFFF9F9F9),
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(Icons.arrow_back, 
-                color: Colors.black,
-                size: AppLayout.scaleWidth(context, 24),
+    // ✅ ref.watch replaces Consumer<RequestProvider>
+    final provider = ref.watch(requestProvider);
+    final selectedCount = provider.selectedContacts.length;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF9F9F9),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF9F9F9),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back,
+            color: Colors.black,
+            size: AppLayout.scaleWidth(context, 24),
+          ),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Request Money',
+          style: GoogleFonts.openSans(
+            color: Colors.black,
+            fontSize: AppLayout.fontSize(context, 18),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+      body: Column(
+        children: [
+          // Search Bar
+          Padding(
+            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+            child: TextField(
+              controller: _searchController,
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+              },
+              decoration: InputDecoration(
+                hintText: 'Search.....',
+                hintStyle: GoogleFonts.openSans(
+                  color: Colors.grey[400],
+                  fontSize: AppLayout.fontSize(context, 14),
+                ),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.grey[400],
+                  size: AppLayout.scaleWidth(context, 20),
+                ),
+                filled: true,
+                fillColor: const Color(0xFFF5F5F5),
+                border: OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 16),
+                  vertical: AppLayout.scaleHeight(context, 14),
+                ),
               ),
-              onPressed: () => Navigator.pop(context),
             ),
-            title: Text(
-              'Request Money',
+          ),
+
+          // Selected contacts chips
+          if (selectedCount > 0)
+            Container(
+              height: AppLayout.scaleHeight(context, 50),
+              margin: EdgeInsets.symmetric(
+                horizontal: AppLayout.scaleWidth(context, 16),
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: provider.selectedContacts.length,
+                itemBuilder: (context, index) {
+                  final contact = provider.selectedContacts[index];
+                  return Container(
+                    margin: EdgeInsets.only(
+                      right: AppLayout.scaleWidth(context, 8),
+                    ),
+                    child: Chip(
+                      label: Text(
+                        contact.name.split(' ')[0],
+                        style: GoogleFonts.openSans(
+                          fontSize: AppLayout.fontSize(context, 13),
+                        ),
+                      ),
+                      deleteIcon: Icon(
+                        Icons.close,
+                        size: AppLayout.scaleWidth(context, 18),
+                      ),
+                      onDeleted: () {
+                        // ✅ ref.read for actions
+                        ref
+                            .read(requestProvider.notifier)
+                            .toggleContactSelection(contact);
+                      },
+                      backgroundColor: const Color(0xFFE8F5E9),
+                      deleteIconColor: const Color(0xFF069494),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+          SizedBox(height: AppLayout.scaleHeight(context, 8)),
+
+          // Tabs
+          Container(
+            margin: EdgeInsets.symmetric(
+              horizontal: AppLayout.scaleWidth(context, 16),
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+            ),
+            child: TabBar(
+              controller: _tabController,
+              labelColor: const Color(0xFF069494),
+              unselectedLabelColor: Colors.grey[600],
+              indicatorColor: const Color(0xFF069494),
+              indicatorWeight: 3,
+              labelStyle: GoogleFonts.openSans(
+                fontSize: AppLayout.fontSize(context, 14),
+                fontWeight: FontWeight.w600,
+              ),
+              tabs: const [
+                Tab(text: 'Contact'),
+                Tab(text: 'Recent'),
+                Tab(text: 'Phone No.'),
+              ],
+            ),
+          ),
+
+          // Tab Views
+          Expanded(
+            child: Container(
+              margin: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+              ),
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildContactsList(
+                    _filterContacts(provider.allContacts),
+                    provider,
+                  ),
+                  _buildContactsList(
+                    _filterContacts(provider.recentContacts),
+                    provider,
+                  ),
+                  _buildPhoneNumberTab(provider),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: AppLayout.scaleWidth(context, 10),
+              offset: Offset(0, -AppLayout.scaleHeight(context, 4)),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: ElevatedButton(
+            onPressed: selectedCount > 0
+                ? () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PreviewRequestScreen(),
+                      ),
+                    );
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF069494),
+              disabledBackgroundColor: const Color(0xFFE0E0E0),
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(
+                vertical: AppLayout.scaleHeight(context, 16),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+              ),
+              elevation: 0,
+            ),
+            child: Text(
+              selectedCount > 0
+                  ? 'Continue with $selectedCount Recipient${selectedCount > 1 ? 's' : ''}'
+                  : 'Continue',
               style: GoogleFonts.openSans(
-                color: Colors.black,
-                fontSize: AppLayout.fontSize(context, 18),
+                fontSize: AppLayout.fontSize(context, 16),
                 fontWeight: FontWeight.w600,
               ),
             ),
           ),
-          body: Column(
-            children: [
-              // Search Bar
-              Padding(
-                padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) {
-                    setState(() {
-                      _searchQuery = value;
-                    });
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Search.....',
-                    hintStyle: GoogleFonts.openSans(
-                      color: Colors.grey[400],
-                      fontSize: AppLayout.fontSize(context, 14),
-                    ),
-                    prefixIcon: Icon(Icons.search, 
-                      color: Colors.grey[400],
-                      size: AppLayout.scaleWidth(context, 20),
-                    ),
-                    filled: true,
-                    fillColor: const Color(0xFFF5F5F5),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      horizontal: AppLayout.scaleWidth(context, 16),
-                      vertical: AppLayout.scaleHeight(context, 14),
-                    ),
-                  ),
-                ),
-              ),
-
-              // Selected contacts chips
-              if (selectedCount > 0)
-                Container(
-                  height: AppLayout.scaleHeight(context, 50),
-                  margin: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 16),
-                  ),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: provider.selectedContacts.length,
-                    itemBuilder: (context, index) {
-                      final contact = provider.selectedContacts[index];
-                      return Container(
-                        margin: EdgeInsets.only(
-                          right: AppLayout.scaleWidth(context, 8),
-                        ),
-                        child: Chip(
-                          label: Text(
-                            contact.name.split(' ')[0],
-                            style: GoogleFonts.openSans(
-                              fontSize: AppLayout.fontSize(context, 13),
-                            ),
-                          ),
-                          deleteIcon: Icon(Icons.close, 
-                            size: AppLayout.scaleWidth(context, 18),
-                          ),
-                          onDeleted: () {
-                            provider.toggleContactSelection(contact);
-                          },
-                          backgroundColor: const Color(0xFFE8F5E9),
-                          deleteIconColor: const Color(0xFF069494),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-              SizedBox(height: AppLayout.scaleHeight(context, 8)),
-
-              // Tabs
-              Container(
-                margin: EdgeInsets.symmetric(
-                  horizontal: AppLayout.scaleWidth(context, 16),
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  labelColor: const Color(0xFF069494),
-                  unselectedLabelColor: Colors.grey[600],
-                  indicatorColor: const Color(0xFF069494),
-                  indicatorWeight: 3,
-                  labelStyle: GoogleFonts.openSans(
-                    fontSize: AppLayout.fontSize(context, 14),
-                    fontWeight: FontWeight.w600,
-                  ),
-                  tabs: const [
-                    Tab(text: 'Contact'),
-                    Tab(text: 'Recent'),
-                    Tab(text: 'Phone No.'),
-                  ],
-                ),
-              ),
-
-              // Tab Views
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
-                  ),
-                  child: TabBarView(
-                    controller: _tabController,
-                    children: [
-                      // All Contacts
-                      _buildContactsList(
-                        _filterContacts(provider.allContacts),
-                        provider,
-                      ),
-                      // Recent Contacts
-                      _buildContactsList(
-                        _filterContacts(provider.recentContacts),
-                        provider,
-                      ),
-                      // Phone Number
-                      _buildPhoneNumberTab(provider),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          bottomNavigationBar: Container(
-            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: AppLayout.scaleWidth(context, 10),
-                  offset: Offset(0, -AppLayout.scaleHeight(context, 4)),
-                ),
-              ],
-            ),
-            child: SafeArea(
-              child: ElevatedButton(
-                onPressed: selectedCount > 0
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const PreviewRequestScreen(),
-                          ),
-                        );
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF069494),
-                  disabledBackgroundColor: const Color(0xFFE0E0E0),
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(
-                    vertical: AppLayout.scaleHeight(context, 16),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-                  ),
-                  elevation: 0,
-                ),
-                child: Text(
-                  selectedCount > 0
-                      ? 'Continue with $selectedCount Recipient${selectedCount > 1 ? 's' : ''}'
-                      : 'Continue',
-                  style: GoogleFonts.openSans(
-                    fontSize: AppLayout.fontSize(context, 16),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _buildContactsList(List<Contact> contacts, RequestProvider provider) {
+  Widget _buildContactsList(
+      List<Contact> contacts, dynamic provider) {
     if (contacts.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.person_outline, 
-              size: AppLayout.scaleWidth(context, 64), 
+            Icon(
+              Icons.person_outline,
+              size: AppLayout.scaleWidth(context, 64),
               color: Colors.grey[300],
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
@@ -291,7 +297,8 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
       itemCount: contacts.length,
       itemBuilder: (context, index) {
         final contact = contacts[index];
-        final isSelected = provider.selectedContacts.any((c) => c.id == contact.id);
+        final isSelected =
+            provider.selectedContacts.any((c) => c.id == contact.id);
 
         return ListTile(
           leading: CircleAvatar(
@@ -317,8 +324,9 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 4)),
               if (contact.isVerified)
-                Icon(Icons.check_circle, 
-                  color: const Color(0xFF069494), 
+                Icon(
+                  Icons.check_circle,
+                  color: const Color(0xFF069494),
                   size: AppLayout.scaleWidth(context, 16),
                 ),
             ],
@@ -333,12 +341,13 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
           trailing: contact.isInvited
               ? Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 12), 
+                    horizontal: AppLayout.scaleWidth(context, 12),
                     vertical: AppLayout.scaleHeight(context, 6),
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                    borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 12)),
                   ),
                   child: Text(
                     'Invite',
@@ -353,19 +362,25 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                   value: true,
                   groupValue: isSelected,
                   onChanged: (value) {
-                    provider.toggleContactSelection(contact);
+                    // ✅ ref.read for actions
+                    ref
+                        .read(requestProvider.notifier)
+                        .toggleContactSelection(contact);
                   },
                   activeColor: const Color(0xFF069494),
                 ),
           onTap: () {
-            provider.toggleContactSelection(contact);
+            // ✅ ref.read for actions
+            ref
+                .read(requestProvider.notifier)
+                .toggleContactSelection(contact);
           },
         );
       },
     );
   }
 
-  Widget _buildPhoneNumberTab(RequestProvider provider) {
+  Widget _buildPhoneNumberTab(dynamic provider) {
     return Padding(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
       child: Column(
@@ -389,10 +404,12 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
               filled: true,
               fillColor: const Color(0xFFF5F5F5),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+              contentPadding:
+                  EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
             ),
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
@@ -400,10 +417,10 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () {
-                // Add recipient logic
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
-                    content: Text('If they\'re not on Kudikil, they\'ll receive an SMS invitation'),
+                    content: Text(
+                        'If they\'re not on Kudikil, they\'ll receive an SMS invitation'),
                   ),
                 );
               },
@@ -414,7 +431,8 @@ class _SelectRecipientsScreenState extends State<SelectRecipientsScreen>
                   vertical: AppLayout.scaleHeight(context, 16),
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                  borderRadius: BorderRadius.circular(
+                      AppLayout.scaleWidth(context, 12)),
                 ),
                 elevation: 0,
               ),

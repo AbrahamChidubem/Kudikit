@@ -1,5 +1,7 @@
+
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 
 // ==================== P2P TRANSFER MODELS ====================
 
@@ -376,7 +378,7 @@ class P2PTransferNotifier extends StateNotifier<P2PTransferState> {
     state = state.copyWith(isProcessingTransfer: true, clearError: true);
 
     try {
-      if (pin.length != 6) {
+      if (pin.length != 4) {
         throw P2PTransferException('Invalid PIN');
       }
 
@@ -421,7 +423,7 @@ class P2PTransferNotifier extends StateNotifier<P2PTransferState> {
 
 final p2pTransferServiceProvider = Provider<P2PTransferService>((ref) {
   return P2PTransferService(
-    baseUrl: 'https://api.kudipay.com/api/v1',
+    baseUrl: kBaseUrl,
   );
 });
 

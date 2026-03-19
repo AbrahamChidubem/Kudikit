@@ -4,7 +4,7 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
 
 import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
-import 'package:kudipay/provider/bill_provider.dart';
+import 'package:kudipay/provider/bill/bill_provider.dart';
 
 import 'package:kudipay/provider/provider.dart';
 import 'transfer_amount_screen.dart';

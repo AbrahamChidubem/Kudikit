@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/presentation/email/verify_otp_email_screen.dart';
-import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/email/email_provider.dart';
+
 
 class EmailChangeStepsScreen extends ConsumerWidget {
   const EmailChangeStepsScreen({super.key});

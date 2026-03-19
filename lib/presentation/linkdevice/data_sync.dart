@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/linkdevice/enable_biometrics.dart';
+import 'package:kudipay/provider/device_linking/device_linking_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class DataSyncScreen extends ConsumerStatefulWidget {

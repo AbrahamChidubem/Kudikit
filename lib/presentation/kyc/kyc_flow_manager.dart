@@ -5,8 +5,9 @@ import 'package:kudipay/presentation/Identity/chooseID.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
 import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/selfie/selfie_instruction.dart';
-import 'package:kudipay/provider/auth_provider.dart';
-import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
+import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
+
 
 
 /// Smart KYC Flow Manager - Automatically navigates to the next incomplete step

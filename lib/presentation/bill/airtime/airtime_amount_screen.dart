@@ -23,8 +23,8 @@ import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/presentation/bill/bill_transaction_detail.dart';
-import 'package:kudipay/provider/bill_provider.dart';
-import 'package:kudipay/provider/kyc_provider.dart';
+import 'package:kudipay/provider/bill/bill_provider.dart';
+import 'package:kudipay/provider/kyc/kyc_provider.dart';
 
 
 

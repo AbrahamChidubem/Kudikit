@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/provider/request_provider.dart';
+import 'package:kudipay/provider/request/request_provider.dart';
 
-import 'package:provider/provider.dart';
 import '../../model/request/request_model.dart';
 
-
-class RequestDetailScreen extends StatefulWidget {
+class RequestDetailScreen extends ConsumerStatefulWidget {
   final MoneyRequest request;
 
   const RequestDetailScreen({super.key, required this.request});
 
   @override
-  State<RequestDetailScreen> createState() => _RequestDetailScreenState();
+  ConsumerState<RequestDetailScreen> createState() => _RequestDetailScreenState();
 }
 
-class _RequestDetailScreenState extends State<RequestDetailScreen> {
+class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
   void _showPartialPaymentDialog() {
     showModalBottomSheet(
       context: context,
@@ -119,38 +118,30 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(
-          'Decline Request?',
-          style: GoogleFonts.openSans(fontWeight: FontWeight.w600),
-        ),
-        content: Text(
-          'Are you sure you want to decline this request?',
-          style: GoogleFonts.openSans(),
-        ),
+        title: Text('Decline Request?',
+            style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
+        content: Text('Are you sure you want to decline this request?',
+            style: GoogleFonts.openSans()),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.openSans(color: Colors.grey[600]),
-            ),
+            child: Text('Cancel',
+                style: GoogleFonts.openSans(color: Colors.grey[600])),
           ),
           TextButton(
             onPressed: () async {
-              await Provider.of<RequestProvider>(context, listen: false)
+              // ✅ Riverpod — ref.read, no context needed
+              await ref
+                  .read(requestProvider.notifier)
                   .declineRequest(widget.request);
               if (mounted) {
                 Navigator.pop(context);
                 Navigator.pop(context);
               }
             },
-            child: Text(
-              'Decline',
-              style: GoogleFonts.openSans(
-                color: Colors.red,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+            child: Text('Decline',
+                style: GoogleFonts.openSans(
+                    color: Colors.red, fontWeight: FontWeight.w600)),
           ),
         ],
       ),
@@ -398,7 +389,8 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ElevatedButton(
-                      onPressed: () => _showPaymentConfirmation(request.remainingAmount),
+                      onPressed: () =>
+                          _showPaymentConfirmation(request.remainingAmount),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF069494),
                         foregroundColor: Colors.white,
@@ -635,21 +627,24 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
             Row(
               children: [
                 _PercentageChip(
-                  label: '25% ( ₦${NumberFormat('#,###').format(remaining * 0.25)})',
+                  label:
+                      '25% ( ₦${NumberFormat('#,###').format(remaining * 0.25)})',
                   percentage: 0.25,
                   selectedPercentage: _selectedPercentage,
                   onTap: _selectPercentage,
                 ),
                 const SizedBox(width: 8),
                 _PercentageChip(
-                  label: '50% ( ₦${NumberFormat('#,###').format(remaining * 0.50)})',
+                  label:
+                      '50% ( ₦${NumberFormat('#,###').format(remaining * 0.50)})',
                   percentage: 0.50,
                   selectedPercentage: _selectedPercentage,
                   onTap: _selectPercentage,
                 ),
                 const SizedBox(width: 8),
                 _PercentageChip(
-                  label: '75% ( ₦${NumberFormat('#,###').format(remaining * 0.75)})',
+                  label:
+                      '75% ( ₦${NumberFormat('#,###').format(remaining * 0.75)})',
                   percentage: 0.75,
                   selectedPercentage: _selectedPercentage,
                   onTap: _selectPercentage,
@@ -772,7 +767,7 @@ class _PercentageChip extends StatelessWidget {
   }
 }
 
-class _PaymentConfirmationSheet extends StatelessWidget {
+class _PaymentConfirmationSheet extends ConsumerWidget {
   final MoneyRequest request;
   final double amount;
 
@@ -782,7 +777,7 @@ class _PaymentConfirmationSheet extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -821,7 +816,8 @@ class _PaymentConfirmationSheet extends StatelessWidget {
             const SizedBox(height: 24),
             _buildDetailRow('Paying to', request.requesterName),
             const SizedBox(height: 12),
-            _buildDetailRow('Amount', '₦${NumberFormat('#,###.00').format(amount)}'),
+            _buildDetailRow(
+                'Amount', '₦${NumberFormat('#,###.00').format(amount)}'),
             const SizedBox(height: 12),
             _buildDetailRow('Reason', request.reason ?? 'Dinner'),
             const SizedBox(height: 24),
@@ -833,7 +829,8 @@ class _PaymentConfirmationSheet extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.info_outline, color: Color(0xFF2196F3), size: 20),
+                  const Icon(Icons.info_outline,
+                      color: Color(0xFF2196F3), size: 20),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -850,13 +847,14 @@ class _PaymentConfirmationSheet extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: () async {
-                // Process payment
-                await Provider.of<RequestProvider>(context, listen: false)
+                // ✅ Riverpod
+                await ref
+                    .read(requestProvider.notifier)
                     .payRequest(request, amount);
-                
+
                 if (context.mounted) {
-                  Navigator.pop(context); // Close confirmation sheet
-                  Navigator.pop(context); // Close detail screen
+                  Navigator.pop(context);
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
                       content: Text('Payment successful!'),

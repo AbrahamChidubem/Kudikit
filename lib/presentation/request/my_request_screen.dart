@@ -6,7 +6,7 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/request/request_detail_screen.dart';
 import 'package:kudipay/presentation/request/request_money_main_screen.dart';
-import 'package:kudipay/provider/request_provider.dart';
+import 'package:kudipay/provider/request/request_provider.dart';
 
 import '../../model/request/request_model.dart';
 

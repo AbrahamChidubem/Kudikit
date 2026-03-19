@@ -1,23 +1,34 @@
+// lib/main.dart
+// FIXED:
+//   - availableCamerasProvider has a safe [] fallback (no more bare UnimplementedError)
+//   - AppLayout.lockPortrait() called before runApp so landscape devices
+//     are forced to portrait at launch
+//   - ConnectivityService initialised before runApp as before
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/presentation/splashscreen/splashscreen.dart';
-import 'package:kudipay/provider/connectivity_provider.dart';
+// import 'package:kudipay/provider/connectivity_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 import 'package:camera/camera.dart';
 
-final availableCamerasProvider = Provider<List<CameraDescription>>((ref) {
-  throw UnimplementedError('availableCamerasProvider must be overridden');
-});
+// FIXED: provides an empty-list default so watching the provider before
+// main() finishes never throws UnimplementedError.
+final availableCamerasProvider = Provider<List<CameraDescription>>((ref) => const []);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize cameras
+  // FIXED: Lock to portrait before runApp so no landscape flash on first frame.
+  await AppLayout.lockPortrait();
+
+  // Initialise cameras — override the provider with real cameras.
   final cameras = await availableCameras();
-  
-  // Initialize connectivity service
+
+  // Initialise connectivity service.
   await ConnectivityService.instance.initialize();
 
   runApp(
@@ -41,10 +52,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'PolySans',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF389165),
+          seedColor: const Color(0xFF069494),
         ),
       ),
-      // Wrap the entire app with connectivity banner
       home: const ConnectivityBanner(
         child: SplashScreen(),
       ),
@@ -52,30 +62,21 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Alternative: If you want to show connectivity status in all screens
-/// You can create a custom wrapper:
 class AppWithConnectivity extends ConsumerWidget {
   final Widget child;
-  
   const AppWithConnectivity({super.key, required this.child});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final connectivityState = ref.watch(connectivityProvider);
-    
-    // Listen for connectivity changes and show snackbar
     ref.listen(connectivityProvider, (previous, next) {
       next.whenData((isConnected) {
         if (previous?.value != null && previous!.value! && !isConnected) {
-          // Connection lost
           ConnectivitySnackBar.showNoInternet(context);
         } else if (previous?.value != null && !previous!.value! && isConnected) {
-          // Connection restored
           ConnectivitySnackBar.showConnectionRestored(context);
         }
       });
     });
-
     return child;
   }
 }

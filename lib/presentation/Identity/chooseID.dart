@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
-import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/Identity_verify/identity_verify_provider.dart';
+
+// ── No local IdType enum — IdentificationType imported from provider above ──
 
 class IdVerificationScreen extends ConsumerStatefulWidget {
   const IdVerificationScreen({Key? key}) : super(key: key);
@@ -17,10 +19,9 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
   final TextEditingController _idNumberController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // Selected ID type (BVN or NIN)
-  IdType _selectedIdType = IdType.BVN;
+  // ✅ Using IdentificationType — not the old local IdType
+  IdentificationType _selectedIdType = IdentificationType.BVN;
 
-  // Progress percentage (can be calculated based on registration steps)
   final int _progressPercentage = 48;
 
   @override
@@ -39,7 +40,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       body: Stack(
         children: [
           _buildBody(context, verificationState),
-          
           _buildNextButton(context),
           if (verificationState.isVerifying)
             Container(
@@ -62,7 +62,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
         onPressed: () => Navigator.pop(context),
       ),
       actions: [
-        // Progress Indicator Circle
         Padding(
           padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
           child: Center(
@@ -72,7 +71,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  // Progress Circle
                   SizedBox(
                     width: AppLayout.scaleWidth(context, 30),
                     height: AppLayout.scaleWidth(context, 30),
@@ -85,7 +83,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
                       ),
                     ),
                   ),
-                  // Percentage Text
                   Text(
                     '$_progressPercentage%',
                     style: TextStyle(
@@ -114,7 +111,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
           children: [
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Title
             Text(
               'Choose an ID type',
               style: TextStyle(
@@ -126,7 +122,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
 
             SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-            // Subtitle
             Text(
               'We\'ll need a valid ID type to confirm who you are.',
               style: TextStyle(
@@ -138,28 +133,24 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
 
             SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-            // BVN/NIN Toggle Buttons
             _buildIdTypeToggle(context),
 
             SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-            // ID Number Input Field
             _buildIdNumberField(context),
 
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Display Fetched Name if Available
             if (verificationState.verificationData != null)
               _buildFetchedNameDisplay(
                 context,
                 verificationState.verificationData!,
               ),
 
-            // Error Message
             if (verificationState.error != null)
               Padding(
-                padding:
-                    EdgeInsets.only(top: AppLayout.scaleHeight(context, 16)),
+                padding: EdgeInsets.only(
+                    top: AppLayout.scaleHeight(context, 16)),
                 child: Container(
                   padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
                   decoration: BoxDecoration(
@@ -201,35 +192,29 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
   Widget _buildIdTypeToggle(BuildContext context) {
     return Row(
       children: [
-        // BVN Button
         Expanded(
           child: _buildToggleButton(
             context: context,
-            label: 'BVN',
-            isSelected: _selectedIdType == IdType.BVN,
-            onTap: () {
-              setState(() {
-                _selectedIdType = IdType.BVN;
-                _idNumberController.clear();
-              });
-            },
+            label: IdentificationType.BVN.displayLabel, // ✅
+            isSelected: _selectedIdType == IdentificationType.BVN, // ✅
+            onTap: () => setState(() {
+              _selectedIdType = IdentificationType.BVN; // ✅
+              _idNumberController.clear();
+              ref.read(identityVerificationProvider.notifier).reset();
+            }),
           ),
         ),
-
         SizedBox(width: AppLayout.scaleWidth(context, 12)),
-
-        // NIN Button
         Expanded(
           child: _buildToggleButton(
             context: context,
-            label: 'NIN',
-            isSelected: _selectedIdType == IdType.NIN,
-            onTap: () {
-              setState(() {
-                _selectedIdType = IdType.NIN;
-                _idNumberController.clear();
-              });
-            },
+            label: IdentificationType.NIN.displayLabel, // ✅
+            isSelected: _selectedIdType == IdentificationType.NIN, // ✅
+            onTap: () => setState(() {
+              _selectedIdType = IdentificationType.NIN; // ✅
+              _idNumberController.clear();
+              ref.read(identityVerificationProvider.notifier).reset();
+            }),
           ),
         ),
       ],
@@ -275,7 +260,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Your ${_selectedIdType == IdType.BVN ? "BVN" : "NIN"}',
+          'Your ${_selectedIdType.displayLabel}', // ✅
           style: TextStyle(
             fontSize: AppLayout.fontSize(context, 14),
             fontWeight: FontWeight.w600,
@@ -291,17 +276,14 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             LengthLimitingTextInputFormatter(11),
           ],
           onChanged: (value) {
-            // Auto-verify when 11 digits are entered
-            if (value.length == 11) {
-              _handleVerification();
-            }
+            if (value.length == 11) _handleVerification();
           },
           validator: (value) {
             if (value == null || value.isEmpty) {
-              return 'Please enter your ${_selectedIdType == IdType.BVN ? "BVN" : "NIN"}';
+              return 'Please enter your ${_selectedIdType.displayLabel}'; // ✅
             }
             if (value.length != 11) {
-              return '${_selectedIdType == IdType.BVN ? "BVN" : "NIN"} must be 11 digits';
+              return '${_selectedIdType.displayLabel} must be 11 digits'; // ✅
             }
             return null;
           },
@@ -332,7 +314,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
+              borderSide:
+                  const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -357,7 +340,8 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        borderRadius:
+            BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         border: Border.all(color: const Color(0xFFF9F9F9), width: 1),
       ),
       child: Column(
@@ -387,7 +371,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 14),
               fontWeight: FontWeight.w700,
-              color: Color(0xFF171515),
+              color: const Color(0xFF171515),
               letterSpacing: 0.5,
             ),
           ),
@@ -446,39 +430,24 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
 
   Future<void> _handleVerification() async {
     if (!_formKey.currentState!.validate()) return;
-
     await ref.read(identityVerificationProvider.notifier).verifyIdentity(
           idNumber: _idNumberController.text,
-          idType: _selectedIdType,
+          idType: _selectedIdType, // ✅ IdentificationType — matches provider
         );
   }
 
   void _handleNext() {
     final verificationData =
         ref.read(identityVerificationProvider).verificationData;
-
     if (verificationData != null) {
-      // Navigate to next registration step
       Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => AddressVerificationScreen(),
-          ));
-      // Or pass the data to the next screen
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(
-      //     builder: (context) => CompleteRegistrationScreen(
-      //       verificationData: verificationData,
-      //     ),
-      //   ),
-      // );
+        context,
+        MaterialPageRoute(
+          builder: (context) => const AddressVerificationScreen(),
+        ),
+      );
     }
   }
-}
 
-// ID Type Enum
-enum IdType {
-  BVN,
-  NIN,
+// ✅ Local IdType enum completely removed — IdentificationType is the single source of truth
 }

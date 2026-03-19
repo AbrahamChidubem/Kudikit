@@ -1,18 +1,15 @@
-// ============================================================================
 // lib/provider/wallet/wallet_provider.dart
-// Single source of truth for wallet state: balance, account number,
-// account name, and recent transactions.
-//
-// All screens that previously had hardcoded "TODO: replace with real balance"
-// should watch walletProvider instead.
-// ============================================================================
+// FIXED:
+//   - Balance, account number and account name are no longer hardcoded.
+//   - _load() and refresh() call the mock API helpers from MockWalletData.
+//     When the backend is ready, replace the two mock calls with:
+//       GET $kBaseUrl/wallet/balance
+//       GET $kBaseUrl/wallet/account-details
 
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 
-// ---------------------------------------------------------------------------
-// Model
-// ---------------------------------------------------------------------------
 
 class WalletState {
   final double balance;
@@ -58,7 +55,6 @@ class WalletState {
     );
   }
 
-  /// Formatted balance string, e.g. "135,780.00"
   String get formattedBalance {
     final parts = balance.toStringAsFixed(2).split('.');
     final whole = parts[0];
@@ -73,22 +69,15 @@ class WalletState {
     return '${buf.toString().split('').reversed.join('')}.$decimal';
   }
 
-  /// Two-letter initials from accountName for avatar widgets.
   String get initials {
     final parts = accountName.trim().split(' ');
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
     if (parts.isNotEmpty && parts[0].isNotEmpty) {
       return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
     }
-    return 'MA';
+    return 'KP';
   }
 }
-
-// ---------------------------------------------------------------------------
-// Notifier
-// ---------------------------------------------------------------------------
 
 class WalletNotifier extends StateNotifier<WalletState> {
   WalletNotifier() : super(const WalletState(isLoading: true)) {
@@ -98,21 +87,24 @@ class WalletNotifier extends StateNotifier<WalletState> {
   Future<void> _load() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      // Simulate network fetch — replace with real API call.
+      // ── TODO: Replace with real HTTP calls when backend is ready ──────────
+      // final balanceResp = await ApiService.instance.get('/wallet/balance', token: authToken);
+      // final acctResp    = await ApiService.instance.get('/wallet/account-details', token: authToken);
       await Future.delayed(const Duration(milliseconds: 900));
+
+      final balanceData = MockWalletData.balanceResponse;
+      final acctData    = MockWalletData.accountDetailsResponse;
+
       state = state.copyWith(
         isLoading: false,
-        balance: 135780.00,
-        accountNumber: '8123456789',
-        accountName: 'MICHAEL ASUQUO TOLUWALASE',
-        bankName: 'KudiPay MFB',
+        balance: (balanceData['balance'] as num).toDouble(),
+        accountNumber: acctData['account_number'] as String,
+        accountName: acctData['account_name'] as String,
+        bankName: acctData['bank_name'] as String,
         lastUpdated: DateTime.now(),
       );
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Could not load wallet. Pull to refresh.',
-      );
+      state = state.copyWith(isLoading: false, error: 'Could not load wallet. Pull to refresh.');
     }
   }
 
@@ -120,24 +112,25 @@ class WalletNotifier extends StateNotifier<WalletState> {
     if (state.isRefreshing) return;
     state = state.copyWith(isRefreshing: true, clearError: true);
     try {
+      // ── TODO: Replace with real HTTP call ─────────────────────────────────
       await Future.delayed(const Duration(milliseconds: 700));
+
+      final balanceData = MockWalletData.balanceResponse;
+      final acctData    = MockWalletData.accountDetailsResponse;
+
       state = state.copyWith(
         isRefreshing: false,
-        balance: 135780.00,
-        accountNumber: '8123456789',
-        accountName: 'MICHAEL ASUQUO TOLUWALASE',
+        balance: (balanceData['balance'] as num).toDouble(),
+        accountNumber: acctData['account_number'] as String,
+        accountName: acctData['account_name'] as String,
         lastUpdated: DateTime.now(),
       );
     } catch (e) {
-      state = state.copyWith(
-        isRefreshing: false,
-        error: 'Refresh failed. Try again.',
-      );
+      state = state.copyWith(isRefreshing: false, error: 'Refresh failed. Try again.');
     }
   }
 
-  /// Optimistically deduct after a successful payment so the balance
-  /// reflects the new value immediately without waiting for a re-fetch.
+  /// Optimistically deduct after a successful payment.
   void deduct(double amount) {
     if (state.balance >= amount) {
       state = state.copyWith(balance: state.balance - amount);
@@ -145,7 +138,6 @@ class WalletNotifier extends StateNotifier<WalletState> {
   }
 }
 
-final walletProvider =
-    StateNotifierProvider<WalletNotifier, WalletState>((ref) {
+final walletProvider = StateNotifierProvider<WalletNotifier, WalletState>((ref) {
   return WalletNotifier();
 });

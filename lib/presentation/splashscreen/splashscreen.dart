@@ -10,8 +10,8 @@ import 'package:kudipay/presentation/onboarding/onboarding_screen.dart';
 
 import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/kyc/kyc_flow_manager.dart';
-import 'package:kudipay/provider/auth_provider.dart';
-import 'package:kudipay/provider/onboarding_provider.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
+import 'package:kudipay/provider/onboarding/onboarding_provider.dart';
 
 
 class SplashScreen extends ConsumerStatefulWidget {

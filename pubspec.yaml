@@ -1,5 +1,97 @@
+# name: kudipay
+# description: "A new Flutter project."
+
+# publish_to: "none"
+
+# version: 1.0.0+1
+
+# environment:
+#   sdk: ">=3.2.5 <4.0.0"
+
+# dependencies:
+#   flutter:
+#     sdk: flutter
+
+#   # UI & Icons
+#   cupertino_icons: 
+#   flutter_svg:
+#   google_fonts:
+#   smooth_page_indicator: 
+
+#   # State Management
+#   provider: 
+#   flutter_riverpod:
+
+#   # Forms & Validation
+#   form_field_validator:
+#   pinput: 
+
+#    # UI Components
+#   card_swiper:
+#   flutter_clean_calendar:
+
+#   # Network & API
+#   http:
+#   dio:
+  
+#   # NEW: Internet Connectivity Packages
+#   connectivity_plus:                     # Monitor network connectivity
+#   internet_connection_checker_plus:      # Check actual internet access
+
+#   # Data & Storage
+#   shared_preferences:
+#   flutter_secure_storage:
+
+#   # Firebase
+#   firebase_auth:
+#   firebase_core:
+#   cloud_firestore:
+
+#   # Media & Files
+#   camera: 
+#   image_picker: 
+#   file_picker: 
+#   csv: 
+#   permission_handler:
+
+#   # Permissions & Contacts
+#   flutter_contacts:   # ← NEW: read device phonebook with phone numbers
+
+
+#   # Utilities
+#   intl:
+#   flutter_lints: 
+#   crypto: 
+#   shimmer: ^3.0.0
+
+# dev_dependencies:
+#   flutter_test:
+#     sdk: flutter
+  
+   
+
+# flutter_launcher_icons:
+#   android: true
+#   ios: true
+#   image_path: "assets/images/kudikit_teal_logo.png"
+#   adaptive_icon_background: "#ffffff"
+#   adaptive_icon_foreground: "assets/icons/kudikit_android_logo.png"
+
+# flutter:
+#   uses-material-design: true
+
+#   assets:
+#     - assets/images/
+#     - assets/fonts/
+
+#   fonts:
+#   - family: PolySans          # ← was "Poly Sans", changed to match code
+#     fonts:
+#       - asset: assets/fonts/polysanstrial-neutral.otf
+
+
 name: kudipay
-description: "A new Flutter project."
+description: "KudiPay — Nigerian fintech mobile application."
 
 publish_to: "none"
 
@@ -13,67 +105,62 @@ dependencies:
     sdk: flutter
 
   # UI & Icons
-  cupertino_icons: 
+  cupertino_icons:
   flutter_svg:
   google_fonts:
-  smooth_page_indicator: 
+  smooth_page_indicator:
 
   # State Management
-  provider: 
   flutter_riverpod:
 
   # Forms & Validation
   form_field_validator:
-  pinput: 
+  pinput:
 
-   # UI Components
+  # UI Components
   card_swiper:
   flutter_clean_calendar:
 
   # Network & API
-  http:
   dio:
-  
-  # NEW: Internet Connectivity Packages
-  connectivity_plus:                     # Monitor network connectivity
-  internet_connection_checker_plus:      # Check actual internet access
+  # http kept for add_money_services which uses it directly
+  http:
+
+  # Connectivity
+  connectivity_plus:
+  internet_connection_checker_plus:
 
   # Data & Storage
   shared_preferences:
   flutter_secure_storage:
 
-  # Firebase
+  # Firebase (initialise in main() before going live)
   firebase_auth:
   firebase_core:
   cloud_firestore:
 
   # Media & Files
-  camera: 
-  image_picker: 
-  file_picker: 
-  csv: 
+  camera:
+  image_picker:
+  file_picker:
+  csv:
   permission_handler:
-
-  # Permissions & Contacts
-  flutter_contacts:   # ← NEW: read device phonebook with phone numbers
-
+  flutter_contacts:
 
   # Utilities
   intl:
-  flutter_lints: 
-  crypto: 
+  crypto:
   shimmer: ^3.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  
-   
+  flutter_lints:
 
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/kudikit_teal_logo.png"
+  image_path: "assets/images/Kudikit_teal_logo.png"
   adaptive_icon_background: "#ffffff"
   adaptive_icon_foreground: "assets/icons/kudikit_android_logo.png"
 
@@ -83,8 +170,35 @@ flutter:
   assets:
     - assets/images/
     - assets/fonts/
+    - assets/icons/
 
   fonts:
-  - family: PolySans          # ← was "Poly Sans", changed to match code
-    fonts:
-      - asset: assets/fonts/polysanstrial-neutral.otf
+    # FIXED: All PolySans weight variants registered.
+    # Previously only neutral.otf was registered — bold/semibold text
+    # was silently falling back to the single face.
+    - family: PolySans
+      fonts:
+        - asset: assets/fonts/polysanstrial-slim.otf
+          weight: 300
+        - asset: assets/fonts/polysanstrial-neutral.otf
+          weight: 400
+        - asset: assets/fonts/polysanstrial-median.otf
+          weight: 500
+        - asset: assets/fonts/polysanstrial-median.otf
+          weight: 600
+        - asset: assets/fonts/polysanstrial-bulky.otf
+          weight: 700
+        - asset: assets/fonts/polysanstrial-bulky.otf
+          weight: 800
+    - family: OpenSans
+      fonts:
+        - asset: assets/fonts/OpenSans-Light.ttf
+          weight: 300
+        - asset: assets/fonts/OpenSans-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/OpenSans-Semibold.ttf
+          weight: 600
+        - asset: assets/fonts/OpenSans-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/OpenSans-ExtraBold.ttf
+          weight: 800

@@ -5,7 +5,7 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/transfer/bulk_transfer_model.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_preview.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_upload_file_screen.dart';
-import 'package:kudipay/provider/bulk_transfer_provider.dart';
+import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 
 class BulkTransferFileValidationScreen extends ConsumerStatefulWidget {

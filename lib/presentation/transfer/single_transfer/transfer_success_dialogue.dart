@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transaction_detail.dart';
+import 'package:kudipay/provider/P2P_transfer/P2P_transfer_provider.dart';
 import 'package:kudipay/provider/provider_pack.dart';
 
 class TransactionSuccessBottomSheet extends ConsumerStatefulWidget {

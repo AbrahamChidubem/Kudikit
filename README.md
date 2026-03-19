@@ -10,6 +10,9 @@ TransactionSuccessBottomSheet (material widget issue)
 
 -respomsiveness
 TransactionsScree
+swiper image 1563*938
+adaptive logo 300*300
+logo path 512*512
 
 A few resources to get you started if this is your first Flutter project:
 

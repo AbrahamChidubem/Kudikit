@@ -8,9 +8,9 @@ import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
 import 'package:kudipay/presentation/tier/upgrade_tier_screen.dart';
 // import 'package:kudipay/provider/auth_provider.dart';
-import 'package:kudipay/provider/kyc_provider.dart';
+import 'package:kudipay/provider/kyc/kyc_provider.dart';
 import 'package:kudipay/provider/provider.dart';
-import 'package:kudipay/provider/tier_provider.dart';
+import 'package:kudipay/provider/tier/tier_provider.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);

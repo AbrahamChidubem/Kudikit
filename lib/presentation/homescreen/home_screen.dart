@@ -11,11 +11,13 @@ import 'package:kudipay/presentation/bill/data/data_phone_screen.dart';
 import 'package:kudipay/presentation/bill/electricity/electricity_screen.dart';
 import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
-import 'package:kudipay/provider/kyc_provider.dart';
+import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
+import 'package:kudipay/provider/kyc/kyc_provider.dart';
 import 'package:kudipay/provider/provider.dart';
-import 'package:kudipay/provider/tier_provider.dart';
-
+import 'package:kudipay/provider/tier/tier_provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:kudipay/provider/wallet/wallet_provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -57,7 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Account details copied!'),
-        backgroundColor: const Color(0xFF069494),
+        backgroundColor: Colors.white70,
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -482,17 +484,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Row(
                         children: [
                           _buildQuickAction(
-                            icon: Icons.send_outlined,
+                            icon: CupertinoIcons.paperplane, // ✅ Cupertino icon
                             label: 'Transfer',
                             onTap: () {
-                              _handleQuickAction(context, 'Transfer',
-                                  navigateTo: const TransferMenuScreen());
+                              _handleQuickAction(
+                                context,
+                                'Transfer',
+                                navigateTo: const TransferMenuScreen(),
+                              );
                             },
                             isEnabled: connectivityState.isConnected,
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           _buildQuickAction(
-                            icon: Icons.add_circle_outline,
+                            icon: CupertinoIcons.add_circled,
                             label: 'Request',
                             onTap: () {
                               _handleQuickAction(context, 'Request',
@@ -502,7 +507,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           _buildQuickAction(
-                            icon: Icons.account_balance_wallet_outlined,
+                            icon: CupertinoIcons.creditcard,
                             label: 'Cash out',
                             onTap: () {
                               _handleQuickAction(context, 'Cash out');
@@ -541,7 +546,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Row(
                             children: [
                               _buildServiceCard(
-                                icon: Icons.phone_callback,
+                                icon: CupertinoIcons.phone_arrow_up_right,
                                 label: 'Airtime',
                                 onTap: () {
                                   _handleQuickAction(context, 'Airtime',
@@ -552,7 +557,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
-                                icon: Icons.wifi,
+                                icon: CupertinoIcons.wifi,
                                 label: 'Data',
                                 onTap: () {
                                   _handleQuickAction(context, 'Data',
@@ -562,22 +567,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
-                              _buildServiceCard(
-                                icon: Icons.tv,
-                                label: 'TV',
-                                onTap: () {
-                                  _handleQuickAction(
-                                    context,
-                                    'TV Cable',
-                                    navigateTo: const CableTvBillerScreen(),
-                                  );
-                                },
-                                isEnabled: connectivityState.isConnected,
+                              _buildQuickAction(
+                                icon: SvgPicture.asset(
+                                  'assets/icons/tv.svg',
+                                  width: 24,
+                                  height: 24,
+                                  color: Colors.grey[700],
+                                ),
+                                label: 'Transfer',
+                                onTap: () {},
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
                               _buildServiceCard(
-                                icon: Icons.bolt_outlined,
+                                icon: CupertinoIcons.bolt,
                                 label: 'Electricity',
                                 onTap: () {
                                   _handleQuickAction(
@@ -594,7 +597,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           Row(
                             children: [
                               _buildServiceCard(
-                                icon: Icons.school_outlined,
+                                icon: Icons.school_rounded,
                                 label: 'Education',
                                 onTap: () {
                                   // _handleQuickAction(
@@ -653,7 +656,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'Recent Transaction',
+                            'Recent Transactions',
                             style: TextStyle(
                               fontSize: AppLayout.fontSize(context, 14),
                               fontWeight: FontWeight.w600,
@@ -940,11 +943,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildServiceCard({
-    required IconData icon,
+  Widget _buildQuickAction({
+    required Widget icon,
     required String label,
-    bool isEnabled = true,
     required VoidCallback onTap,
+    bool isEnabled = true,
   }) {
     return Expanded(
       child: Opacity(
@@ -955,7 +958,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             AppLayout.scaleWidth(context, 12),
           ),
           child: Container(
-            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
+            padding: EdgeInsets.symmetric(
+              vertical: AppLayout.scaleHeight(context, 16),
+            ),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(
@@ -971,20 +976,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             child: Column(
               children: [
-                Icon(
-                  icon,
-                  size: AppLayout.scaleWidth(context, 24),
-                  color: isEnabled ? Colors.grey[700] : Colors.grey[400],
-                ),
-                SizedBox(height: AppLayout.scaleHeight(context, 6)),
+                icon,
+                SizedBox(height: AppLayout.scaleHeight(context, 8)),
                 Text(
                   label,
                   style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 11),
+                    fontSize: AppLayout.fontSize(context, 12),
                     fontWeight: FontWeight.w500,
                     color: isEnabled ? Colors.black87 : Colors.grey[400],
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ],
             ),
