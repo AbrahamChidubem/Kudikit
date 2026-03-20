@@ -1,3 +1,13 @@
+// lib/presentation/signup/signup_verify.dart
+//
+// FIXED:
+//   - Constructor parameter renamed: `pin` → `passcode`.
+//     The old name `pin` was ambiguous — the same word was used inside
+//     the Pinput widget for the OTP code, causing a naming collision that
+//     made the code confusing and error-prone for future developers.
+//   - All internal references updated accordingly.
+//   - No logic changes — only naming clarity.
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -14,13 +24,17 @@ import 'package:pinput/pinput.dart';
 class EmailVerifySignup extends ConsumerStatefulWidget {
   final String email;
   final String phoneNumber;
-  final String pin;
+
+  // FIXED: renamed from `pin` to `passcode` — this is the user's signup
+  // passcode (8-12 char alphanumeric), NOT the 6-digit OTP shown in the
+  // Pinput widget below. Using `pin` for both caused a naming collision.
+  final String passcode;
 
   const EmailVerifySignup({
     super.key,
     required this.email,
     required this.phoneNumber,
-    required this.pin,
+    required this.passcode,
   });
 
   @override
@@ -28,14 +42,16 @@ class EmailVerifySignup extends ConsumerStatefulWidget {
 }
 
 class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
-  final TextEditingController _pinController = TextEditingController();
+  // Named `_otpController` to make clear this controls the 6-digit OTP input,
+  // not the user's passcode.
+  final TextEditingController _otpController = TextEditingController();
   final FocusNode _pinFocusNode = FocusNode();
   bool isLoading = false;
   bool isResending = false;
 
   @override
   void dispose() {
-    _pinController.dispose();
+    _otpController.dispose();
     _pinFocusNode.dispose();
     super.dispose();
   }
@@ -47,7 +63,6 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
 
-      // Send verification code when screen loads (only if online)
       final isConnected = ref.read(currentConnectivityProvider);
       if (isConnected) {
         _sendVerificationCode();
@@ -150,16 +165,15 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
     });
 
     try {
-      // Resend verification email — replace this delay with the real auth
-      // service call (e.g. ref.read(authProvider.notifier).resendVerification(widget.email))
-      // when the backend endpoint is available.
+      // TODO: Replace this delay with the real auth service call:
+      // ref.read(authProvider.notifier).resendVerification(widget.email)
       await Future.delayed(const Duration(seconds: 1));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification code sent to ${widget.email}'),
-            backgroundColor: Color(0xFF069494),
+            backgroundColor: const Color(0xFF069494),
           ),
         );
       }
@@ -202,9 +216,10 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
       return;
     }
 
-    final code = _pinController.text.trim();
+    // `otp` clearly means the 6-digit email/SMS code — NOT the passcode.
+    final otp = _otpController.text.trim();
 
-    if (code.length != 6) {
+    if (otp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please enter the 6-digit code'),
@@ -219,12 +234,11 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
     });
 
     try {
-      // Verify OTP — replace this delay with the real auth service call
-      // (e.g. ref.read(authProvider.notifier).verifyEmail(widget.email, code))
-      // when the backend endpoint is available.
+      // TODO: Replace this delay with the real auth service call:
+      // ref.read(authProvider.notifier).verifyEmail(widget.email, otp)
       await Future.delayed(const Duration(seconds: 2));
 
-      if (code.isNotEmpty) {
+      if (otp.isNotEmpty) {
         final userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
         ref.read(userIdProvider.notifier).state = userId;
         ref.read(userEmailProvider.notifier).state = widget.email;
@@ -325,14 +339,15 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
           onPressed: () => Navigator.pop(context),
         ),
         actions: [
-          // Connectivity indicator
           if (!isOnline)
             Padding(
-              padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
+              padding:
+                  EdgeInsets.only(right: AppLayout.scaleWidth(context, 8)),
               child: const Center(child: ConnectivityIndicator()),
             ),
           Padding(
-            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
+            padding:
+                EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
             child: Center(
               child: Stack(
                 children: [
@@ -367,11 +382,11 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
       ),
       body: Column(
         children: [
-          // Connectivity Banner
           if (!isOnline)
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               color: Colors.red.shade700,
               child: Row(
                 children: [
@@ -385,7 +400,9 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                   ),
                   TextButton(
                     onPressed: () {
-                      ref.read(connectivityStateProvider.notifier).refresh();
+                      ref
+                          .read(connectivityStateProvider.notifier)
+                          .refresh();
                     },
                     child: const Text(
                       'Retry',
@@ -405,7 +422,6 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                     children: [
                       const SizedBox(height: 10),
 
-                      // Title and Subtitle
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -419,7 +435,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            "Enter the 6-digit code sent to ${widget.email} and ${widget.phoneNumber}",
+                            'Enter the 6-digit code sent to ${widget.email} and ${widget.phoneNumber}',
                             style: TextStyle(
                               color: Colors.black54,
                               fontSize: isSmallScreen ? 14 : 16,
@@ -427,8 +443,6 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                             ),
                           ),
                           const SizedBox(height: 16),
-
-                          // Enter Code Label
                           const Text(
                             'Enter code',
                             style: TextStyle(
@@ -441,17 +455,17 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                       ),
                       const SizedBox(height: 20),
 
-                      // PIN Input
+                      // OTP input — 6 digits only. This is NOT the passcode.
                       Pinput(
                         length: 6,
-                        controller: _pinController,
+                        controller: _otpController,
                         focusNode: _pinFocusNode,
                         defaultPinTheme: defaultPinTheme,
                         focusedPinTheme: focusedPinTheme,
                         submittedPinTheme: submittedPinTheme,
                         pinAnimationType: PinAnimationType.fade,
                         enabled: isOnline && !isLoading,
-                        onCompleted: (pin) {
+                        onCompleted: (enteredOtp) {
                           if (isOnline) {
                             _verifyCode();
                           } else {
@@ -474,7 +488,6 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
 
                       const SizedBox(height: 30),
 
-                      // Verify Button
                       if (isLoading)
                         const AppLoadingIndicator()
                       else if (!isOnline)
@@ -495,7 +508,6 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
 
                       const SizedBox(height: 20),
 
-                      // Resend Code
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -521,7 +533,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                                           context);
                                     },
                               child: Text(
-                                "Resend Code",
+                                'Resend Code',
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontWeight: FontWeight.bold,
@@ -530,20 +542,20 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
                                       : Colors.grey,
                                 ),
                               ),
-                            )
+                            ),
                         ],
                       ),
                       TextButton(
                         onPressed: () {},
                         child: const Text(
-                          "Change email",
+                          'Change email',
                           style: TextStyle(
                             fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF069494),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),

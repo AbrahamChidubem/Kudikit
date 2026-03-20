@@ -28,9 +28,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(p2pTransferProvider);
-    // The logged-in user name comes from userProvider (e.g. 'MICHAEL ASUQUO TOLUWALASE')
     final senderName = ref.watch(userProvider);
-    // The verification state holds the sender's account number (idNumber field)
     final verificationState = ref.watch(identityVerificationProvider);
     final senderAccountNumber =
         verificationState.verificationData?.idNumber ?? '';
@@ -43,7 +41,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        color:  Color(0xFFF9F9F9),
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -51,34 +49,56 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppLayout.scaleWidth(context, 24),
-            vertical: AppLayout.scaleHeight(context, 20),
+          padding: EdgeInsets.fromLTRB(
+            AppLayout.scaleWidth(context, 24),
+            AppLayout.scaleHeight(context, 20),
+            AppLayout.scaleWidth(context, 24),
+            AppLayout.scaleHeight(context, 24),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Handle bar ───────────────────────────────────────────
+              Center(
+                child: Container(
+                  width: AppLayout.scaleWidth(context, 40),
+                  height: AppLayout.scaleHeight(context, 4),
+                  margin:
+                      EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 16)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
               // ── Header ──────────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Center(
-                    child: Text(
-                      'Kindly confirm',
-                      style: TextStyle(
-                        fontSize: AppLayout.fontSize(context, 18),
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
-                      ),
+                  Text(
+                    'Kindly confirm',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
                     ),
                   ),
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(
-                      Icons.close,
-                      size: 22,
-                      color: Colors.black54,
+                    child: Container(
+                      width: AppLayout.scaleWidth(context, 28),
+                      height: AppLayout.scaleWidth(context, 28),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.black54,
+                      ),
                     ),
                   ),
                 ],
@@ -91,7 +111,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                 child: Text(
                   currencyFormat.format(state.transferData.amount ?? 0),
                   style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 34),
+                    fontSize: AppLayout.fontSize(context, 32),
                     fontWeight: FontWeight.w700,
                     color: const Color(0xFF069494),
                   ),
@@ -125,7 +145,6 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                             ),
                           ),
                           Text(
-                            // e.g. "8123456789 | OPay"
                             '${recipient?.accountNumber ?? ''}'
                             '${(recipient?.bank != null && recipient!.bank!.isNotEmpty) ? ' | ${recipient.bank}' : ''}',
                             style: TextStyle(
@@ -187,8 +206,8 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
               // ── Sender card ──────────────────────────────────────────
               Container(
                 padding: EdgeInsets.symmetric(
-                  horizontal: AppLayout.scaleWidth(context, 16),
-                  vertical: AppLayout.scaleHeight(context, 14),
+                  horizontal: AppLayout.scaleWidth(context, 14),
+                  vertical: AppLayout.scaleHeight(context, 12),
                 ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFF7F7F7),
@@ -204,7 +223,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                       child: Text(
                         _initials(senderName),
                         style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 13),
+                          fontSize: AppLayout.fontSize(context, 12),
                           fontWeight: FontWeight.w700,
                           color: const Color(0xFF069494),
                         ),
@@ -218,30 +237,22 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Name and account number on the same line
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  senderAccountNumber.isNotEmpty
-                                      ? '${senderName.toUpperCase()}  $senderAccountNumber'
-                                      : senderName.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 13),
-                                    fontWeight: FontWeight.w500,
-                                    color: Color(0xFF171515),
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ],
+                          Text(
+                            senderAccountNumber.isNotEmpty
+                                ? '${senderName.toUpperCase()}  $senderAccountNumber'
+                                : senderName.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: AppLayout.fontSize(context, 12),
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF171515),
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                           SizedBox(height: AppLayout.scaleHeight(context, 4)),
-                          // Balance below
                           Text(
                             currencyFormat.format(balance),
                             style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 13),
+                              fontSize: AppLayout.fontSize(context, 12),
                               color: Colors.black45,
                             ),
                           ),
@@ -311,8 +322,6 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                   ),
                 ],
               ),
-
-              SizedBox(height: AppLayout.scaleHeight(context, 8)),
             ],
           ),
         ),

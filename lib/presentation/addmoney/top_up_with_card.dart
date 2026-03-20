@@ -6,7 +6,6 @@ import 'package:kudipay/model/bankmodel/bank_model.dart';
 import 'package:kudipay/presentation/otp/otp_verification_screen.dart';
 import 'package:kudipay/provider/funding/funding_provider.dart';
 
-
 class CardTopUpFormScreen extends ConsumerStatefulWidget {
   const CardTopUpFormScreen({Key? key}) : super(key: key);
 
@@ -25,9 +24,30 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
 
   bool _cvvVisible = false;
   bool _pinVisible = false;
+  bool _isFormValid = false;
+
+  static const _primaryColor = Color(0xFF069494);
+
+  // ─── Lifecycle ───────────────────────────────────────────────────────────────
+
+  @override
+  void initState() {
+    super.initState();
+    _amountController.addListener(_validateForm);
+    _cardNumberController.addListener(_validateForm);
+    _expiryController.addListener(_validateForm);
+    _cvvController.addListener(_validateForm);
+    _pinController.addListener(_validateForm);
+  }
 
   @override
   void dispose() {
+    _amountController.removeListener(_validateForm);
+    _cardNumberController.removeListener(_validateForm);
+    _expiryController.removeListener(_validateForm);
+    _cvvController.removeListener(_validateForm);
+    _pinController.removeListener(_validateForm);
+
     _amountController.dispose();
     _cardNumberController.dispose();
     _expiryController.dispose();
@@ -36,6 +56,30 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
     super.dispose();
   }
 
+  // ─── Validation ──────────────────────────────────────────────────────────────
+
+  void _validateForm() {
+    final amount = double.tryParse(_amountController.text);
+    final cardDigits = _cardNumberController.text.replaceAll(' ', '');
+    final expiryParts = _expiryController.text.split(' / ');
+
+    final isValid = amount != null &&
+        amount > 0 &&
+        cardDigits.length >= 13 &&
+        cardDigits.length <= 19 &&
+        expiryParts.length == 2 &&
+        expiryParts[0].length == 2 &&
+        expiryParts[1].length == 2 &&
+        _cvvController.text.length >= 3 &&
+        _pinController.text.length == 4;
+
+    if (isValid != _isFormValid) {
+      setState(() => _isFormValid = isValid);
+    }
+  }
+
+  // ─── Build ───────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final cardTopUpState = ref.watch(cardTopUpProvider);
@@ -43,15 +87,15 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
+      bottomNavigationBar: _buildConfirmButton(context),
       body: Stack(
         children: [
           _buildBody(context),
-          _buildConfirmButton(context),
           if (cardTopUpState.isLoading)
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF069494)),
+                child: CircularProgressIndicator(color: _primaryColor),
               ),
             ),
         ],
@@ -87,55 +131,139 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-            // Amount Field
             _buildAmountField(context),
-
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
-            // Card Number Field
             _buildCardNumberField(context),
-
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
-            // Expiry and CVV Row
             Row(
               children: [
-                Expanded(
-                  child: _buildExpiryField(context),
-                ),
+                Expanded(child: _buildExpiryField(context)),
                 SizedBox(width: AppLayout.scaleWidth(context, 16)),
-                Expanded(
-                  child: _buildCvvField(context),
-                ),
+                Expanded(child: _buildCvvField(context)),
               ],
             ),
-
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
-            // PIN Field
             _buildPinField(context),
-
-            SizedBox(height: AppLayout.scaleHeight(context, 120)),
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
           ],
         ),
       ),
     );
   }
 
+  // ─── Reusable Helpers ────────────────────────────────────────────────────────
+
+  InputDecoration _fieldDecoration(
+    BuildContext context, {
+    required String hint,
+    String? prefix,
+    Widget? suffix,
+    double? hintFontSize,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+        color: Colors.grey[400],
+        fontSize: AppLayout.fontSize(context, hintFontSize ?? 14),
+      ),
+      prefixText: prefix,
+      prefixStyle: TextStyle(
+        fontSize: AppLayout.fontSize(context, 16),
+        fontWeight: FontWeight.w600,
+        color: Colors.black87,
+      ),
+      suffixIcon: suffix,
+      filled: true,
+      fillColor: Colors.white,
+      border: _border(context),
+      enabledBorder: _border(context),
+      focusedBorder: _border(context, focused: true),
+      errorBorder: _border(context, error: true),
+      focusedErrorBorder: _border(context, error: true),
+      contentPadding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 16),
+        vertical: AppLayout.scaleHeight(context, 14),
+      ),
+    );
+  }
+
+  OutlineInputBorder _border(
+    BuildContext context, {
+    bool focused = false,
+    bool error = false,
+  }) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+      borderSide: BorderSide(
+        color: error
+            ? Colors.red
+            : focused
+                ? _primaryColor
+                : Colors.grey[300]!,
+        width: focused ? 2 : 1,
+      ),
+    );
+  }
+
+  TextStyle _fieldTextStyle(BuildContext context) {
+    return TextStyle(
+      fontSize: AppLayout.fontSize(context, 16),
+      fontWeight: FontWeight.w500,
+    );
+  }
+
+  Widget _fieldLabel(
+    BuildContext context,
+    String label, {
+    bool showInfo = false,
+  }) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 8)),
+      child: Row(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+            ),
+          ),
+          if (showInfo) ...[
+            SizedBox(width: AppLayout.scaleWidth(context, 4)),
+            Icon(
+              Icons.info_outline,
+              size: AppLayout.scaleWidth(context, 16),
+              color: Colors.grey[400],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _visibilityToggle(
+    BuildContext context, {
+    required bool visible,
+    required VoidCallback onTap,
+  }) {
+    return IconButton(
+      icon: Icon(
+        visible ? Icons.visibility : Icons.visibility_off,
+        color: Colors.grey[400],
+        size: AppLayout.scaleWidth(context, 20),
+      ),
+      onPressed: onTap,
+    );
+  }
+
+  // ─── Form Fields ─────────────────────────────────────────────────────────────
+
   Widget _buildAmountField(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Amount',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14),
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 8)),
+        _fieldLabel(context, 'Amount'),
         TextFormField(
           controller: _amountController,
           keyboardType: TextInputType.number,
@@ -143,59 +271,19 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(7),
           ],
+          style: _fieldTextStyle(context),
+          decoration: _fieldDecoration(
+            context,
+            hint: '100.00',
+            hintFontSize: 16,
+            prefix: '₦',
+          ),
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter amount';
-            }
+            if (value == null || value.isEmpty) return 'Please enter amount';
             final amount = double.tryParse(value);
-            if (amount == null || amount <= 0) {
-              return 'Please enter a valid amount';
-            }
+            if (amount == null || amount <= 0) return 'Please enter a valid amount';
             return null;
           },
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: '100.00',
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: AppLayout.fontSize(context, 16),
-            ),
-            prefixText: '₦',
-            prefixStyle: TextStyle(
-              fontSize: AppLayout.fontSize(context, 16),
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 16),
-              vertical: AppLayout.scaleHeight(context, 14),
-            ),
-          ),
         ),
       ],
     );
@@ -205,15 +293,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Card Number',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14),
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 8)),
+        _fieldLabel(context, 'Card Number'),
         TextFormField(
           controller: _cardNumberController,
           keyboardType: TextInputType.number,
@@ -222,53 +302,19 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             LengthLimitingTextInputFormatter(19),
             _CardNumberInputFormatter(),
           ],
+          style: _fieldTextStyle(context),
+          decoration: _fieldDecoration(
+            context,
+            hint: 'Enter 13 - 19 digit card number',
+          ),
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter card number';
-            }
-            final digitsOnly = value.replaceAll(' ', '');
-            if (digitsOnly.length < 13 || digitsOnly.length > 19) {
+            if (value == null || value.isEmpty) return 'Please enter card number';
+            final digits = value.replaceAll(' ', '');
+            if (digits.length < 13 || digits.length > 19) {
               return 'Please enter a valid card number';
             }
             return null;
           },
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Enter 13 - 19 digit card number',
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: AppLayout.fontSize(context, 14),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 16),
-              vertical: AppLayout.scaleHeight(context, 14),
-            ),
-          ),
         ),
       ],
     );
@@ -278,15 +324,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Expiry Date',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14),
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
-          ),
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 8)),
+        _fieldLabel(context, 'Expiry Date'),
         TextFormField(
           controller: _expiryController,
           keyboardType: TextInputType.number,
@@ -295,56 +333,19 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             LengthLimitingTextInputFormatter(4),
             _ExpiryDateInputFormatter(),
           ],
+          style: _fieldTextStyle(context),
+          decoration: _fieldDecoration(context, hint: 'MM / YY'),
           validator: (value) {
             final input = value?.trim();
-
-            if (input == null || input.isEmpty) {
-              return 'Required';
+            if (input == null || input.isEmpty) return 'Required';
+            final parts = input.split(' / ');
+            if (parts.length < 2 ||
+                parts[0].length != 2 ||
+                parts[1].length != 2) {
+              return 'Invalid date';
             }
-
-            // if (input.length != 4) {
-            //   return 'Invalid';
-            // }
-
             return null;
           },
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: 'MM / YY',
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: AppLayout.fontSize(context, 14),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 12),
-              vertical: AppLayout.scaleHeight(context, 14),
-            ),
-          ),
         ),
       ],
     );
@@ -354,25 +355,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'CVV',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 14),
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(width: AppLayout.scaleWidth(context, 4)),
-            Icon(
-              Icons.info_outline,
-              size: AppLayout.scaleWidth(context, 16),
-              color: Colors.grey[400],
-            ),
-          ],
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 8)),
+        _fieldLabel(context, 'CVV', showInfo: true),
         TextFormField(
           controller: _cvvController,
           keyboardType: TextInputType.number,
@@ -381,64 +364,21 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(4),
           ],
+          style: _fieldTextStyle(context),
+          decoration: _fieldDecoration(
+            context,
+            hint: 'Enter CVV',
+            suffix: _visibilityToggle(
+              context,
+              visible: _cvvVisible,
+              onTap: () => setState(() => _cvvVisible = !_cvvVisible),
+            ),
+          ),
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Required';
-            }
-            if (value.length < 3) {
-              return 'Invalid';
-            }
+            if (value == null || value.isEmpty) return 'Required';
+            if (value.length < 3) return 'Invalid CVV';
             return null;
           },
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Enter Card CVV',
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: AppLayout.fontSize(context, 14),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _cvvVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey[400],
-                size: AppLayout.scaleWidth(context, 20),
-              ),
-              onPressed: () {
-                setState(() {
-                  _cvvVisible = !_cvvVisible;
-                });
-              },
-            ),
-            border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 12),
-              vertical: AppLayout.scaleHeight(context, 14),
-            ),
-          ),
         ),
       ],
     );
@@ -448,25 +388,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'CVV',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 14),
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-              ),
-            ),
-            SizedBox(width: AppLayout.scaleWidth(context, 4)),
-            Icon(
-              Icons.info_outline,
-              size: AppLayout.scaleWidth(context, 16),
-              color: Colors.grey[400],
-            ),
-          ],
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 8)),
+        _fieldLabel(context, 'Card PIN', showInfo: true),
         TextFormField(
           controller: _pinController,
           keyboardType: TextInputType.number,
@@ -475,151 +397,126 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             FilteringTextInputFormatter.digitsOnly,
             LengthLimitingTextInputFormatter(4),
           ],
+          style: _fieldTextStyle(context),
+          decoration: _fieldDecoration(
+            context,
+            hint: 'Enter Card PIN',
+            suffix: _visibilityToggle(
+              context,
+              visible: _pinVisible,
+              onTap: () => setState(() => _pinVisible = !_pinVisible),
+            ),
+          ),
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your CVV';
-            }
-            if (value.length != 4) {
-              return 'PIN must be 4 digits';
-            }
+            if (value == null || value.isEmpty) return 'Please enter your PIN';
+            if (value.length != 4) return 'PIN must be 4 digits';
             return null;
           },
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Enter Card PIN',
-            hintStyle: TextStyle(
-              color: Colors.grey[400],
-              fontSize: AppLayout.fontSize(context, 14),
-            ),
-            filled: true,
-            fillColor: Colors.white,
-            suffixIcon: IconButton(
-              icon: Icon(
-                _pinVisible ? Icons.visibility : Icons.visibility_off,
-                color: Colors.grey[400],
-                size: AppLayout.scaleWidth(context, 20),
-              ),
-              onPressed: () {
-                setState(() {
-                  _pinVisible = !_pinVisible;
-                });
-              },
-            ),
-            border: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: BorderSide(color: Colors.grey[300]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF069494), width: 2),
-            ),
-            errorBorder: OutlineInputBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Colors.red),
-            ),
-            contentPadding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 16),
-              vertical: AppLayout.scaleHeight(context, 14),
-            ),
-          ),
         ),
       ],
     );
   }
 
+  // ─── Confirm Button ───────────────────────────────────────────────────────────
+
   Widget _buildConfirmButton(BuildContext context) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: ElevatedButton(
-          onPressed: _handleConfirm,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF069494),
-            minimumSize: Size(
-              double.infinity,
-              AppLayout.scaleHeight(context, 50),
-            ),
-            shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-            ),
-            elevation: 0,
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 16),
+        AppLayout.scaleHeight(context, 12),
+        AppLayout.scaleWidth(context, 16),
+        AppLayout.scaleHeight(context, 12) +
+            MediaQuery.of(context).padding.bottom,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, -2),
           ),
-          child: Text(
-            'Confirm',
-            style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 16),
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
+        ],
+      ),
+      child: ElevatedButton(
+        onPressed: _isFormValid ? _handleConfirm : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: _primaryColor,
+          disabledBackgroundColor: _primaryColor.withOpacity(0.4),
+          disabledForegroundColor: Colors.white,
+          minimumSize: Size(
+            double.infinity,
+            AppLayout.scaleHeight(context, 50),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius:
+                BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+          ),
+          elevation: 0,
+        ),
+        child: Text(
+          'Confirm',
+          style: TextStyle(
+            fontSize: AppLayout.fontSize(context, 16),
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
           ),
         ),
       ),
     );
   }
 
+  // ─── Handler ─────────────────────────────────────────────────────────────────
+
   Future<void> _handleConfirm() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final expiry = _expiryController.text.split(' / ');
+    final parts = _expiryController.text.split(' / ');
+    if (parts.length < 2) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter a valid expiry date'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final request = CardTopUpRequest(
       amount: double.parse(_amountController.text),
       cardNumber: _cardNumberController.text.replaceAll(' ', ''),
-      expiryMonth: expiry[0],
-      expiryYear: expiry[1],
+      expiryMonth: parts[0],
+      expiryYear: parts[1],
       cvv: _cvvController.text,
       pin: _pinController.text,
     );
 
     await ref.read(cardTopUpProvider.notifier).initiateTopUp(request);
 
+    if (!mounted) return;
+
     final state = ref.read(cardTopUpProvider);
 
-    if (mounted) {
-      if (state.error != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(state.error!.message),
-            backgroundColor: Colors.red,
-          ),
-        );
-      } else if (state.response?.requiresOtp == true) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const OtpVerificationScreen(),
-          ),
-        );
-      }
+    if (state.error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(state.error!.message),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } else if (state.response?.requiresOtp == true) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const OtpVerificationScreen(),
+        ),
+      );
     }
   }
 }
 
-// Custom Input Formatters
+// ─── Input Formatters ─────────────────────────────────────────────────────────
+
 class _CardNumberInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(
@@ -631,9 +528,7 @@ class _CardNumberInputFormatter extends TextInputFormatter {
 
     for (int i = 0; i < text.length; i++) {
       buffer.write(text[i]);
-      if ((i + 1) % 4 == 0 && i + 1 != text.length) {
-        buffer.write(' ');
-      }
+      if ((i + 1) % 4 == 0 && i + 1 != text.length) buffer.write(' ');
     }
 
     final formatted = buffer.toString();

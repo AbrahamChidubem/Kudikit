@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/presentation/request/preview_request_screen.dart';
 import 'package:kudipay/presentation/request/select_recipient_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // âœ… replaced provider/provider.dart
 
-class RequestMoneyScreen extends ConsumerStatefulWidget { // âœ…
+class RequestMoneyScreen extends ConsumerStatefulWidget {
+  // âœ…
   const RequestMoneyScreen({super.key});
 
   @override
@@ -15,7 +17,8 @@ class RequestMoneyScreen extends ConsumerStatefulWidget { // âœ…
       _RequestMoneyScreenState();
 }
 
-class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // âœ…
+class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> {
+  // âœ…
   final TextEditingController _amountController = TextEditingController();
   final TextEditingController _noteController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
@@ -109,7 +112,7 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // âœ
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const SelectRecipientsScreen(),
+        builder: (context) => const PreviewRequestScreen(),
       ),
     );
   }
@@ -117,7 +120,8 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // âœ
   @override
   Widget build(BuildContext context) {
     final canContinue = _amountController.text.isNotEmpty;
-
+    final provider = ref.watch(requestProvider);
+    final selectedCount = provider.selectedContacts.length;
     return Scaffold(
       backgroundColor: const Color(0xFFf9f9f9),
       appBar: AppBar(
@@ -214,13 +218,12 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // âœ
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
+                        horizontal: 14,
+                        vertical: 8,
                       ),
                       decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFFE8F5E9)
-                            : Colors.white,
+                        color:
+                            isSelected ? const Color(0xFFE8F5E9) : Colors.white,
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFF069494)
@@ -231,7 +234,7 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // âœ
                       child: Text(
                         reason,
                         style: GoogleFonts.openSans(
-                          fontSize: 13,
+                          fontSize: 12,
                           fontWeight: FontWeight.w500,
                           color: isSelected
                               ? const Color(0xFF069494)
@@ -508,14 +511,16 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> { // âœ
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(28),
               ),
               elevation: 0,
             ),
             child: Text(
-              'Continue',
+              selectedCount > 0
+                  ? 'Continue with $selectedCount Recipient${selectedCount > 1 ? 's' : ''}'
+                  : 'Continue',
               style: GoogleFonts.openSans(
-                fontSize: 16,
+                fontSize: AppLayout.fontSize(context, 16),
                 fontWeight: FontWeight.w600,
               ),
             ),

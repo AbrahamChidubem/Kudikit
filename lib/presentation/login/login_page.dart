@@ -40,7 +40,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _showingPhone = true;
   bool _isLoading = false;
 
-  // ── FIX 1: Store error as a ValueNotifier so it always triggers rebuild ──
   final ValueNotifier<String?> _errorNotifier = ValueNotifier<String?>(null);
 
   @override
@@ -103,7 +102,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _hasEmail(UserModel? user) =>
       (widget.email ?? user?.email ?? '').isNotEmpty;
 
-  // ── FIX 2: Proper error handling that always sets the error notifier ──
   Future<void> _handleLogin(UserModel? user) async {
     final isConnected = ref.read(currentConnectivityProvider);
     if (!isConnected) {
@@ -113,7 +111,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     final password = _passwordCtrl.text.trim();
     if (password.isEmpty) {
-      _errorNotifier.value = 'Please enter your password';
+      _errorNotifier.value = 'Please enter your passcode';
+      return;
+    }
+
+    if (password.length < 8) {
+      _errorNotifier.value = 'Passcode must be at least 8 characters';
       return;
     }
 
@@ -125,8 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
 
       if (!isValid) {
-        // ── FIX 3: Set error via notifier, matching exact mockup text ──
-        _errorNotifier.value = 'Incorrect password, kindly try again';
+        _errorNotifier.value = 'Incorrect passcode, kindly try again';
         _passwordCtrl.clear();
         if (mounted) setState(() => _isLoading = false);
         return;
@@ -157,32 +159,51 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  void _showIdentifierMenu(BuildContext context, UserModel? user) {
+  // ---------------------------------------------------------------------------
+  // Dropdown menu — opens BELOW the identifier field when the chevron is tapped.
+  // Uses a GlobalKey on the field to measure its exact screen position and
+  // anchor the menu flush to its bottom edge.
+  // ---------------------------------------------------------------------------
+  final _identifierFieldKey = GlobalKey();
+
+  // Cached so _showIdentifierMenu can read connectivity without a BuildContext arg.
+  bool _isOnlineCached = true;
+
+  void _showIdentifierMenu(UserModel? user) {
+    if (!_isOnlineCached) return;
+
     final phone = widget.phoneNumber ?? user?.phoneNumber ?? '';
     final email = widget.email ?? user?.email ?? '';
 
-    final renderBox = context.findRenderObject() as RenderBox;
+    final box =
+        _identifierFieldKey.currentContext?.findRenderObject() as RenderBox?;
+    if (box == null) return;
+
     final overlay =
         Navigator.of(context).overlay!.context.findRenderObject() as RenderBox;
-    final topLeft = renderBox.localToGlobal(Offset.zero, ancestor: overlay);
+
+    // Anchor the menu top-left to the bottom-left of the identifier field.
+    final fieldBottomLeft =
+        box.localToGlobal(Offset(0, box.size.height), ancestor: overlay);
 
     final position = RelativeRect.fromLTRB(
-      topLeft.dx + AppLayout.scaleWidth(context, 24),
-      topLeft.dy + AppLayout.scaleHeight(context, 148),
-      overlay.size.width -
-          topLeft.dx -
-          renderBox.size.width +
-          AppLayout.scaleWidth(context, 24),
+      fieldBottomLeft.dx,
+      fieldBottomLeft.dy,
+      overlay.size.width - fieldBottomLeft.dx - box.size.width,
       0,
     );
 
     showMenu<String>(
       context: context,
       position: position,
-      elevation: 8,
+      elevation: 6,
       color: Colors.white,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 14)),
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+      ),
+      constraints: BoxConstraints(
+        minWidth: box.size.width,
+        maxWidth: box.size.width,
       ),
       items: [
         if (phone.isNotEmpty)
@@ -219,13 +240,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       value: value,
       padding: EdgeInsets.symmetric(
         horizontal: AppLayout.scaleWidth(context, 16),
-        vertical: AppLayout.scaleHeight(context, 10),
+        vertical: AppLayout.scaleHeight(context, 12),
       ),
       child: Row(
         children: [
-          Icon(icon,
-              size: AppLayout.scaleWidth(context, 18),
-              color: selected ? brand : Colors.grey[500]),
+          Icon(
+            icon,
+            size: AppLayout.scaleWidth(context, 18),
+            color: selected ? brand : Colors.grey[500],
+          ),
           SizedBox(width: AppLayout.scaleWidth(context, 12)),
           Expanded(
             child: Text(
@@ -234,7 +257,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
                 fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                color: selected ? brand : Color(0xFF171515),
+                color: selected ? brand : const Color(0xFF171515),
               ),
             ),
           ),
@@ -291,6 +314,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final screenH = MediaQuery.of(context).size.height;
     final topPad = MediaQuery.of(context).padding.top;
     final bannerH = isOnline ? 0.0 : AppLayout.scaleHeight(context, 42);
+    final canToggle = _hasPhone(user) && _hasEmail(user);
+
+    // Keep the cached connectivity flag in sync so _showIdentifierMenu can read it.
+    _isOnlineCached = isOnline;
 
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
@@ -309,7 +336,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 // ── Top bar ──────────────────────────────────────────────
                 _TopBar(isOnline: isOnline),
 
-                // Generous whitespace between top bar and heading — matches mockup
                 SizedBox(height: AppLayout.scaleHeight(context, 150)),
 
                 // ── Heading ──────────────────────────────────────────────
@@ -323,48 +349,59 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                 ),
 
-                // ── Error message slot ────────────────────────────────────
-                // Always reserves the same height (20px text line + 8px top
-                // gap + 16px bottom gap = fixed block) so the fields below
-                // never shift position whether or not there is an error.
-                // Matches mockup: red text, directly under the heading.
-                SizedBox(height: AppLayout.scaleHeight(context, 8)),
+                SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+                // ── Identifier field ──────────────────────────────────────
+                // Tapping the field (or the chevron) opens a dropdown menu
+                // anchored below this field listing phone and email options.
+                _IdentifierField(
+                  key: _identifierFieldKey,
+                  displayValue: _displayValue(user),
+                  showingPhone: _showingPhone,
+                  canToggle: canToggle,
+                  onTap: () => _showIdentifierMenu(user),
+                ),
+
+                // ── Error message — directly below identifier field ────────
                 ValueListenableBuilder<String?>(
                   valueListenable: _errorNotifier,
                   builder: (context, errorText, _) {
-                    return SizedBox(
-                      height: AppLayout.scaleHeight(context, 22),
-                      width: double.infinity,
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: errorText != null
-                            ? Align(
-                                key: const ValueKey('err'),
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  errorText,
-                                  style: TextStyle(
-                                    fontSize: AppLayout.fontSize(context, 14),
-                                    fontWeight: FontWeight.w400,
+                    return AnimatedSize(
+                      duration: const Duration(milliseconds: 180),
+                      curve: Curves.easeInOut,
+                      child: errorText != null
+                          ? Padding(
+                              padding: EdgeInsets.only(
+                                top: AppLayout.scaleHeight(context, 8),
+                                left: AppLayout.scaleWidth(context, 2),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.error_outline,
+                                    size: AppLayout.scaleWidth(context, 14),
                                     color: const Color(0xFFE53935),
-                                    height: 1.2,
                                   ),
-                                ),
-                              )
-                            : const SizedBox.shrink(key: ValueKey('none')),
-                      ),
+                                  SizedBox(
+                                      width: AppLayout.scaleWidth(context, 4)),
+                                  Expanded(
+                                    child: Text(
+                                      errorText,
+                                      style: TextStyle(
+                                        fontSize:
+                                            AppLayout.fontSize(context, 13),
+                                        fontWeight: FontWeight.w400,
+                                        color: const Color(0xFFE53935),
+                                        height: 1.3,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : const SizedBox.shrink(),
                     );
                   },
-                ),
-
-                SizedBox(height: AppLayout.scaleHeight(context, 14)),
-
-                // ── Identifier field ──────────────────────────────────────
-                _IdentifierField(
-                  displayValue: _displayValue(user),
-                  showingPhone: _showingPhone,
-                  canToggle: _hasPhone(user) && _hasEmail(user),
-                  onTap: () => _showIdentifierMenu(context, user),
                 ),
 
                 SizedBox(height: AppLayout.scaleHeight(context, 12)),
@@ -478,7 +515,7 @@ class _TopBar extends ConsumerWidget {
 }
 
 // =============================================================================
-// Identifier field — read-only
+// Identifier field — read-only display
 // =============================================================================
 class _IdentifierField extends StatelessWidget {
   final String displayValue;
@@ -487,6 +524,7 @@ class _IdentifierField extends StatelessWidget {
   final VoidCallback onTap;
 
   const _IdentifierField({
+    super.key,
     required this.displayValue,
     required this.showingPhone,
     required this.canToggle,
@@ -531,6 +569,7 @@ class _IdentifierField extends StatelessWidget {
                 ),
               ),
             ),
+            // Chevron — only shown when toggling between phone/email is possible.
             if (canToggle) ...[
               SizedBox(width: AppLayout.scaleWidth(context, 4)),
               Icon(
@@ -581,10 +620,10 @@ class _PasswordField extends StatelessWidget {
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 15),
           fontWeight: FontWeight.w500,
-          color: Color(0xFF171515),
+          color: const Color(0xFF171515),
         ),
         decoration: InputDecoration(
-          hintText: 'Password',
+          hintText: 'Passcode',
           hintStyle: TextStyle(
             fontSize: AppLayout.fontSize(context, 15),
             color: Colors.grey[400],
@@ -671,7 +710,7 @@ class _ContinueButton extends StatelessWidget {
 }
 
 // =============================================================================
-// Sign-up row — "Already have an account? Log in"
+// Sign-up row
 // =============================================================================
 class _SignUpRow extends StatelessWidget {
   final bool isOnline;

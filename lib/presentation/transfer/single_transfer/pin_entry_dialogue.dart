@@ -4,6 +4,45 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
 import 'package:kudipay/provider/provider.dart';
 
+// ── Processing Payment Screen ───────────────────────────────────────────────
+// Shown as a full screen while the transfer is being processed.
+class ProcessingPaymentScreen extends StatelessWidget {
+  const ProcessingPaymentScreen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Color(0xFFF5F5F5),
+      body: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 40,
+              height: 40,
+              child: CircularProgressIndicator(
+                strokeWidth: 3,
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
+                backgroundColor: Color(0xFFD0EDED),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Processing payment',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w400,
+                color: Colors.black54,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── PIN Entry Bottom Sheet ──────────────────────────────────────────────────
 class PinEntryBottomSheet extends ConsumerStatefulWidget {
   const PinEntryBottomSheet({Key? key}) : super(key: key);
 
@@ -49,22 +88,44 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
   }
 
   void _submitPin() async {
+    if (!mounted) return;
+
+    // Close the PIN bottom sheet first
+    Navigator.pop(context);
+
+    // Navigate to the processing screen
+    Navigator.push(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => const ProcessingPaymentScreen(),
+        transitionDuration: const Duration(milliseconds: 200),
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+      ),
+    );
+
+    // Process the transfer in the background
     await ref.read(p2pTransferProvider.notifier).processTransfer(_pin);
+
     if (mounted) {
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => const TransactionSuccessBottomSheet()));
+      // Replace the processing screen with the success screen
+      Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const TransactionSuccessBottomSheet(),
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (_, animation, __, child) =>
+              FadeTransition(opacity: animation, child: child),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(p2pTransferProvider);
-
     return Container(
       decoration: const BoxDecoration(
-        color:  Color(0xFFF9F9F9),
+        color: Colors.white,
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -75,11 +136,30 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
       ),
       child: SafeArea(
         child: Padding(
-          padding: EdgeInsets.all(AppLayout.scaleWidth(context, 24)),
+          padding: EdgeInsets.fromLTRB(
+            AppLayout.scaleWidth(context, 24),
+            AppLayout.scaleHeight(context, 16),
+            AppLayout.scaleWidth(context, 24),
+            AppLayout.scaleHeight(context, 24),
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
+              // ── Handle bar ─────────────────────────────────────────
+              Center(
+                child: Container(
+                  width: AppLayout.scaleWidth(context, 40),
+                  height: AppLayout.scaleHeight(context, 4),
+                  margin:
+                      EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 16)),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade300,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+
+              // ── Header ────────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -91,37 +171,36 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
                       color: Colors.black87,
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, size: 24),
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: AppLayout.scaleWidth(context, 28),
+                      height: AppLayout.scaleWidth(context, 28),
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.close,
+                        size: 16,
+                        color: Colors.black54,
+                      ),
+                    ),
                   ),
                 ],
               ),
 
-              SizedBox(height: AppLayout.scaleHeight(context, 32)),
+              SizedBox(height: AppLayout.scaleHeight(context, 36)),
 
-              // PIN dots
+              // ── PIN dots ──────────────────────────────────────────
               _buildPinDots(context),
 
               SizedBox(height: AppLayout.scaleHeight(context, 40)),
 
-              // Numeric keypad
+              // ── Numeric keypad ────────────────────────────────────
               _buildKeypad(context),
 
               SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
-              // Loading indicator
-              if (state.isProcessingTransfer)
-                Padding(
-                  padding: EdgeInsets.only(
-                    top: AppLayout.scaleHeight(context, 16),
-                  ),
-                  child: const CircularProgressIndicator(
-                    color: Color(0xFF069494),
-                  ),
-                ),
             ],
           ),
         ),
@@ -134,12 +213,13 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(_pinLength, (index) {
         final isFilled = index < _pin.length;
-        return Container(
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
           margin: EdgeInsets.symmetric(
-            horizontal: AppLayout.scaleWidth(context, 6),
+            horizontal: AppLayout.scaleWidth(context, 8),
           ),
-          width: AppLayout.scaleWidth(context, 12),
-          height: AppLayout.scaleWidth(context, 12),
+          width: AppLayout.scaleWidth(context, 14),
+          height: AppLayout.scaleWidth(context, 14),
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: isFilled ? const Color(0xFF069494) : Colors.grey[300],
@@ -168,7 +248,7 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: numbers.map((number) {
         if (number.isEmpty) {
-          return SizedBox(width: AppLayout.scaleWidth(context, 70));
+          return SizedBox(width: AppLayout.scaleWidth(context, 72));
         }
 
         if (number == 'delete') {
@@ -176,8 +256,8 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
             context,
             child: Icon(
               Icons.backspace_outlined,
-              color: const Color(0xFF069494),
-              size: AppLayout.scaleWidth(context, 24),
+              color: Colors.black87,
+              size: AppLayout.scaleWidth(context, 22),
             ),
             onPressed: _onDeletePressed,
           );
@@ -188,7 +268,7 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
           child: Text(
             number,
             style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 24),
+              fontSize: AppLayout.fontSize(context, 22),
               fontWeight: FontWeight.w500,
               color: Colors.black87,
             ),
@@ -206,10 +286,10 @@ class _PinEntryBottomSheetState extends ConsumerState<PinEntryBottomSheet> {
   }) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(35),
+      borderRadius: BorderRadius.circular(36),
       child: Container(
-        width: AppLayout.scaleWidth(context, 70),
-        height: AppLayout.scaleWidth(context, 70),
+        width: AppLayout.scaleWidth(context, 72),
+        height: AppLayout.scaleWidth(context, 72),
         alignment: Alignment.center,
         child: child,
       ),

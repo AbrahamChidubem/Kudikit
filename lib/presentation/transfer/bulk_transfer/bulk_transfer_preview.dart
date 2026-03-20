@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/transfer/bulk_transfer_model.dart';
-import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_pin_dialog.dart';
+import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_otp_sheet.dart';
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 class BulkTransferPreviewScreen extends ConsumerStatefulWidget {
@@ -406,11 +406,6 @@ class _BulkTransferPreviewScreenState
   }
 
   void _showPinDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (context) => const BulkTransferPinDialog(),
-    );
+    BulkTransferOtpSheet.show(context);
   }
 }

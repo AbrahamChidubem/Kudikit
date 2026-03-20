@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
 
@@ -71,7 +72,7 @@ class _TransferRecipientScreenState
     final state = ref.watch(p2pTransferProvider);
     final isInputEmpty = _phoneController.text.isEmpty;
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9F5),
+      backgroundColor:  AppColors.backgroundScreen,
       appBar: _buildAppBar(context),
       body: Column(
         children: [
@@ -118,20 +119,24 @@ class _TransferRecipientScreenState
 
   Widget _buildInfoBanner(BuildContext context) {
     return Container(
+      margin: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 24),
+        vertical: AppLayout.scaleHeight(context, 16),
+      ),
       width: double.infinity,
       padding: EdgeInsets.symmetric(
         horizontal: AppLayout.scaleWidth(context, 24),
         vertical: AppLayout.scaleHeight(context, 12),
       ),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
+      decoration: const BoxDecoration(
+        color: Color(0xFFD5F2ED),
       ),
       child: Text(
         'Free Transfer to Kudikit accounts',
         textAlign: TextAlign.center,
         style: TextStyle(
           fontSize: AppLayout.fontSize(context, 13),
-          color: const Color(0xFF069494),
+          color: const Color(0xFF339992),
           fontWeight: FontWeight.w500,
         ),
       ),
@@ -154,7 +159,7 @@ class _TransferRecipientScreenState
         indicator: UnderlineTabIndicator(
           borderSide: BorderSide(
             width: 2,
-            color: const Color(0xFF069494),
+            color: const Color(0xFF339992),
           ),
         ),
         labelColor: const Color(0xFF069494),

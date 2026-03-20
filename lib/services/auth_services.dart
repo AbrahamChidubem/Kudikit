@@ -2,8 +2,9 @@
 // FIXED:
 //   - baseUrl now reads from kBaseUrl (consistent with all other services)
 //   - updateProfile() no longer throws UnimplementedError
+//   - login() mock guard updated: password.length >= 6 → >= 8 to match
+//     the new alphanumeric passcode minimum length rule
 //   - All print() removed
-
 
 import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/user/user_info.dart';
@@ -17,10 +18,20 @@ class AuthService {
   // ── Login ──────────────────────────────────────────────────────────────────
   // TODO: Replace mock body below with real HTTP call:
   //   POST $baseUrl/auth/login  { email, password }
-  Future<Map<String, dynamic>> login({required String email, required String password}) async {
+  //
+  // FIXED: Guard updated from password.length >= 6 to password.length >= 8.
+  // The passcode minimum is now 8 characters (alphanumeric with complexity).
+  // Using 6 here was a leftover from the old 6-digit numeric PIN era and
+  // would allow passwords that the StorageService._validatePasscode() would
+  // reject, creating a silent inconsistency between the login mock and signup.
+  Future<Map<String, dynamic>> login({
+    required String email,
+    required String password,
+  }) async {
     await Future.delayed(const Duration(seconds: 2));
 
-    if (email.isNotEmpty && password.length >= 6) {
+    // Guard: must match the minimum passcode length enforced at signup (8 chars).
+    if (email.isNotEmpty && password.length >= 8) {
       return MockAuthData.loginSuccess(email: email);
     } else {
       throw Exception('Invalid credentials');
@@ -30,16 +41,25 @@ class AuthService {
   // ── Signup ─────────────────────────────────────────────────────────────────
   // TODO: Replace mock body below with real HTTP call:
   //   POST $baseUrl/auth/register  { email, phone_number, passcode }
-  Future<Map<String, dynamic>> signup({required String email, required String phoneNumber, required String pin}) async {
+  Future<Map<String, dynamic>> signup({
+    required String email,
+    required String phoneNumber,
+    required String pin,
+  }) async {
     await Future.delayed(const Duration(seconds: 2));
 
-    return MockAuthData.registerSuccess(email: email, phoneNumber: phoneNumber);
+    return MockAuthData.registerSuccess(
+        email: email, phoneNumber: phoneNumber);
   }
 
   // ── Email Verification ─────────────────────────────────────────────────────
   // TODO: Replace mock body below with real HTTP call:
   //   POST $baseUrl/auth/verify-email  { email, code }
-  Future<Map<String, dynamic>> verifyEmail({required String email, required String code, String phoneNumber = ''}) async {
+  Future<Map<String, dynamic>> verifyEmail({
+    required String email,
+    required String code,
+    String phoneNumber = '',
+  }) async {
     await Future.delayed(const Duration(seconds: 1));
 
     if (code.length == 6) {
@@ -73,7 +93,6 @@ class AuthService {
   }) async {
     await Future.delayed(const Duration(seconds: 1));
 
-    // Retrieve existing model, merge updates, and return.
     final existing = await _storage.getUserModel();
     if (existing == null) throw Exception('No user model found in storage');
 
@@ -94,7 +113,8 @@ class AuthService {
     try {
       await Future.delayed(const Duration(seconds: 2));
       await _storage.saveUserInfo(userInfo);
-      await _storage.saveAuthToken('mock_token_${DateTime.now().millisecondsSinceEpoch}');
+      await _storage.saveAuthToken(
+          'mock_token_${DateTime.now().millisecondsSinceEpoch}');
       return true;
     } catch (_) {
       return false;

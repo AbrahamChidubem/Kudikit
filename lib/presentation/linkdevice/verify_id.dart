@@ -88,14 +88,14 @@ class _VerifyIdentityScreenState
               EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
           child: Center(
             child: SizedBox(
-              width: AppLayout.scaleWidth(context, 44),
-              height: AppLayout.scaleWidth(context, 44),
+              width: AppLayout.scaleWidth(context, 30),
+              height: AppLayout.scaleWidth(context, 30),
               child: Stack(
                 alignment: Alignment.center,
                 children: [
                   SizedBox(
-                    width: AppLayout.scaleWidth(context, 44),
-                    height: AppLayout.scaleWidth(context, 44),
+                    width: AppLayout.scaleWidth(context, 30),
+                    height: AppLayout.scaleWidth(context, 30),
                     child: CircularProgressIndicator(
                       value: _progressPercentage / 100,
                       strokeWidth: 3,

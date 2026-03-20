@@ -8,9 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 
 class AppColors {
-  static const Color primaryGreen      = Color(0xFF069494);
+  static const Color primaryTeal       = Color(0xFF069494);
   static const Color lightGreen        = Color(0xFFE8F5EE);
-  static const Color backgroundScreen  = Color(0xFFf9f9f9);
+  static const Color backgroundScreen  = Color(0xFFF9F9F9);
   static const Color backgroundGreen   = Color(0xFFEDF7F1);
   static const Color searchBackground  = Color(0xFFDCEFE4);
   static const Color textDark          = Color(0xFF151717);
@@ -32,13 +32,13 @@ class AppColors {
 /// Static text styles — font sizes are fixed (no BuildContext required).
 /// Prefer the responsive factory methods below when a BuildContext is available.
 class AppTextStyles {
-  // ── Static (fixed px, backward-compatible) ─────────────────────────────
+  // ── Static (fixed px, backward-compatible) ─────────────────────────────    
   static const TextStyle pageTitle = TextStyle(
     fontFamily: 'PolySans', fontSize: 18, fontWeight: FontWeight.w700,
     color: AppColors.textDark, letterSpacing: 0.2,
   );
   static const TextStyle tabActive = TextStyle(
-    fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primaryGreen,
+    fontSize: 14, fontWeight: FontWeight.w600, color: AppColors.primaryTeal,
   );
   static const TextStyle tabInactive = TextStyle(
     fontSize: 14, fontWeight: FontWeight.w400, color: AppColors.textGrey,
@@ -89,7 +89,7 @@ static const TextStyle body = TextStyle(
   static TextStyle responsiveTabActive(BuildContext context) => TextStyle(
     fontSize: AppLayout.fontSize(context, 14),
     fontWeight: FontWeight.w600,
-    color: AppColors.primaryGreen,
+    color: AppColors.primaryTeal,
   );
 
   static TextStyle responsiveTabInactive(BuildContext context) => TextStyle(

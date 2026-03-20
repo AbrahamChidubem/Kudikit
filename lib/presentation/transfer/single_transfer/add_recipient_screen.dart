@@ -293,7 +293,41 @@ class _AddRecipientsManuallyScreenState
     }
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Recipients header with count badge
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Recipients',
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 15),
+                fontWeight: FontWeight.w600,
+                color: Colors.black87,
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.symmetric(
+                horizontal: AppLayout.scaleWidth(context, 10),
+                vertical: AppLayout.scaleHeight(context, 4),
+              ),
+              decoration: BoxDecoration(
+                color: const Color(0xFF069494).withOpacity(0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                '${state.recipients.length}/15',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 12),
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF069494),
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppLayout.scaleHeight(context, 12)),
         ...state.recipients.asMap().entries.map((entry) {
           final index = entry.key;
           final recipient = entry.value;
@@ -329,8 +363,8 @@ class _AddRecipientsManuallyScreenState
           );
         }).toList(),
 
-        // Add Recipient Button (only for Solo Amount mode)
-        if (isSoloAmount && state.recipients.length < 15)
+        // Add Recipient Button — available in both distribution modes
+        if (state.recipients.length < 15)
           Container(
             decoration: BoxDecoration(
               border: Border.all(
@@ -344,7 +378,6 @@ class _AddRecipientsManuallyScreenState
               color: Colors.transparent,
               child: InkWell(
                 onTap: () {
-                  // Add new recipient
                   final newRecipient = BulkTransferRecipient(
                     id: DateTime.now().millisecondsSinceEpoch.toString(),
                     name: '',

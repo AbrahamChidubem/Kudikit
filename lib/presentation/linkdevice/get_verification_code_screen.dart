@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/presentation/linkdevice/verify_id.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class GetVerificationCodeScreen extends ConsumerStatefulWidget {
@@ -224,21 +223,21 @@ class _GetVerificationCodeScreenState
           onPressed: state.isSendingCode
               ? null
               : () async {
-                  await ref
-                      .read(deviceLinkingProvider.notifier)
-                      .sendVerificationCode();
+                  // await ref
+                  //     .read(deviceLinkingProvider.notifier)
+                  //     .sendVerificationCode();
 
-                  // FIX: read fresh state after await instead of using
-                  // stale captured state.
-                  final fresh = ref.read(deviceLinkingProvider);
-                  if (mounted && fresh.data?.isCodeSent == true) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const VerifyIdentityScreen(),
-                      ),
-                    );
-                  }
+                  // // FIX: read fresh state after await instead of using
+                  // // stale captured state.
+                  // final fresh = ref.read(deviceLinkingProvider);
+                  // if (mounted && fresh.data?.isCodeSent == true) {
+                  //   Navigator.push(
+                  //     context,
+                  //     MaterialPageRoute(
+                  //       builder: (context) => const VerifyIdentityScreen(),
+                  //     ),
+                  //   );
+                  // }
                 },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF069494),

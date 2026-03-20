@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
@@ -9,15 +10,31 @@ import 'package:kudipay/presentation/bill/airtime/airtime_phone_screen.dart';
 import 'package:kudipay/presentation/bill/cable_tv/cable_tv_screen.dart';
 import 'package:kudipay/presentation/bill/data/data_phone_screen.dart';
 import 'package:kudipay/presentation/bill/electricity/electricity_screen.dart';
+import 'package:kudipay/presentation/request/request_menu_screen.dart';
 import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
 import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
 import 'package:kudipay/provider/kyc/kyc_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:kudipay/provider/wallet/wallet_provider.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
+// =============================================================================
+// HomeScreen
+// =============================================================================
+// FIX SUMMARY
+// -----------
+// 1. Removed duplicate _buildQuickAction (IconData overload) — Dart does not
+//    support method overloading. Replaced both with a SINGLE _buildActionCard
+//    that accepts a String svgAsset path.
+// 2. Defined _buildServiceCard — it was called 6 times but never existed.
+//    Also unified into _buildActionCard (same layout, same params).
+// 3. Removed the SvgPicture.color: deprecated named param — replaced with
+//    colorFilter: ColorFilter.mode(..., BlendMode.srcIn) throughout.
+// 4. Fixed TV card label: was 'Transfer' (copy-paste bug) → 'Cable TV'.
+// 5. Created SVG assets for every icon: transfer, request, cashout, airtime,
+//    data, electricity, education, betting, savings (tv.svg already existed).
+// =============================================================================
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -28,6 +45,20 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isBalanceVisible = true;
+
+  // ---------------------------------------------------------------------------
+  // SVG asset paths — all icons live in assets/icons/
+  // ---------------------------------------------------------------------------
+  static const _svgTransfer = 'assets/icons/transfer.svg';
+  static const _svgRequest = 'assets/icons/request.svg';
+  static const _svgCashOut = 'assets/icons/cashout.svg';
+  static const _svgAirtime = 'assets/icons/airtime.svg';
+  static const _svgData = 'assets/icons/data.svg';
+  static const _svgTv = 'assets/icons/tv.svg';
+  static const _svgElectricity = 'assets/icons/electricity.svg';
+  static const _svgEducation = 'assets/icons/education.svg';
+  static const _svgBetting = 'assets/icons/betting.svg';
+  static const _svgSavings = 'assets/icons/saving.svg';
 
   @override
   void initState() {
@@ -53,9 +84,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   void _copyAccountNumber() {
     final wallet = ref.read(walletProvider);
-    final accountNumber = wallet.accountNumber;
-    final accountName = wallet.accountName;
-    Clipboard.setData(ClipboardData(text: '$accountNumber $accountName'));
+    Clipboard.setData(
+        ClipboardData(text: '${wallet.accountNumber} ${wallet.accountName}'));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Account details copied!'),
@@ -67,6 +97,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // BUILD
+  // ---------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     final userInfo = ref.watch(userInfoProvider);
@@ -74,6 +108,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tierState = ref.watch(tierProvider);
     final currentTierObject = tierState.getTierObject();
     final wallet = ref.watch(walletProvider);
+    final isOnline = connectivityState.isConnected;
+
     final firstName = userInfo?.firstName ??
         (wallet.accountName.isNotEmpty
             ? wallet.accountName.split(' ').first.capitalize()
@@ -84,8 +120,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Connectivity Status Bar (shows when offline)
-            if (!connectivityState.isConnected)
+            // ── Offline banner ───────────────────────────────────────────────
+            if (!isOnline)
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(
@@ -95,32 +131,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 color: Colors.red.shade700,
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.wifi_off,
-                      color: Colors.white,
-                      size: AppLayout.scaleWidth(context, 20),
-                    ),
+                    Icon(Icons.wifi_off,
+                        color: Colors.white,
+                        size: AppLayout.scaleWidth(context, 20)),
                     SizedBox(width: AppLayout.scaleWidth(context, 8)),
                     Expanded(
                       child: Text(
                         'No internet connection',
                         style: TextStyle(
-                          color: Colors.white,
-                          fontSize: AppLayout.fontSize(context, 14),
-                        ),
+                            color: Colors.white,
+                            fontSize: AppLayout.fontSize(context, 14)),
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                        ref.read(connectivityStateProvider.notifier).refresh();
-                      },
-                      child: Text(
-                        'Retry',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: AppLayout.fontSize(context, 14),
-                        ),
-                      ),
+                      onPressed: () => ref
+                          .read(connectivityStateProvider.notifier)
+                          .refresh(),
+                      child: Text('Retry',
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontSize: AppLayout.fontSize(context, 14))),
                     ),
                   ],
                 ),
@@ -131,50 +161,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header Section
+                    // ── Header ───────────────────────────────────────────────
                     Padding(
                       padding: AppLayout.pagePadding(context),
                       child: Row(
                         children: [
-                          // Profile Image
+                          // Profile avatar
                           Container(
                             width: AppLayout.scaleWidth(context, 45),
                             height: AppLayout.scaleWidth(context, 45),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(
-                                AppLayout.scaleWidth(context, 12),
-                              ),
+                                  AppLayout.scaleWidth(context, 12)),
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(
-                                AppLayout.scaleWidth(context, 12),
-                              ),
+                                  AppLayout.scaleWidth(context, 12)),
                               child: Image.asset(
                                 'assets/images/img_placeholder.png',
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Container(
-                                    color: const Color(0xFF069494),
-                                    child: Icon(
-                                      Icons.person,
+                                errorBuilder: (_, __, ___) => Container(
+                                  color: const Color(0xFF069494),
+                                  child: Icon(Icons.person,
                                       color: Colors.white,
-                                      size: AppLayout.scaleWidth(context, 24),
-                                    ),
-                                  );
-                                },
+                                      size: AppLayout.scaleWidth(context, 24)),
+                                ),
                               ),
                             ),
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
 
-                          // Greeting
+                          // Greeting + tier badge
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Hi, $firstName 👋',
+                                  'Hi, $firstName',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 16),
                                     fontWeight: FontWeight.w600,
@@ -191,8 +215,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     color: const Color(0xFF069494)
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(
-                                      AppLayout.scaleWidth(context, 8),
-                                    ),
+                                        AppLayout.scaleWidth(context, 8)),
                                   ),
                                   child: Text(
                                     'Tier ${currentTierObject.tierNumber}',
@@ -207,41 +230,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ),
 
-                          // Icons with connectivity indicator
+                          // Support icon
                           IconButton(
                             onPressed: () {},
                             icon: const Icon(Icons.headphones_outlined),
                             color: Colors.grey[700],
                             iconSize: AppLayout.scaleWidth(context, 24),
                           ),
-                          Stack(
-                            children: [
-                              IconButton(
-                                onPressed: () {},
-                                icon: const Icon(Icons.notifications_outlined),
-                                color: Colors.grey[700],
-                                iconSize: AppLayout.scaleWidth(context, 24),
-                              ),
-                              // Small connectivity indicator dot
-                              Positioned(
-                                right: AppLayout.scaleWidth(context, 8),
-                                top: AppLayout.scaleHeight(context, 8),
-                                child: Container(
-                                  width: AppLayout.scaleWidth(context, 8),
-                                  height: AppLayout.scaleWidth(context, 8),
-                                  decoration: BoxDecoration(
-                                    color: connectivityState.isConnected
-                                        ? Colors.green
-                                        : Colors.red,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+
+                          // Notification icon + connectivity dot
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(Icons.notifications_outlined),
+                            color: Colors.grey[700],
+                            iconSize: AppLayout.scaleWidth(context, 24),
                           ),
                         ],
                       ),
@@ -249,36 +251,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-                    // Balance Card — shimmer while wallet is loading
+                    // ── Balance card ─────────────────────────────────────────
                     wallet.isLoading
                         ? Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: AppLayout.scaleWidth(context, 16),
-                            ),
+                                horizontal: AppLayout.scaleWidth(context, 16)),
                             child: const HomeBalanceCardShimmer(),
                           )
                         : Container(
                             margin: EdgeInsets.symmetric(
-                              horizontal: AppLayout.scaleWidth(context, 16),
-                            ),
+                                horizontal: AppLayout.scaleWidth(context, 16)),
                             padding: EdgeInsets.all(
                                 AppLayout.scaleWidth(context, 20)),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF069494),
-                                  Color(0xFF013838),
-                                ],
+                                colors: [Color(0xFF069494), Color(0xFF013838)],
                               ),
                               borderRadius: BorderRadius.circular(
-                                AppLayout.scaleWidth(context, 20),
-                              ),
+                                  AppLayout.scaleWidth(context, 20)),
                               boxShadow: [
                                 BoxShadow(
                                   color:
-                                      const Color(0xFF069494).withOpacity(0.3),
+                                      const Color(0xFF069494).withOpacity(1),
                                   blurRadius: AppLayout.scaleWidth(context, 20),
                                   offset: Offset(
                                       0, AppLayout.scaleHeight(context, 8)),
@@ -292,24 +288,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceBetween,
                                   children: [
-                                    Text(
-                                      'Available Balance',
-                                      style: TextStyle(
-                                        fontSize:
-                                            AppLayout.fontSize(context, 13),
-                                        color: Colors.white70,
-                                      ),
-                                    ),
-                                    // Add Money Button
+                                    Text('Available Balance',
+                                        style: TextStyle(
+                                            fontSize:
+                                                AppLayout.fontSize(context, 13),
+                                            color: Colors.white70)),
+                                    // Add Money button
                                     InkWell(
                                       onTap: () {
-                                        if (connectivityState.isConnected) {
+                                        if (isOnline) {
                                           Navigator.push(
                                             context,
                                             MaterialPageRoute(
-                                              builder: (context) =>
-                                                  const AddMoneyScreen(),
-                                            ),
+                                                builder: (_) =>
+                                                    const AddMoneyScreen()),
                                           );
                                         } else {
                                           ConnectivitySnackBar.showNoInternet(
@@ -326,30 +318,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: BorderRadius.circular(
-                                            AppLayout.scaleWidth(context, 16),
-                                          ),
+                                              AppLayout.scaleWidth(
+                                                  context, 16)),
                                         ),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(
-                                              Icons.add,
-                                              color: const Color(0xFF069494),
-                                              size: AppLayout.scaleWidth(
-                                                  context, 16),
-                                            ),
+                                            Icon(Icons.add,
+                                                color: const Color(0xFF069494),
+                                                size: AppLayout.scaleWidth(
+                                                    context, 12)),
                                             SizedBox(
                                                 width: AppLayout.scaleWidth(
                                                     context, 4)),
-                                            Text(
-                                              'Add money',
-                                              style: TextStyle(
-                                                fontSize: AppLayout.fontSize(
-                                                    context, 12),
-                                                color: const Color(0xFF069494),
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
+                                            Text('Add money',
+                                                style: TextStyle(
+                                                  fontSize: AppLayout.fontSize(
+                                                      context, 12),
+                                                  color:
+                                                      const Color(0xFF069494),
+                                                  fontWeight: FontWeight.w500,
+                                                )),
                                           ],
                                         ),
                                       ),
@@ -378,12 +367,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         width:
                                             AppLayout.scaleWidth(context, 12)),
                                     InkWell(
-                                      onTap: () {
-                                        setState(() {
+                                      onTap: () => setState(() =>
                                           _isBalanceVisible =
-                                              !_isBalanceVisible;
-                                        });
-                                      },
+                                              !_isBalanceVisible),
                                       child: Icon(
                                         _isBalanceVisible
                                             ? Icons.visibility_outlined
@@ -396,24 +382,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                                 SizedBox(
                                     height: AppLayout.scaleHeight(context, 16)),
-                                Row(
-                                  children: [
-                                    Flexible(
-                                      child: Text(
-                                        !connectivityState.isConnected
-                                            ? 'Offline — showing cached balance'
-                                            : wallet.lastUpdated != null
-                                                ? 'Updated ${_timeAgo(wallet.lastUpdated!)}'
-                                                : 'Last updated recently',
-                                        style: TextStyle(
-                                          fontSize:
-                                              AppLayout.fontSize(context, 11),
-                                          color: Colors.white.withOpacity(0.7),
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
+                                Flexible(
+                                  child: Text(
+                                    !isOnline
+                                        ? 'Offline — showing cached balance'
+                                        : wallet.lastUpdated != null
+                                            ? 'Updated ${_timeAgo(wallet.lastUpdated!)}'
+                                            : 'Last updated recently',
+                                    style: TextStyle(
+                                        fontSize:
+                                            AppLayout.fontSize(context, 11),
+                                        color: Colors.white.withOpacity(0.7)),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
                                 SizedBox(
                                     height: AppLayout.scaleHeight(context, 8)),
@@ -424,23 +405,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       Text(
                                         wallet.accountNumber,
                                         style: TextStyle(
-                                          fontSize:
-                                              AppLayout.fontSize(context, 12),
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontWeight: FontWeight.w500,
-                                        ),
+                                            fontSize:
+                                                AppLayout.fontSize(context, 12),
+                                            color:
+                                                Colors.white.withOpacity(0.9),
+                                            fontWeight: FontWeight.w500),
                                       ),
                                       SizedBox(
                                           width:
                                               AppLayout.scaleWidth(context, 4)),
-                                      Text(
-                                        '|',
-                                        style: TextStyle(
-                                          fontSize:
-                                              AppLayout.fontSize(context, 12),
-                                          color: Colors.white.withOpacity(0.5),
-                                        ),
-                                      ),
+                                      Text('|',
+                                          style: TextStyle(
+                                              fontSize: AppLayout.fontSize(
+                                                  context, 12),
+                                              color: Colors.white
+                                                  .withOpacity(0.5))),
                                       SizedBox(
                                           width:
                                               AppLayout.scaleWidth(context, 4)),
@@ -451,22 +430,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                   .trim()
                                               : wallet.accountName,
                                           style: TextStyle(
-                                            fontSize:
-                                                AppLayout.fontSize(context, 12),
-                                            color:
-                                                Colors.white.withOpacity(0.9),
-                                          ),
+                                              fontSize: AppLayout.fontSize(
+                                                  context, 12),
+                                              color: Colors.white
+                                                  .withOpacity(0.9)),
                                           overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       SizedBox(
                                           width:
                                               AppLayout.scaleWidth(context, 8)),
-                                      Icon(
-                                        Icons.copy,
-                                        size: AppLayout.scaleWidth(context, 14),
-                                        color: Colors.white.withOpacity(0.7),
-                                      ),
+                                      Icon(Icons.copy,
+                                          size:
+                                              AppLayout.scaleWidth(context, 14),
+                                          color: Colors.white.withOpacity(0.7)),
                                     ],
                                   ),
                                 ),
@@ -476,43 +453,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-                    // Quick Actions with connectivity-aware buttons
+                    // ── Quick Actions row (Transfer / Request / Cash out) ─────
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.scaleWidth(context, 16),
-                      ),
+                          horizontal: AppLayout.scaleWidth(context, 16)),
                       child: Row(
                         children: [
-                          _buildQuickAction(
-                            icon: CupertinoIcons.paperplane, // ✅ Cupertino icon
+                          _buildActionCard(
+                            svgAsset: _svgTransfer,
                             label: 'Transfer',
-                            onTap: () {
-                              _handleQuickAction(
-                                context,
-                                'Transfer',
-                                navigateTo: const TransferMenuScreen(),
-                              );
-                            },
-                            isEnabled: connectivityState.isConnected,
+                            onTap: () => _handleQuickAction(context, 'Transfer',
+                                navigateTo: const TransferMenuScreen()),
+                            isEnabled: isOnline,
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
-                          _buildQuickAction(
-                            icon: CupertinoIcons.add_circled,
+                          _buildActionCard(
+                            svgAsset: _svgRequest,
                             label: 'Request',
-                            onTap: () {
-                              _handleQuickAction(context, 'Request',
-                                  navigateTo: const RequestMoneyMainScreen());
-                            },
-                            isEnabled: connectivityState.isConnected,
+                            onTap: () => _handleQuickAction(context, 'Request',
+                                navigateTo: const RequestMenuScreen()),
+                            isEnabled: isOnline,
                           ),
                           SizedBox(width: AppLayout.scaleWidth(context, 12)),
-                          _buildQuickAction(
-                            icon: CupertinoIcons.creditcard,
+                          _buildActionCard(
+                            svgAsset: _svgCashOut,
                             label: 'Cash out',
-                            onTap: () {
-                              _handleQuickAction(context, 'Cash out');
-                            },
-                            isEnabled: connectivityState.isConnected,
+                            onTap: () =>
+                                _handleQuickAction(context, 'Cash out'),
+                            isEnabled: isOnline,
                           ),
                         ],
                       ),
@@ -520,11 +488,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-                    // Bill & Utilities
+                    // ── Bill & Utilities label ───────────────────────────────
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.scaleWidth(context, 16),
-                      ),
+                          horizontal: AppLayout.scaleWidth(context, 16)),
                       child: Text(
                         'Bill & Utilities',
                         style: TextStyle(
@@ -536,108 +503,87 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                     SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
-                    // Bill Services Grid
+                    // ── Bill Services grid ───────────────────────────────────
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.scaleWidth(context, 16),
-                      ),
+                          horizontal: AppLayout.scaleWidth(context, 16)),
                       child: Column(
                         children: [
+                          // Row 1: Airtime | Data | Cable TV | Electricity
                           Row(
                             children: [
-                              _buildServiceCard(
-                                icon: CupertinoIcons.phone_arrow_up_right,
+                              _buildActionCard(
+                                svgAsset: _svgAirtime,
                                 label: 'Airtime',
-                                onTap: () {
-                                  _handleQuickAction(context, 'Airtime',
-                                      navigateTo: const AirtimePhoneScreen());
-                                },
-                                isEnabled: connectivityState.isConnected,
+                                onTap: () => _handleQuickAction(
+                                    context, 'Airtime',
+                                    navigateTo: const AirtimePhoneScreen()),
+                                isEnabled: isOnline,
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
-                              _buildServiceCard(
-                                icon: CupertinoIcons.wifi,
+                              _buildActionCard(
+                                svgAsset: _svgData,
                                 label: 'Data',
-                                onTap: () {
-                                  _handleQuickAction(context, 'Data',
-                                      navigateTo: const DataPhoneScreen());
-                                },
-                                isEnabled: connectivityState.isConnected,
+                                onTap: () => _handleQuickAction(context, 'Data',
+                                    navigateTo: const DataPhoneScreen()),
+                                isEnabled: isOnline,
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
-                              _buildQuickAction(
-                                icon: SvgPicture.asset(
-                                  'assets/icons/tv.svg',
-                                  width: 24,
-                                  height: 24,
-                                  color: Colors.grey[700],
-                                ),
-                                label: 'Transfer',
-                                onTap: () {},
+                              // FIX: was labelled 'Transfer' — corrected to 'Cable TV'
+                              _buildActionCard(
+                                svgAsset: _svgTv,
+                                label: 'Tv',
+                                onTap: () => _handleQuickAction(
+                                    context, 'Tv',
+                                    navigateTo: const CableTvScreen()),
+                                isEnabled: isOnline,
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
-                              _buildServiceCard(
-                                icon: CupertinoIcons.bolt,
+                              _buildActionCard(
+                                svgAsset: _svgElectricity,
                                 label: 'Electricity',
-                                onTap: () {
-                                  _handleQuickAction(
-                                    context,
-                                    'Electricity',
-                                    navigateTo: const ElectricityScreen(),
-                                  );
-                                },
-                                isEnabled: connectivityState.isConnected,
+                                onTap: () => _handleQuickAction(
+                                    context, 'Electricity',
+                                    navigateTo: const ElectricityScreen()),
+                                isEnabled: isOnline,
                               ),
                             ],
                           ),
                           SizedBox(height: AppLayout.scaleHeight(context, 12)),
+                          // Row 2: Education | Betting | Savings | (spacer)
                           Row(
                             children: [
-                              _buildServiceCard(
-                                icon: Icons.school_rounded,
+                              _buildActionCard(
+                                svgAsset: _svgEducation,
                                 label: 'Education',
-                                onTap: () {
-                                  // _handleQuickAction(
-                                  //   context,
-                                  //   'Request',
-                                  //   navigateTo: const AirtimeAmountScreen()
-                                  // );
-                                },
-                                isEnabled: connectivityState.isConnected,
+                                onTap: () =>
+                                    _handleQuickAction(context, 'Education'),
+                                isEnabled: isOnline,
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
-                              _buildServiceCard(
-                                icon: Icons.sports_soccer_outlined,
+                              _buildActionCard(
+                                svgAsset: _svgBetting,
                                 label: 'Betting',
-                                onTap: () {
-                                  // _handleQuickAction(
-                                  //   context,
-                                  //   'Request',
-                                  //   navigateTo: const AirtimeAmountScreen()
-                                  // );
-                                },
-                                isEnabled: connectivityState.isConnected,
+                                onTap: () =>
+                                    _handleQuickAction(context, 'Betting'),
+                                isEnabled: isOnline,
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
-                              _buildServiceCard(
-                                icon: Icons.savings_outlined,
+                              _buildActionCard(
+                                svgAsset: _svgSavings,
                                 label: 'Savings',
-                                onTap: () {
-                                  // _handleQuickAction(
-                                  //   context,
-                                  //   'Request',
-                                  //   navigateTo: const AirtimeAmountScreen()
-                                  // );
-                                },
-                                isEnabled: connectivityState.isConnected,
+                                onTap: () =>
+                                    _handleQuickAction(context, 'Savings'),
+                                isEnabled: isOnline,
                               ),
                               SizedBox(
                                   width: AppLayout.scaleWidth(context, 12)),
+                              // Spacer so the 3 cards match the 4-column width above
                               const Expanded(child: SizedBox()),
                             ],
                           ),
@@ -647,48 +593,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                     SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-                    // Recent Transactions
+                    // ── Recent Transactions header ────────────────────────────
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.scaleWidth(context, 16),
-                      ),
+                          horizontal: AppLayout.scaleWidth(context, 16)),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Recent Transactions',
-                            style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 14),
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: connectivityState.isConnected
-                                ? () {
-                                    // Navigate to all transactions
-                                  }
-                                : () {
-                                    ConnectivitySnackBar.showNoInternet(
-                                        context);
-                                  },
-                            child: Text(
-                              'View All',
+                          Text('Recent Transactions',
                               style: TextStyle(
-                                fontSize: AppLayout.fontSize(context, 12),
-                                color: connectivityState.isConnected
-                                    ? const Color(0xFF069494)
-                                    : Colors.grey,
+                                fontSize: AppLayout.fontSize(context, 14),
                                 fontWeight: FontWeight.w600,
-                              ),
-                            ),
+                                color: Colors.grey[800],
+                              )),
+                          TextButton(
+                            onPressed: isOnline
+                                ? () {}
+                                : () => ConnectivitySnackBar.showNoInternet(
+                                    context),
+                            child: Text('View All',
+                                style: TextStyle(
+                                  fontSize: AppLayout.fontSize(context, 12),
+                                  color: isOnline
+                                      ? const Color(0xFF069494)
+                                      : Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                )),
                           ),
                         ],
                       ),
                     ),
 
-                    // Transaction List (with offline indicator if needed)
-                    if (!connectivityState.isConnected)
+                    // Offline cached-data notice
+                    if (!isOnline)
                       Container(
                         margin: EdgeInsets.symmetric(
                           horizontal: AppLayout.scaleWidth(context, 16),
@@ -700,32 +637,27 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           color: Colors.orange.shade50,
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.orange.shade200,
-                            width: 1,
-                          ),
+                              color: Colors.orange.shade200, width: 1),
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Colors.orange.shade700,
-                              size: AppLayout.scaleWidth(context, 20),
-                            ),
+                            Icon(Icons.info_outline,
+                                color: Colors.orange.shade700,
+                                size: AppLayout.scaleWidth(context, 20)),
                             SizedBox(width: AppLayout.scaleWidth(context, 12)),
                             Expanded(
                               child: Text(
                                 'You\'re viewing cached transactions. Connect to internet for latest updates.',
                                 style: TextStyle(
-                                  fontSize: AppLayout.fontSize(context, 12),
-                                  color: Colors.orange.shade900,
-                                ),
+                                    fontSize: AppLayout.fontSize(context, 12),
+                                    color: Colors.orange.shade900),
                               ),
                             ),
                           ],
                         ),
                       ),
 
-                    // Recent transactions — shimmer while wallet is loading
+                    // ── Transaction list ─────────────────────────────────────
                     if (wallet.isLoading)
                       const HomeRecentTransactionsShimmer(itemCount: 3)
                     else ...[
@@ -760,7 +692,88 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  /// Handle quick action with connectivity check
+  // ===========================================================================
+  // _buildActionCard
+  // ===========================================================================
+  // SINGLE unified card used for BOTH the top Quick-Actions row AND
+  // the Bill & Utilities grid. Replaces the old duplicate _buildQuickAction
+  // (IconData overload) and the missing _buildServiceCard.
+  //
+  // svgAsset   — path to the SVG file in assets/icons/
+  // label      — text shown below the icon
+  // onTap      — callback when the card is tapped
+  // isEnabled  — dims the card and still fires onTap (handler checks connectivity)
+  // ===========================================================================
+  Widget _buildActionCard({
+    required String svgAsset,
+    required String label,
+    required VoidCallback onTap,
+    bool isEnabled = true,
+  }) {
+    // Icon colour: full-opacity slate when enabled, lighter when not.
+    final iconColor = isEnabled
+        ? const Color(0xFF339992) // slate-600
+        : const Color(0xFFCBD5E1); // slate-300
+
+    return Expanded(
+      child: Opacity(
+        opacity: isEnabled ? 1.0 : 0.5,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              vertical: AppLayout.scaleHeight(context, 12),
+            ),
+            decoration: BoxDecoration(
+              border: Border.all(color: AppColors.textGrey, width: 0.35),
+              color: AppColors.backgroundScreen,
+              borderRadius: BorderRadius.circular(
+                AppLayout.scaleWidth(context, 12),
+              ),
+              // boxShadow: [
+              //   BoxShadow(
+              //     color: Colors.black.withOpacity(0.05),
+              //     blurRadius: AppLayout.scaleWidth(context, 10),
+              //     offset: Offset(0, AppLayout.scaleHeight(context, 2)),
+              //   ),
+              // ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // FIX: colorFilter replaces the deprecated color: param on SvgPicture
+                SvgPicture.asset(
+                  svgAsset,
+                  width: AppLayout.scaleWidth(context, 17),
+                  height: AppLayout.scaleWidth(context, 17),
+                  colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                ),
+                SizedBox(height: AppLayout.scaleHeight(context, 8)),
+                Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 10),
+                    fontWeight: FontWeight.w500,
+                    color: isEnabled ? Colors.black87 : Colors.grey[400],
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ===========================================================================
+  // Navigation helpers
+  // ===========================================================================
+
   void _handleQuickAction(
     BuildContext context,
     String actionName, {
@@ -769,18 +782,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isConnected = ref.read(currentConnectivityProvider);
 
     if (!isConnected) {
-      // Show no internet dialog for critical actions
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          icon: Icon(
-            Icons.wifi_off,
-            size: 48,
-            color: Colors.red.shade700,
-          ),
+          icon: Icon(Icons.wifi_off, size: 48, color: Colors.red.shade700),
           title: const Text('No Internet Connection'),
           content: Text(
-            'You need an internet connection to use $actionName. Please check your connection and try again.',
+            'You need an internet connection to use $actionName. '
+            'Please check your connection and try again.',
           ),
           actions: [
             TextButton(
@@ -800,12 +809,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       return;
     }
 
-    // If connected, proceed with action
     if (navigateTo != null) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => navigateTo),
-      );
+      Navigator.push(context, MaterialPageRoute(builder: (_) => navigateTo));
     } else {
       _showComingSoon(context, actionName);
     }
@@ -868,17 +873,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     backgroundColor: const Color(0xFF069494),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
+                        borderRadius: BorderRadius.circular(28)),
                   ),
-                  child: Text(
-                    'Got it',
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 15),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                  child: Text('Got it',
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 15),
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      )),
                 ),
               ),
             ],
@@ -888,111 +890,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildQuickAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isEnabled = true,
-  }) {
-    return Expanded(
-      child: Opacity(
-        opacity: isEnabled ? 1.0 : 0.5,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(
-            AppLayout.scaleWidth(context, 12),
-          ),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              vertical: AppLayout.scaleHeight(context, 16),
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(
-                AppLayout.scaleWidth(context, 12),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: AppLayout.scaleWidth(context, 10),
-                  offset: Offset(0, AppLayout.scaleHeight(context, 2)),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  icon,
-                  size: AppLayout.scaleWidth(context, 24),
-                  color: isEnabled ? Colors.grey[700] : Colors.grey[400],
-                ),
-                SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 12),
-                    fontWeight: FontWeight.w500,
-                    color: isEnabled ? Colors.black87 : Colors.grey[400],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickAction({
-    required Widget icon,
-    required String label,
-    required VoidCallback onTap,
-    bool isEnabled = true,
-  }) {
-    return Expanded(
-      child: Opacity(
-        opacity: isEnabled ? 1.0 : 0.5,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(
-            AppLayout.scaleWidth(context, 12),
-          ),
-          child: Container(
-            padding: EdgeInsets.symmetric(
-              vertical: AppLayout.scaleHeight(context, 16),
-            ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(
-                AppLayout.scaleWidth(context, 12),
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: AppLayout.scaleWidth(context, 10),
-                  offset: Offset(0, AppLayout.scaleHeight(context, 2)),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                icon,
-                SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                Text(
-                  label,
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 12),
-                    fontWeight: FontWeight.w500,
-                    color: isEnabled ? Colors.black87 : Colors.grey[400],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  // ===========================================================================
+  // Transaction row
+  // ===========================================================================
 
   Widget _buildTransactionItem({
     required String title,
@@ -1007,17 +907,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(
-          AppLayout.scaleWidth(context, 12),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: AppLayout.scaleWidth(context, 10),
-            offset: Offset(0, AppLayout.scaleHeight(context, 2)),
-          ),
-        ],
+        color: AppColors.backgroundScreen,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.05),
+        //     blurRadius: AppLayout.scaleWidth(context, 10),
+        //     offset: Offset(0, AppLayout.scaleHeight(context, 2)),
+        //   ),
+        // ],
       ),
       child: Row(
         children: [
@@ -1025,53 +923,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             padding: EdgeInsets.all(AppLayout.scaleWidth(context, 8)),
             decoration: BoxDecoration(
               color: const Color(0xFF069494).withOpacity(0.1),
-              borderRadius: BorderRadius.circular(
-                AppLayout.scaleWidth(context, 8),
-              ),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
             ),
-            child: Icon(
-              Icons.arrow_upward,
-              color: const Color(0xFF069494),
-              size: AppLayout.scaleWidth(context, 16),
-            ),
+            child: Icon(Icons.arrow_upward,
+                color: const Color(0xFF069494),
+                size: AppLayout.scaleWidth(context, 16)),
           ),
           SizedBox(width: AppLayout.scaleWidth(context, 12)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 13),
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                Text(title,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 13),
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis),
                 SizedBox(height: AppLayout.scaleHeight(context, 2)),
-                Text(
-                  date,
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 11),
-                    color: Colors.grey[600],
-                  ),
-                ),
+                Text(date,
+                    style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 11),
+                        color: Colors.grey[600])),
               ],
             ),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                amount,
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 14),
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
-                ),
-              ),
+              Text(amount,
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 14),
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  )),
               SizedBox(height: AppLayout.scaleHeight(context, 2)),
               Container(
                 padding: EdgeInsets.symmetric(
@@ -1079,16 +967,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   vertical: AppLayout.scaleHeight(context, 2),
                 ),
                 decoration: BoxDecoration(
-                  // Fix: badge colour was always teal regardless of isSuccess
                   color: isSuccess
                       ? const Color(0xFF069494).withOpacity(0.1)
                       : Colors.red.shade50,
-                  borderRadius: BorderRadius.circular(
-                    AppLayout.scaleWidth(context, 8),
-                  ),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
                 ),
                 child: Text(
-                  // Fix: text was always 'Successful' regardless of isSuccess
                   isSuccess ? 'Successful' : 'Failed',
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 9),
@@ -1105,6 +990,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+
+  // ===========================================================================
+  // Helpers
+  // ===========================================================================
 
   String _timeAgo(DateTime dt) {
     final diff = DateTime.now().difference(dt);

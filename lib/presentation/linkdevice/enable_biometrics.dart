@@ -12,10 +12,11 @@ class EnableBiometricsScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
+      bottomNavigationBar: _buildButton(context),
       body: Stack(
         children: [
           _buildBody(context),
-          _buildButton(context),
+          
         ],
       ),
     );

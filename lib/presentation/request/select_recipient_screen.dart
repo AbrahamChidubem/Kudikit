@@ -1,33 +1,36 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/KudiAppbar.dart';
+import 'package:kudipay/formatting/widget/contact_avatar.dart';
+import 'package:kudipay/formatting/widget/contact_list_item.dart';
+import 'package:kudipay/formatting/widget/recipient_tab.dart';
 import 'package:kudipay/presentation/request/preview_request_screen.dart';
+import 'package:kudipay/presentation/request/request_money_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // ✅ replaced provider/provider.dart
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../model/request/request_model.dart';
 
-class SelectRecipientsScreen extends ConsumerStatefulWidget { // ✅
+class SelectRecipientsScreen extends ConsumerStatefulWidget {
   const SelectRecipientsScreen({super.key});
 
   @override
-  ConsumerState<SelectRecipientsScreen> createState() => // ✅
+  ConsumerState<SelectRecipientsScreen> createState() =>
       _SelectRecipientsScreenState();
 }
 
-class _SelectRecipientsScreenState extends ConsumerState<SelectRecipientsScreen> // ✅
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _SelectRecipientsScreenState
+    extends ConsumerState<SelectRecipientsScreen> {
   final TextEditingController _searchController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   String _searchQuery = '';
+  int _selectedTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
     _phoneController.text = '+234';
 
-    // ✅ ref is available directly in ConsumerState — no Provider.of needed
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(requestProvider.notifier).loadMockData();
     });
@@ -35,7 +38,6 @@ class _SelectRecipientsScreenState extends ConsumerState<SelectRecipientsScreen>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     _phoneController.dispose();
     super.dispose();
@@ -51,240 +53,208 @@ class _SelectRecipientsScreenState extends ConsumerState<SelectRecipientsScreen>
 
   @override
   Widget build(BuildContext context) {
-    // ✅ ref.watch replaces Consumer<RequestProvider>
     final provider = ref.watch(requestProvider);
     final selectedCount = provider.selectedContacts.length;
 
+    final List<Contact> tabContacts = _selectedTabIndex == 0
+        ? _filterContacts(provider.allContacts)
+        : _selectedTabIndex == 1
+            ? _filterContacts(provider.recentContacts)
+            : [];
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF9F9F9),
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back,
-            color: Colors.black,
-            size: AppLayout.scaleWidth(context, 24),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Request Money',
-          style: GoogleFonts.openSans(
-            color: Colors.black,
-            fontSize: AppLayout.fontSize(context, 18),
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      backgroundColor: AppColors.backgroundScreen,
+      appBar: KudiAppBar(title: 'Request Money'),
       body: Column(
         children: [
-          // Search Bar
+          // ── Search bar ──────────────────────────────────────────────
           Padding(
-            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-            child: TextField(
+            padding: EdgeInsets.symmetric(
+              horizontal: AppLayout.scaleWidth(context, 16),
+              vertical: AppLayout.scaleHeight(context, 8),
+            ),
+            child: _KudiSearchField(
               controller: _searchController,
-              onChanged: (value) {
-                setState(() {
-                  _searchQuery = value;
-                });
-              },
-              decoration: InputDecoration(
-                hintText: 'Search.....',
-                hintStyle: GoogleFonts.openSans(
-                  color: Colors.grey[400],
-                  fontSize: AppLayout.fontSize(context, 14),
-                ),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: Colors.grey[400],
-                  size: AppLayout.scaleWidth(context, 20),
-                ),
-                filled: true,
-                fillColor: const Color(0xFFF5F5F5),
-                border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppLayout.scaleWidth(context, 16),
-                  vertical: AppLayout.scaleHeight(context, 14),
-                ),
-              ),
+              onChanged: (value) => setState(() => _searchQuery = value),
             ),
           ),
 
-          // Selected contacts chips
+          // ── Selected chips ──────────────────────────────────────────
           if (selectedCount > 0)
-            Container(
-              height: AppLayout.scaleHeight(context, 50),
-              margin: EdgeInsets.symmetric(
-                horizontal: AppLayout.scaleWidth(context, 16),
-              ),
-              child: ListView.builder(
+            SizedBox(
+              height: AppLayout.scaleHeight(context, 44),
+              child: ListView.separated(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 16),
+                ),
                 scrollDirection: Axis.horizontal,
                 itemCount: provider.selectedContacts.length,
+                separatorBuilder: (_, __) =>
+                    SizedBox(width: AppLayout.scaleWidth(context, 8)),
                 itemBuilder: (context, index) {
                   final contact = provider.selectedContacts[index];
-                  return Container(
-                    margin: EdgeInsets.only(
-                      right: AppLayout.scaleWidth(context, 8),
-                    ),
-                    child: Chip(
-                      label: Text(
-                        contact.name.split(' ')[0],
-                        style: GoogleFonts.openSans(
-                          fontSize: AppLayout.fontSize(context, 13),
-                        ),
-                      ),
-                      deleteIcon: Icon(
-                        Icons.close,
-                        size: AppLayout.scaleWidth(context, 18),
-                      ),
-                      onDeleted: () {
-                        // ✅ ref.read for actions
-                        ref
-                            .read(requestProvider.notifier)
-                            .toggleContactSelection(contact);
-                      },
-                      backgroundColor: const Color(0xFFE8F5E9),
-                      deleteIconColor: const Color(0xFF069494),
-                    ),
+                  return _SelectedChip(
+                    contact: contact,
+                    onRemove: () => ref
+                        .read(requestProvider.notifier)
+                        .toggleContactSelection(contact),
                   );
                 },
               ),
             ),
 
-          SizedBox(height: AppLayout.scaleHeight(context, 8)),
+          SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
-          // Tabs
-          Container(
-            margin: EdgeInsets.symmetric(
+          // ── Tab bar ─────────────────────────────────────────────────
+          Padding(
+            padding: EdgeInsets.symmetric(
               horizontal: AppLayout.scaleWidth(context, 16),
             ),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-            ),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: const Color(0xFF069494),
-              unselectedLabelColor: Colors.grey[600],
-              indicatorColor: const Color(0xFF069494),
-              indicatorWeight: 3,
-              labelStyle: GoogleFonts.openSans(
-                fontSize: AppLayout.fontSize(context, 14),
-                fontWeight: FontWeight.w600,
-              ),
-              tabs: const [
-                Tab(text: 'Contact'),
-                Tab(text: 'Recent'),
-                Tab(text: 'Phone No.'),
-              ],
+            child: RecipientTabBar(
+              selectedIndex: _selectedTabIndex,
+              onTabChanged: (i) => setState(() => _selectedTabIndex = i),
             ),
           ),
 
-          // Tab Views
+          // ── Contact list card ────────────────────────────────────────
           Expanded(
             child: Container(
-              margin: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+              margin: EdgeInsets.fromLTRB(
+                AppLayout.scaleWidth(context, 16),
+                AppLayout.scaleHeight(context, 12),
+                AppLayout.scaleWidth(context, 16),
+                AppLayout.scaleHeight(context, 12),
+              ),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppColors.white,
                 borderRadius:
                     BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
               ),
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  _buildContactsList(
-                    _filterContacts(provider.allContacts),
-                    provider,
-                  ),
-                  _buildContactsList(
-                    _filterContacts(provider.recentContacts),
-                    provider,
-                  ),
-                  _buildPhoneNumberTab(provider),
-                ],
-              ),
+              child: _selectedTabIndex == 2
+                  ? _PhoneTab(controller: _phoneController)
+                  : _ContactListView(
+                      contacts: tabContacts,
+                      selectedContacts: provider.selectedContacts,
+                      onToggle: (contact) => ref
+                          .read(requestProvider.notifier)
+                          .toggleContactSelection(contact),
+                    ),
             ),
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: AppLayout.scaleWidth(context, 10),
-              offset: Offset(0, -AppLayout.scaleHeight(context, 4)),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: ElevatedButton(
-            onPressed: selectedCount > 0
-                ? () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const PreviewRequestScreen(),
-                      ),
-                    );
-                  }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF069494),
-              disabledBackgroundColor: const Color(0xFFE0E0E0),
-              foregroundColor: Colors.white,
-              padding: EdgeInsets.symmetric(
-                vertical: AppLayout.scaleHeight(context, 16),
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius:
-                    BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
-              selectedCount > 0
-                  ? 'Continue with $selectedCount Recipient${selectedCount > 1 ? 's' : ''}'
-                  : 'Continue',
-              style: GoogleFonts.openSans(
-                fontSize: AppLayout.fontSize(context, 16),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+
+      // ── Bottom CTA ───────────────────────────────────────────────────
+      bottomNavigationBar: _BottomCta(
+        selectedCount: selectedCount,
+        onContinue: selectedCount > 0
+            ? () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const RequestMoneyScreen(),
+                  ),
+                )
+            : null,
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Private sub-widgets
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _KudiSearchField extends StatelessWidget {
+  final TextEditingController? controller;
+  final ValueChanged<String>? onChanged;
+
+  const _KudiSearchField({this.controller, this.onChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 48,
+      decoration: BoxDecoration(
+        color: AppColors.searchBackground,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: TextField(
+        controller: controller,
+        onChanged: onChanged,
+        style: AppTextStyles.body,
+        decoration: InputDecoration(
+          prefixIcon: const Padding(
+            padding: EdgeInsets.only(left: 16, right: 10),
+            child: Icon(Icons.search, color: AppColors.textGrey, size: 20),
           ),
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 50, minHeight: 48),
+          hintText: 'Search.....',
+          hintStyle: AppTextStyles.searchHint,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(vertical: 14),
         ),
       ),
     );
   }
+}
 
-  Widget _buildContactsList(
-      List<Contact> contacts, dynamic provider) {
+class _SelectedChip extends StatelessWidget {
+  final Contact contact;
+  final VoidCallback onRemove;
+
+  const _SelectedChip({required this.contact, required this.onRemove});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            contact.name.split(' ').first,
+            style: AppTextStyles.contactName,
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: onRemove,
+            child: const Icon(Icons.close, size: 14, color: AppColors.textGrey),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ContactListView extends StatelessWidget {
+  final List<Contact> contacts;
+  final List<Contact> selectedContacts;
+  final ValueChanged<Contact> onToggle;
+
+  const _ContactListView({
+    required this.contacts,
+    required this.selectedContacts,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     if (contacts.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.person_outline,
-              size: AppLayout.scaleWidth(context, 64),
-              color: Colors.grey[300],
-            ),
-            SizedBox(height: AppLayout.scaleHeight(context, 16)),
-            Text(
-              'No contacts found',
-              style: GoogleFonts.openSans(
-                fontSize: AppLayout.fontSize(context, 16),
-                color: Colors.grey[600],
-              ),
-            ),
+            Icon(Icons.person_outline,
+                size: AppLayout.scaleWidth(context, 64),
+                color: AppColors.divider),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+            Text('No contacts found', style: AppTextStyles.label),
           ],
         ),
       );
@@ -292,124 +262,54 @@ class _SelectRecipientsScreenState extends ConsumerState<SelectRecipientsScreen>
 
     return ListView.builder(
       padding: EdgeInsets.symmetric(
-        vertical: AppLayout.scaleHeight(context, 8),
+        horizontal: AppLayout.scaleWidth(context, 12),
+        vertical: AppLayout.scaleHeight(context, 4),
       ),
       itemCount: contacts.length,
       itemBuilder: (context, index) {
         final contact = contacts[index];
         final isSelected =
-            provider.selectedContacts.any((c) => c.id == contact.id);
+            selectedContacts.any((c) => c.id == contact.id);
 
-        return ListTile(
-          leading: CircleAvatar(
-            radius: AppLayout.scaleWidth(context, 20),
-            backgroundColor: _getAvatarColor(index),
-            child: Text(
-              contact.initials,
-              style: GoogleFonts.openSans(
-                color: Colors.white,
-                fontWeight: FontWeight.w600,
-                fontSize: AppLayout.fontSize(context, 14),
-              ),
-            ),
-          ),
-          title: Row(
-            children: [
-              Text(
-                contact.name,
-                style: GoogleFonts.openSans(
-                  fontSize: AppLayout.fontSize(context, 15),
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              SizedBox(width: AppLayout.scaleWidth(context, 4)),
-              if (contact.isVerified)
-                Icon(
-                  Icons.check_circle,
-                  color: const Color(0xFF069494),
-                  size: AppLayout.scaleWidth(context, 16),
-                ),
-            ],
-          ),
-          subtitle: Text(
-            contact.phone,
-            style: GoogleFonts.openSans(
-              fontSize: AppLayout.fontSize(context, 13),
-              color: Colors.grey[600],
-            ),
-          ),
-          trailing: contact.isInvited
-              ? Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 12),
-                    vertical: AppLayout.scaleHeight(context, 6),
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE8F5E9),
-                    borderRadius: BorderRadius.circular(
-                        AppLayout.scaleWidth(context, 12)),
-                  ),
-                  child: Text(
-                    'Invite',
-                    style: GoogleFonts.openSans(
-                      fontSize: AppLayout.fontSize(context, 12),
-                      color: const Color(0xFF069494),
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                )
-              : Radio<bool>(
-                  value: true,
-                  groupValue: isSelected,
-                  onChanged: (value) {
-                    // ✅ ref.read for actions
-                    ref
-                        .read(requestProvider.notifier)
-                        .toggleContactSelection(contact);
-                  },
-                  activeColor: const Color(0xFF069494),
-                ),
-          onTap: () {
-            // ✅ ref.read for actions
-            ref
-                .read(requestProvider.notifier)
-                .toggleContactSelection(contact);
-          },
+        return ContactListItemFull(
+          contact: contact,
+          isSelected: isSelected,
+          onTap: () => onToggle(contact),
         );
       },
     );
   }
+}
 
-  Widget _buildPhoneNumberTab(dynamic provider) {
+class _PhoneTab extends StatelessWidget {
+  final TextEditingController controller;
+
+  const _PhoneTab({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Enter phone no.',
-            style: GoogleFonts.openSans(
-              fontSize: AppLayout.fontSize(context, 13),
-              color: Colors.grey[700],
-            ),
-          ),
+          Text('Enter phone no.', style: AppTextStyles.label),
           SizedBox(height: AppLayout.scaleHeight(context, 8)),
-          TextField(
-            controller: _phoneController,
-            keyboardType: TextInputType.phone,
-            style: GoogleFonts.openSans(
-              fontSize: AppLayout.fontSize(context, 16),
+          Container(
+            decoration: BoxDecoration(
+              color: AppColors.searchBackground,
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
             ),
-            decoration: InputDecoration(
-              filled: true,
-              fillColor: const Color(0xFFF5F5F5),
-              border: OutlineInputBorder(
-                borderRadius:
-                    BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-                borderSide: BorderSide.none,
+            child: TextField(
+              controller: controller,
+              keyboardType: TextInputType.phone,
+              style: AppTextStyles.phoneInput,
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                contentPadding:
+                    EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
               ),
-              contentPadding:
-                  EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
             ),
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
@@ -420,54 +320,84 @@ class _SelectRecipientsScreenState extends ConsumerState<SelectRecipientsScreen>
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                        'If they\'re not on Kudikil, they\'ll receive an SMS invitation'),
+                        "If they're not on Kudikil, they'll receive an SMS invitation"),
                   ),
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFE8F5E9),
-                foregroundColor: const Color(0xFF069494),
-                padding: EdgeInsets.symmetric(
-                  vertical: AppLayout.scaleHeight(context, 16),
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 12)),
-                ),
+                backgroundColor: AppColors.lightGreen,
+                foregroundColor: AppColors.primaryTeal ,
                 elevation: 0,
-              ),
-              child: Text(
-                'Add Recipient',
-                style: GoogleFonts.openSans(
-                  fontSize: AppLayout.fontSize(context, 16),
-                  fontWeight: FontWeight.w600,
+                padding: EdgeInsets.symmetric(
+                    vertical: AppLayout.scaleHeight(context, 16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
                 ),
               ),
+              child: Text('Add Recipient', style: AppTextStyles.buttonText.copyWith(color: AppColors.primaryTeal )),
             ),
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 8)),
           Text(
-            'If they\'re not on Kudikil, they\'ll receive an SMS invitation',
-            style: GoogleFonts.openSans(
-              fontSize: AppLayout.fontSize(context, 12),
-              color: Colors.grey[600],
-            ),
+            "If they're not on Kudikil, they'll receive an SMS invitation",
+            style: AppTextStyles.footerNote,
             textAlign: TextAlign.center,
           ),
         ],
       ),
     );
   }
+}
 
-  Color _getAvatarColor(int index) {
-    final colors = [
-      const Color(0xFF069494),
-      Colors.black,
-      const Color(0xFF3F51B5),
-      const Color(0xFF2196F3),
-      const Color(0xFFE91E63),
-      const Color(0xFFFFA726),
-    ];
-    return colors[index % colors.length];
+class _BottomCta extends StatelessWidget {
+  final int selectedCount;
+  final VoidCallback? onContinue;
+
+  const _BottomCta({required this.selectedCount, this.onContinue});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 16),
+        AppLayout.scaleHeight(context, 12),
+        AppLayout.scaleWidth(context, 16),
+        AppLayout.scaleHeight(context, 24),
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: ElevatedButton(
+          onPressed: onContinue,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryTeal ,
+            disabledBackgroundColor: AppColors.divider,
+            foregroundColor: AppColors.white,
+            elevation: 0,
+            minimumSize: const Size(double.infinity, 54),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(
+                  AppLayout.scaleWidth(context, 14)),
+            ),
+          ),
+          child: Text(
+            selectedCount > 0
+                ? 'Continue with $selectedCount Recipient${selectedCount > 1 ? 's' : ''}'
+                : 'Continue',
+            style: AppTextStyles.buttonText,
+          ),
+        ),
+      ),
+    );
   }
 }

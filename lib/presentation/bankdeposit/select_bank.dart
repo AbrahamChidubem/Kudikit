@@ -104,7 +104,7 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
     final searchQuery = ref.watch(bankSearchQueryProvider);
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
+        color: const Color(0xFFF0F0F0),
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 25)),
       ),
       child: TextField(
@@ -184,14 +184,17 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
     }
 
     return GridView.builder(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppLayout.scaleWidth(context, 16),
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 20),
+        AppLayout.scaleHeight(context, 8),
+        AppLayout.scaleWidth(context, 20),
+        AppLayout.scaleHeight(context, 24),
       ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
-        childAspectRatio: 0.85,
-        crossAxisSpacing: AppLayout.scaleWidth(context, 16),
-        mainAxisSpacing: AppLayout.scaleHeight(context, 16),
+        childAspectRatio: 0.78,
+        crossAxisSpacing: AppLayout.scaleWidth(context, 12),
+        mainAxisSpacing: AppLayout.scaleHeight(context, 20),
       ),
       itemCount: filteredBanks.length,
       itemBuilder: (context, index) {
@@ -202,6 +205,8 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
   }
 
   Widget _buildBankItem(BuildContext context, Bank bank) {
+    final logoSize = AppLayout.scaleWidth(context, 64);
+
     return InkWell(
       onTap: () {
         ref.read(selectedBankProvider.notifier).state = bank;
@@ -211,22 +216,16 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Logo circle — tries network image, falls back to coloured initials
           Container(
-            width: AppLayout.scaleWidth(context, 60),
-            height: AppLayout.scaleWidth(context, 60),
+            width: logoSize,
+            height: logoSize,
             decoration: BoxDecoration(
               color: _getBankColor(bank.logo),
               shape: BoxShape.circle,
             ),
-            child: Center(
-              child: Text(
-                _getBankInitials(bank.name),
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: AppLayout.fontSize(context, 16),
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+            child: ClipOval(
+              child: _buildBankLogo(bank, logoSize),
             ),
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 8)),
@@ -244,6 +243,51 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildBankLogo(Bank bank, double size) {
+    final url = _bankLogoUrl(bank.logo);
+    if (url != null) {
+      return Image.network(
+        url,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => _bankInitialsWidget(bank),
+      );
+    }
+    return _bankInitialsWidget(bank);
+  }
+
+  Widget _bankInitialsWidget(Bank bank) {
+    return Center(
+      child: Text(
+        _getBankInitials(bank.name),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 18,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+
+  String? _bankLogoUrl(String logo) {
+    const Map<String, String> logos = {
+      'gtbank':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/GTBank_logo.svg/200px-GTBank_logo.svg.png',
+      'firstbank':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/First_bank_of_Nigeria_plc_logo.png/200px-First_bank_of_Nigeria_plc_logo.png',
+      'wema':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Wema_Bank_Logo.png/200px-Wema_Bank_Logo.png',
+      'uba':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/United_Bank_for_Africa_Logo.svg/200px-United_Bank_for_Africa_Logo.svg.png',
+      'fcmb':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/FCMB_logo.png/200px-FCMB_logo.png',
+      'sterling':
+          'https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Sterling_Bank_Logo.png/200px-Sterling_Bank_Logo.png',
+    };
+    return logos[logo.toLowerCase()];
   }
 
   Widget _buildErrorView(BuildContext context, AddMoneyError error) {

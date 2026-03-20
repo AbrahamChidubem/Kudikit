@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/color_app_button.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
@@ -22,6 +23,12 @@ import 'package:kudipay/presentation/signup/signup_verify.dart';
 //   - Agree to Terms & Conditions
 //
 // On submit → calls AuthNotifier.signup() → navigates to email verification.
+//
+// FIX: Error messages now appear BELOW each field, not inside them.
+// The approach: validator is removed from TextFormField so Flutter doesn't
+// inject error text into the InputDecoration (which appears inside the
+// Container box). Instead, each field tracks its own error string in state,
+// and a separate Text widget is rendered directly below the field container.
 // =============================================================================
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -43,10 +50,21 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   final TextEditingController confirmPasswordController = TextEditingController();
 
   // ---------------------------------------------------------------------------
-  // FORM KEY
+  // FORM KEY — still used to trigger _validate() on submit
   // ---------------------------------------------------------------------------
 
   final _formKey = GlobalKey<FormState>();
+
+  // ---------------------------------------------------------------------------
+  // PER-FIELD ERROR STRINGS
+  // ---------------------------------------------------------------------------
+  // These drive the inline error Text widgets rendered BELOW each field.
+  // They are set on submit (and cleared when the user starts typing again).
+
+  String? _emailError;
+  String? _phoneError;
+  String? _passcodeError;
+  String? _confirmPasscodeError;
 
   // ---------------------------------------------------------------------------
   // LOCAL TERMS ACCEPTANCE STATE
@@ -66,19 +84,48 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   bool _passcodeFieldTouched = false;
 
   // ---------------------------------------------------------------------------
+  // SUBMIT READINESS
+  // ---------------------------------------------------------------------------
+  // True when every field has content, all passcode rules pass, and the
+  // confirm field matches. Terms acceptance is checked separately (it drives
+  // the same gate but is read from a provider, so it's passed in from build).
+  // ---------------------------------------------------------------------------
+
+  bool get _fieldsReady =>
+      emailController.text.trim().isNotEmpty &&
+      numberController.text.trim().length == 10 &&
+      _hasMinLength &&
+      _hasUppercase &&
+      _hasLowercase &&
+      _hasNumber &&
+      _hasSpecialChar &&
+      confirmPasswordController.text == passwordController.text &&
+      confirmPasswordController.text.isNotEmpty;
+
+  // ---------------------------------------------------------------------------
   // LIFECYCLE
   // ---------------------------------------------------------------------------
 
   @override
   void initState() {
     super.initState();
+    // Rebuild whenever any field changes so _fieldsReady recomputes and the
+    // button activates/deactivates immediately as the user types.
+    emailController.addListener(_onFieldChanged);
+    numberController.addListener(_onFieldChanged);
+    confirmPasswordController.addListener(_onFieldChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
     });
   }
 
+  void _onFieldChanged() => setState(() {});
+
   @override
   void dispose() {
+    emailController.removeListener(_onFieldChanged);
+    numberController.removeListener(_onFieldChanged);
+    confirmPasswordController.removeListener(_onFieldChanged);
     emailController.dispose();
     numberController.dispose();
     passwordController.dispose();
@@ -115,7 +162,81 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       _hasLowercase = value.contains(RegExp(r'[a-z]'));
       _hasNumber = value.contains(RegExp(r'[0-9]'));
       _hasSpecialChar = value.contains(RegExp(r'[!@#$%^&*]'));
+      // Clear the passcode error as the user types
+      if (_passcodeError != null) _passcodeError = null;
     });
+  }
+
+  // ---------------------------------------------------------------------------
+  // FIELD-LEVEL VALIDATION
+  // ---------------------------------------------------------------------------
+  // Returns true if ALL fields pass. Sets per-field error strings in state
+  // so the widgets below each field can display them.
+
+  bool _validateFields() {
+    bool valid = true;
+    setState(() {
+      // Email
+      final email = emailController.text.trim();
+      if (email.isEmpty) {
+        _emailError = 'Please enter your email';
+        valid = false;
+      } else if (!email.contains('@') || !email.contains('.')) {
+        _emailError = 'Please enter a valid email address';
+        valid = false;
+      } else {
+        _emailError = null;
+      }
+
+      // Phone
+      final phone = numberController.text.trim();
+      if (phone.isEmpty) {
+        _phoneError = 'Please enter your phone number';
+        valid = false;
+      } else if (phone.length != 10) {
+        _phoneError = 'Enter a valid 10-digit Nigerian phone number';
+        valid = false;
+      } else {
+        _phoneError = null;
+      }
+
+      // Passcode
+      final passcode = passwordController.text;
+      if (passcode.isEmpty) {
+        _passcodeError = 'Please enter a passcode';
+        valid = false;
+      } else if (!_hasMinLength) {
+        _passcodeError = 'Passcode must be 8–12 characters';
+        valid = false;
+      } else if (!_hasUppercase) {
+        _passcodeError = 'Must contain at least one uppercase letter';
+        valid = false;
+      } else if (!_hasLowercase) {
+        _passcodeError = 'Must contain at least one lowercase letter';
+        valid = false;
+      } else if (!_hasNumber) {
+        _passcodeError = 'Must contain at least one number';
+        valid = false;
+      } else if (!_hasSpecialChar) {
+        _passcodeError = 'Must contain at least one special character (!@#\$%^&*)';
+        valid = false;
+      } else {
+        _passcodeError = null;
+      }
+
+      // Confirm passcode
+      final confirm = confirmPasswordController.text;
+      if (confirm.isEmpty) {
+        _confirmPasscodeError = 'Please confirm your passcode';
+        valid = false;
+      } else if (confirm != passwordController.text) {
+        _confirmPasscodeError = 'Passcodes do not match';
+        valid = false;
+      } else {
+        _confirmPasscodeError = null;
+      }
+    });
+    return valid;
   }
 
   // ---------------------------------------------------------------------------
@@ -129,14 +250,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
-    if (!_formKey.currentState!.validate()) return;
+    // Use our own validation — not _formKey.validate() — because TextFormField
+    // validators inject error text inside the InputDecoration (inside the box).
+    if (!_validateFields()) return;
 
     final termsAccepted = ref.read(_termsAcceptedProvider);
     if (!termsAccepted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Please accept the Terms & Conditions and Privacy Policy'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.avatarRed,
         ),
       );
       return;
@@ -161,7 +284,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           builder: (context) => EmailVerifySignup(
             email: email,
             phoneNumber: phoneNumber,
-            pin: password,
+            passcode: password,
           ),
         ),
       );
@@ -173,7 +296,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(e.toString()),
-          backgroundColor: Colors.orange,
+          backgroundColor: AppColors.avatarOrange,
         ),
       );
     } catch (e) {
@@ -181,7 +304,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Signup failed: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.avatarRed,
         ),
       );
     }
@@ -197,6 +320,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final connectivityState = ref.watch(connectivityStateProvider);
     final isLoading = authState.isLoading;
     final isOnline = connectivityState.isConnected;
+    final termsAccepted = ref.watch(_termsAcceptedProvider);
+    final canSubmit = _fieldsReady && termsAccepted;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
@@ -207,6 +332,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           Expanded(
             child: SingleChildScrollView(
               child: SafeArea(
+                // Form is kept so the GlobalKey is valid, but we don't
+                // rely on its built-in validator display anymore.
                 child: Form(
                   key: _formKey,
                   child: Padding(
@@ -221,7 +348,8 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                           style: TextStyle(
                             fontSize: AppLayout.fontSize(context, 25),
                             fontWeight: FontWeight.w700,
-                            height: 1,
+                            height: 1.5,
+                            color: AppColors.textDark
                           ),
                         ),
                         SizedBox(height: AppLayout.scaleHeight(context, 25)),
@@ -229,59 +357,60 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         // ── Email ──────────────────────────────────────────
                         _buildLabel(context, 'Email'),
                         SizedBox(height: AppLayout.scaleHeight(context, 8)),
-                        _buildTextField(
+                        _buildPlainField(
                           context,
                           controller: emailController,
                           keyboardType: TextInputType.emailAddress,
                           enabled: !isLoading && isOnline,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your email';
+                          hasError: _emailError != null,
+                          onChanged: (_) {
+                            if (_emailError != null) {
+                              setState(() => _emailError = null);
                             }
-                            if (!value.contains('@') || !value.contains('.')) {
-                              return 'Please enter a valid email address';
-                            }
-                            return null;
                           },
                         ),
+                        // ERROR BELOW FIELD
+                        _buildFieldError(_emailError),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
                         // ── Phone Number ───────────────────────────────────
                         _buildLabel(context, 'Phone Number'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
-                        _buildTextField(
+                        _buildPlainField(
                           context,
                           controller: numberController,
                           prefixText: '+234 ',
                           keyboardType: TextInputType.phone,
                           enabled: !isLoading && isOnline,
+                          hasError: _phoneError != null,
                           inputFormatters: [
                             FilteringTextInputFormatter.digitsOnly,
                             LengthLimitingTextInputFormatter(10),
                           ],
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your phone number';
+                          onChanged: (_) {
+                            if (_phoneError != null) {
+                              setState(() => _phoneError = null);
                             }
-                            if (value.trim().length != 10) {
-                              return 'Enter a valid 10-digit Nigerian phone number';
-                            }
-                            return null;
                           },
                         ),
+                        // ERROR BELOW FIELD
+                        _buildFieldError(_phoneError),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
                         // ── Passcode ───────────────────────────────────────
                         _buildLabel(context, 'Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
-                        _buildTextField(
+                        _buildPlainField(
                           context,
                           controller: passwordController,
                           obscureText: !ref.watch(pinVisibilityProvider),
                           enabled: !isLoading && isOnline,
-                          onChanged: _updatePasscodeCriteria,
+                          hasError: _passcodeError != null,
+                          onChanged: (v) {
+                            _updatePasscodeCriteria(v);
+                          },
                           suffixIcon: IconButton(
                             icon: Icon(
                               ref.watch(pinVisibilityProvider)
@@ -294,18 +423,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                   !ref.read(pinVisibilityProvider.notifier).state;
                             },
                           ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter a passcode';
-                            }
-                            if (!_hasMinLength) return 'Passcode must be 8–12 characters';
-                            if (!_hasUppercase) return 'Must contain at least one uppercase letter';
-                            if (!_hasLowercase) return 'Must contain at least one lowercase letter';
-                            if (!_hasNumber) return 'Must contain at least one number';
-                            if (!_hasSpecialChar) return 'Must contain at least one special character (!@#\$%^&*)';
-                            return null;
-                          },
                         ),
+                        // ERROR BELOW FIELD
+                        _buildFieldError(_passcodeError),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 10)),
                         _buildPasscodeCriteria(context),
@@ -315,11 +435,17 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                         // ── Confirm Passcode ───────────────────────────────
                         _buildLabel(context, 'Confirm Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
-                        _buildTextField(
+                        _buildPlainField(
                           context,
                           controller: confirmPasswordController,
                           obscureText: !ref.watch(confirmPinVisibilityProvider),
                           enabled: !isLoading && isOnline,
+                          hasError: _confirmPasscodeError != null,
+                          onChanged: (_) {
+                            if (_confirmPasscodeError != null) {
+                              setState(() => _confirmPasscodeError = null);
+                            }
+                          },
                           suffixIcon: IconButton(
                             icon: Icon(
                               ref.watch(confirmPinVisibilityProvider)
@@ -332,33 +458,26 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                                   !ref.read(confirmPinVisibilityProvider.notifier).state;
                             },
                           ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please confirm your passcode';
-                            }
-                            if (value != passwordController.text) {
-                              return 'Passcodes do not match';
-                            }
-                            return null;
-                          },
                         ),
+                        // ERROR BELOW FIELD
+                        _buildFieldError(_confirmPasscodeError),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
                         // ── Terms & Conditions Checkbox ────────────────────
                         _buildTermsCheckbox(context, isLoading, isOnline),
 
-                        SizedBox(height: AppLayout.scaleHeight(context, 14)),
+                        SizedBox(height: AppLayout.scaleHeight(context, 42)),
 
-                        // ── Submit Button — full-width, responsive ─────────
-                        _buildSubmitButton(context, isLoading, isOnline),
+                        // ── Submit Button ──────────────────────────────────
+                        _buildSubmitButton(context, isLoading, isOnline, canSubmit),
 
-                        SizedBox(height: AppLayout.scaleHeight(context, 24)),
+                        SizedBox(height: AppLayout.scaleHeight(context, 15)),
 
                         // ── Already have an account? ───────────────────────
                         _buildLoginRow(context, isLoading, isOnline),
 
-                        SizedBox(height: AppLayout.scaleHeight(context, 20)),
+                        SizedBox(height: AppLayout.scaleHeight(context, 13)),
 
                         // ── CBN / NDIC Licensing Footer ────────────────────
                         _buildLicensingFooter(context),
@@ -378,8 +497,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // EXTRACTED WIDGET BUILDERS
   // =============================================================================
 
-  // FIX 1: Removed the ConnectivityIndicator action from the AppBar.
-  //         Only the 25% progress ring remains in the trailing actions.
   AppBar _buildAppBar(BuildContext context, bool isOnline) {
     return AppBar(
       backgroundColor: const Color(0xFFF5F5F0),
@@ -402,7 +519,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                   width: AppLayout.scaleWidth(context, 30),
                   height: AppLayout.scaleWidth(context, 30),
                   child: CircularProgressIndicator(
-                    value: 0.25,
+                    value: 0.12,
                     strokeWidth: AppLayout.scaleWidth(context, 2),
                     backgroundColor: const Color(0xFFE0E0E0),
                     valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF4DB6AC)),
@@ -411,7 +528,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
                 Positioned.fill(
                   child: Center(
                     child: Text(
-                      '25%',
+                      '12%',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 12),
                         fontWeight: FontWeight.w400,
@@ -508,10 +625,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     );
   }
 
-  // FIX 2: Wrapped ColorAppButton in SizedBox(width: double.infinity) so it
-  //         always stretches to the full available width — responsive across
-  //         all screen sizes. The loading spinner stays centered as before.
-  Widget _buildSubmitButton(BuildContext context, bool isLoading, bool isOnline) {
+  Widget _buildSubmitButton(
+    BuildContext context,
+    bool isLoading,
+    bool isOnline,
+    bool canSubmit,
+  ) {
     if (isLoading) {
       return Center(
         child: CircularProgressIndicator(
@@ -532,11 +651,16 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
       );
     }
+    // Active only when all fields are filled, passcode rules pass, and
+    // terms are accepted. Dimmed but still renders so layout doesn't shift.
     return SizedBox(
       width: double.infinity,
-      child: ColorAppButton(
-        press: _handleSignUp,
-        text: 'Continue',
+      child: Opacity(
+        opacity: canSubmit ? 1.0 : 0.45,
+        child: ColorAppButton(
+          press: canSubmit ? _handleSignUp : () {},
+          text: 'Continue',
+        ),
       ),
     );
   }
@@ -619,6 +743,47 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   // ---------------------------------------------------------------------------
+  // ERROR TEXT — rendered below the field container, never inside it
+  // ---------------------------------------------------------------------------
+  // AnimatedSize collapses the slot to zero height when there's no error,
+  // so fields don't jump position when errors appear/disappear.
+
+  Widget _buildFieldError(String? error) {
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeInOut,
+      child: error != null
+          ? Padding(
+              padding: EdgeInsets.only(
+                top: AppLayout.scaleHeight(context, 5),
+                left: AppLayout.scaleWidth(context, 4),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: AppLayout.scaleWidth(context, 13),
+                    color: const Color(0xFFE53935),
+                  ),
+                  SizedBox(width: AppLayout.scaleWidth(context, 4)),
+                  Expanded(
+                    child: Text(
+                      error,
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 12),
+                        color: const Color(0xFFE53935),
+                        height: 1.3,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : const SizedBox.shrink(),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
   // PASSCODE CRITERIA CHECKLIST
   // ---------------------------------------------------------------------------
 
@@ -687,15 +852,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     );
   }
 
-  Widget _buildTextField(
+  // _buildPlainField — a plain TextField (no validator) inside a styled Container.
+  // Errors are NOT injected here; they are rendered by _buildFieldError() below.
+  // hasError turns the border red so the field itself also signals the error visually.
+  Widget _buildPlainField(
     BuildContext context, {
     required TextEditingController controller,
     String? prefixText,
     bool obscureText = false,
     TextInputType? keyboardType,
     List<TextInputFormatter>? inputFormatters,
-    String? Function(String?)? validator,
     bool enabled = true,
+    bool hasError = false,
     Widget? suffixIcon,
     ValueChanged<String>? onChanged,
   }) {
@@ -703,6 +871,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       decoration: BoxDecoration(
         color: enabled ? Colors.white : Colors.grey[200],
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        // border: hasError
+        //     ? Border.all(color: const Color(0xFFE53935), width: 1.2)
+        //     : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -711,7 +882,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
         ],
       ),
-      child: TextFormField(
+      child: TextField(
         controller: controller,
         obscureText: obscureText,
         keyboardType: keyboardType,
@@ -724,23 +895,27 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
         decoration: InputDecoration(
           hintStyle: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14),
+            fontSize: AppLayout.fontSize(context, 15),
             color: Colors.grey[500],
           ),
           prefixText: prefixText,
           prefixStyle: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w600,
-            color: Colors.black87,
+            fontSize: AppLayout.fontSize(context, 15),
+            fontWeight: FontWeight.w500,
+            color: AppColors.textDark,
           ),
           suffixIcon: suffixIcon,
           border: InputBorder.none,
+          // Explicitly zero out error/helper padding so Flutter's internal
+          // InputDecorator never adds any extra space below the field.
+          errorBorder: InputBorder.none,
+          focusedErrorBorder: InputBorder.none,
+          isDense: false,
           contentPadding: EdgeInsets.symmetric(
             horizontal: AppLayout.scaleWidth(context, 12),
             vertical: AppLayout.scaleHeight(context, 12),
           ),
         ),
-        validator: validator,
       ),
     );
   }
