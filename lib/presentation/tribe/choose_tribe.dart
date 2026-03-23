@@ -1,17 +1,61 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/tribe/tribe_card.dart';
-import 'package:kudipay/presentation/selfie/selfie_instruction.dart';
+import 'package:kudipay/presentation/kyc/kyc_flow_manager.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
+import 'package:kudipay/provider/tier/tier_provider.dart';
 
-class TribeScreen extends StatefulWidget {
+class TribeScreen extends ConsumerStatefulWidget {
   const TribeScreen({Key? key}) : super(key: key);
 
   @override
-  State<TribeScreen> createState() => _KudikitTribeScreenState();
+  ConsumerState<TribeScreen> createState() => _KudikitTribeScreenState();
 }
 
-class _KudikitTribeScreenState extends State<TribeScreen> {
+class _KudikitTribeScreenState extends ConsumerState<TribeScreen> {
+  // 0 = Tier 1 (Basic), 1 = Tier 2 (Pro), 2 = Tier 3 (Mega)
   int? selectedTribe;
+  bool _isSaving = false;
+
+  // ---------------------------------------------------------------------------
+  // Converts the 0-based selectedTribe index to a real tier number (1, 2, 3).
+  // ---------------------------------------------------------------------------
+  int get _selectedTierNumber => (selectedTribe ?? 0) + 1;
+
+  Future<void> _onContinue() async {
+    if (selectedTribe == null || _isSaving) return;
+
+    setState(() => _isSaving = true);
+
+    // 1. Persist the chosen tier so tierProvider (and the home / profile
+    //    screens that watch it) always shows the correct tier number.
+    await ref
+        .read(tierProvider.notifier)
+        .setTierFromOnboarding(_selectedTierNumber);
+
+    // 2. Also persist selectedTier on the UserModel so it survives re-login.
+    final user = ref.read(currentUserProvider);
+    if (user != null) {
+      await ref
+          .read(authProvider.notifier)
+          .updateUser(user.copyWith(selectedTier: _selectedTierNumber));
+    }
+
+    if (!mounted) return;
+    setState(() => _isSaving = false);
+
+    // 3. Route based on tier:
+    //    Tier 1 → KycFlowManager (will route straight to ID screen, then home)
+    //    Tier 2 / 3 → KycFlowManager (will route through full KYC steps)
+    //
+    //    KycFlowManager reads both the tier AND the user's KYC flags, so it
+    //    automatically decides the correct next screen for every tier.
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const KycFlowManager()),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,14 +132,15 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // ── Tier 1 — Basic Tribe ───────────────────────────────
                   TribeCard(
                     icon: Icons.shield,
                     iconColor: const Color(0xFF069494),
                     title: 'Basic Tribe',
                     tier: 'Tier 1',
                     subtitle: 'For everyday transactions',
-                    requirements: const ['NIN / BVN',
-                     'Face verification'],
+                    requirements: const ['Valid ID (NIN / BVN)'],
                     limits: const [
                       'Daily Send Limit: ₦50,000',
                       'Daily Receive Limit: ₦100,000',
@@ -104,13 +149,13 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                     ],
                     isSelected: selectedTribe == 0,
                     isExpanded: selectedTribe == 0,
-                    onTap: () {
-                      setState(() {
-                        selectedTribe = selectedTribe == 0 ? null : 0;
-                      });
-                    },
+                    onTap: () => setState(() {
+                      selectedTribe = selectedTribe == 0 ? null : 0;
+                    }),
                   ),
                   const SizedBox(height: 16),
+
+                  // ── Tier 2 — Pro Tribe ────────────────────────────────
                   TribeCard(
                     icon: Icons.star,
                     iconColor: const Color(0xFFFFA726),
@@ -120,6 +165,7 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                     requirements: const [
                       'NIN & BVN',
                       'Face verification',
+                      'Address verification',
                     ],
                     limits: const [
                       'Daily Send Limit: ₦500,000',
@@ -128,13 +174,13 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                     ],
                     isSelected: selectedTribe == 1,
                     isExpanded: selectedTribe == 1,
-                    onTap: () {
-                      setState(() {
-                        selectedTribe = selectedTribe == 1 ? null : 1;
-                      });
-                    },
+                    onTap: () => setState(() {
+                      selectedTribe = selectedTribe == 1 ? null : 1;
+                    }),
                   ),
                   const SizedBox(height: 16),
+
+                  // ── Tier 3 — Mega Tribe ───────────────────────────────
                   TribeCard(
                     icon: Icons.verified,
                     iconColor: const Color(0xFF7E57C2),
@@ -145,7 +191,7 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                       'NIN & BVN',
                       'Face verification',
                       'Address Verification (Agent visit)',
-                      'Utility Bill'
+                      'Utility Bill',
                     ],
                     limits: const [
                       'Daily Send Limit: ₦5,000,000',
@@ -155,31 +201,24 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                     ],
                     isSelected: selectedTribe == 2,
                     isExpanded: selectedTribe == 2,
-                    onTap: () {
-                      setState(() {
-                        selectedTribe = selectedTribe == 2 ? null : 2;
-                      });
-                    },
+                    onTap: () => setState(() {
+                      selectedTribe = selectedTribe == 2 ? null : 2;
+                    }),
                   ),
                 ],
               ),
             ),
           ),
+
+          // ── Continue button ──────────────────────────────────────────
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: SizedBox(
               width: double.infinity,
-              height: 56,
+              height: 52,
               child: ElevatedButton(
-                onPressed: selectedTribe != null
-                    ? () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) =>
-                                    const SelfieInstructionsScreen()));
-                      }
-                    : null,
+                onPressed:
+                    (selectedTribe != null && !_isSaving) ? _onContinue : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF069494),
                   disabledBackgroundColor:
@@ -189,14 +228,23 @@ class _KudikitTribeScreenState extends State<TribeScreen> {
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'Continue',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : const Text(
+                        'Continue',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ),
           ),

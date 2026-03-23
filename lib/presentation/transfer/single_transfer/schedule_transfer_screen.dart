@@ -430,7 +430,7 @@ class _ScheduledTransferScreenState
         children: [
           SizedBox(
             width: double.infinity,
-            height: AppLayout.scaleHeight(context, 56),
+            height: AppLayout.scaleHeight(context, 52),
             child: ElevatedButton(
               onPressed: canSchedule
                   ? () {

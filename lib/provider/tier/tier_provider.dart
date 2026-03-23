@@ -106,6 +106,41 @@ class TierNotifier extends StateNotifier<TierState> {
   }
 }
 
+  // ---------------------------------------------------------------------------
+  // SET TIER FROM ONBOARDING
+  // Called by choose_tribe.dart immediately after the user picks a tier.
+  // Unlike upgradeTier(), this does NOT enforce index ordering — the user is
+  // selecting for the first time, not upgrading from a lower tier.
+  // ---------------------------------------------------------------------------
+  Future<void> setTierFromOnboarding(int tierNumber) async {
+    final TierLevel level;
+    switch (tierNumber) {
+      case 2:
+        level = TierLevel.pro;
+        break;
+      case 3:
+        level = TierLevel.mega;
+        break;
+      default:
+        level = TierLevel.basic;
+    }
+
+    state = state.copyWith(isLoading: true, error: null);
+    try {
+      await _storageService.saveCurrentTier(level);
+      state = state.copyWith(
+        currentTier: level,
+        lastUpgraded: DateTime.now(),
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: 'Failed to save tier: $e',
+      );
+    }
+  }
+
   // Upgrade to a new tier
   Future<bool> upgradeTier(TierLevel newTier) async {
     if (newTier.index <= state.currentTier.index) {

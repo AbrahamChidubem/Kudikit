@@ -1,4 +1,3 @@
-
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
@@ -232,48 +231,52 @@ class P2PTransferService {
       throw P2PTransferException('Invalid Kudikit account number.');
     }
 
+    // Use MockTransferData so validated name comes from centralised mock.
+    final data = MockTransferData.validateAccountSuccess(
+      accountNumber: accountNumber,
+    );
     return RecipientInfo(
       accountNumber: accountNumber,
-      name: 'PETER AKINOLA',
-      bank: type == TransferType.kudikit ? 'Kudikit' : 'Guaranty Trust Bank',
+      name: data['account_name'] as String,
+      bank: type == TransferType.kudikit
+          ? 'Kudikit MFB'
+          : data['bank_name'] as String,
     );
   }
 
   Future<List<RecentContact>> _mockGetRecentContacts() async {
     await Future.delayed(const Duration(milliseconds: 500));
 
-    return [
-      RecentContact(
-        id: '1',
-        name: 'Squad YEM YEM SUPERSTORE LIMITED',
-        accountNumber: '3004749378',
-        bank: 'GTBank',
-        lastTransferDate: DateTime.now().subtract(const Duration(days: 7)),
-      ),
-      RecentContact(
-        id: '2',
-        name: 'John Doe Peters',
-        accountNumber: '3004749378',
-        bank: 'GTBank',
-        lastTransferDate: DateTime.now().subtract(const Duration(days: 11)),
-      ),
-    ];
+    // Use MockTransferData.recentContactsResponse
+    final raw = MockTransferData.recentContactsResponse['contacts'] as List<dynamic>;
+    return raw.map((c) {
+      final map = c as Map<String, dynamic>;
+      return RecentContact(
+        id: map['id'] as String,
+        name: map['name'] as String,
+        accountNumber: map['account_number'] as String,
+        bank: map['bank_name'] as String,
+        lastTransferDate: DateTime.parse(map['last_transfer_date'] as String),
+      );
+    }).toList();
   }
 
   Future<TransactionResult> _mockProcessTransfer(TransferData data) async {
     await Future.delayed(const Duration(seconds: 2));
 
+    // Use MockTransferData so transaction IDs and bank names match mock data.
+    final result = MockTransferData.transferSuccess(amount: data.amount!);
     return TransactionResult(
-      transactionId: '213546364738829374474939',
-      transactionType: 'Transfer',
+      transactionId: result['transaction_id'] as String,
+      transactionType: result['transaction_type'] as String,
       amount: data.amount!,
       fee: data.fee,
-      payingBank: 'Guaranty Trust Bank',
-      payingBankAccount: '534256**********6758',
-      creditedTo: 'Kudikit wallet',
+      payingBank: result['paying_bank'] as String,
+      payingBankAccount: result['paying_bank_account'] as String,
+      creditedTo: result['credited_to'] as String,
       note: data.note,
       transactionDate: DateTime.now(),
-      isSuccessful: true,
+      isSuccessful: (result['status'] as String) == 'successful',
     );
   }
 }

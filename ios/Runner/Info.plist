@@ -46,15 +46,21 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-<string>This app needs camera access to capture selfies for verification.</string>
-<key>NSPhotoLibraryUsageDescription</key>
-<key>NSContactsUsageDescription</key>
-<string>Kudikit needs access to your contacts to help you send airtime and data faster.</string>
-<string>We need access to select documents</string>
-<key>NSAppTransportSecurity</key>
+ <string>This app needs camera access to capture selfies for verification.</string>
+ <key>NSPhotoLibraryUsageDescription</key>
+ <key>NSContactsUsageDescription</key>
+ <string>Kudikit needs access to your contacts to help you send airtime and data faster.</string>
+ <string>We need access to select documents</string>
+ <key>NSAppTransportSecurity</key>
   <dict>
       <key>NSAllowsArbitraryLoads</key>
       <true/>
   </dict>
+   <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Kudikit needs your location to find nearby agents.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>Kudikit needs your location to find nearby agents.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>Kudikit needs your location to find nearby agents.</string>
 </dict>
 </plist>

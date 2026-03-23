@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
 
@@ -334,39 +335,34 @@ class MockAddMoneyService extends AddMoneyService {
 
   @override
   Future<AccountDetails> getAccountDetails() async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
-
-    return const AccountDetails(
-      accountNumber: '8124608695',
-      accountName: 'Kudipay - Your Name',
-      bankName: 'Providus Bank',
-      referenceCode: 'KDP123456',
+    final data = MockAddMoneyData.virtualAccountResponse;
+    return AccountDetails(
+      accountNumber: data['account_number'] as String,
+      accountName: data['account_name'] as String,
+      bankName: data['bank_name'] as String,
+      referenceCode: data['reference_code'] as String?,
     );
   }
 
   @override
   Future<String> getUssdCode({required String bankCode}) async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 500));
-
-    // Mock USSD codes for different banks
+    // Pull the virtual account number from mock so USSD strings stay in sync.
+    final acctNum = MockAddMoneyData.virtualAccountResponse['account_number'] as String;
     final ussdCodes = {
-      '058': '*737*0*8124608695#', // GTBank
-      '033': '*901*0*8124608695#', // UBA
-      '044': '*894*0*8124608695#', // Access Bank
+      '058': '*737*0*$acctNum#',  // GTBank
+      '033': '*901*0*$acctNum#',  // UBA
+      '044': '*894*0*$acctNum#',  // Access Bank
     };
-
-    return ussdCodes[bankCode] ?? '*737*0*8124608695#';
+    return ussdCodes[bankCode] ?? '*737*0*$acctNum#';
   }
 
   @override
   Future<String> generateQrCode() async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 800));
-
-    // Return a mock QR code URL
-    return 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=kudipay://pay/8124608695';
+    // Use the QR URL from MockAddMoneyData so it matches the account number.
+    return MockAddMoneyData.qrCodeResponse['qr_code_url'] as String;
   }
 
   @override
@@ -374,16 +370,15 @@ class MockAddMoneyService extends AddMoneyService {
     required double amount,
     required String cardToken,
   }) async {
-    // Simulate network delay
     await Future.delayed(const Duration(milliseconds: 1000));
-
-    return const AddMoneyResponse(
+    final acct = MockAddMoneyData.virtualAccountResponse;
+    return AddMoneyResponse(
       success: true,
       message: 'Card top-up initiated successfully',
       accountDetails: AccountDetails(
-        accountNumber: '8124608695',
-        accountName: 'Kudipay - Your Name',
-        bankName: 'Providus Bank',
+        accountNumber: acct['account_number'] as String,
+        accountName: acct['account_name'] as String,
+        bankName: acct['bank_name'] as String,
       ),
     );
   }
@@ -473,7 +468,7 @@ class MockAddMoneyService extends AddMoneyService {
       bank: bank,
       amount: amount,
       ussdCode: ussdCode,
-      accountNumber: '8124608695',
+      accountNumber: MockAddMoneyData.virtualAccountResponse['account_number'] as String,
       timeRemaining: const Duration(minutes: 4, seconds: 24),
     );
   }

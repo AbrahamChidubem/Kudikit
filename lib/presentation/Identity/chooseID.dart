@@ -1,23 +1,4 @@
-// lib/presentation/Identity/chooseID.dart
-//
-// FIXES applied (all caused the blank screen):
-//
-// 1. PROVIDER MISMATCH — removed import of non-existent identity_verify_provider.dart.
-//    Now uses the real `idVerificationProvider` from id_verification_controller.dart
-//    and the real `IdVerificationState` / `IdType` models from the kit.
-//
-// 2. POSITIONED IN bottomNavigationBar — `_buildNextButton` was returning a
-//    `Positioned(...)` widget assigned to `bottomNavigationBar:`, which is not a
-//    valid widget in that slot (expects a plain Widget, not Positioned). Flutter
-//    threw a layout error before painting anything. Fixed: bottomNavigationBar
-//    now receives a plain Container, and the Stack + Positioned are removed from
-//    the body entirely.
-//
-// 3. MISSING .displayLabel EXTENSION — `IdentificationType.BVN.displayLabel`
-//    crashed because the enum declared in the controller has no such getter.
-//    Fixed: screen now uses the canonical `IdType` enum (with its `.label`
-//    extension) from lib/core/constant/id_type.dart — the single source of
-//    truth already used by the rest of the codebase.
+
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -41,7 +22,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
   final TextEditingController _idNumberController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // ✅ Uses the real IdType enum from id_type.dart (has .label extension)
+
   IdType _selectedIdType = IdType.bvn;
 
   final int _progressPercentage = 48;
@@ -54,18 +35,17 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Uses the real provider from id_verification_controller.dart
+    
     final verificationState = ref.watch(idVerificationProvider);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
-      // ✅ FIX 2: bottomNavigationBar receives a plain Widget — no Positioned
+  
       bottomNavigationBar: _buildNextButton(context, verificationState),
       body: Stack(
         children: [
           _buildBody(context, verificationState),
-          // Loading overlay
           if (verificationState.status == VerificationStatus.loading)
             Container(
               color: Colors.black26,
@@ -397,7 +377,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             ],
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 12)),
-          // ✅ data is Map<String, dynamic> from IdVerificationState — safe access
+          
           Text(
             (data['name'] as String? ?? '').toUpperCase(),
             style: TextStyle(
@@ -412,7 +392,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
     );
   }
 
-  // ✅ FIX 2: Returns a plain Widget — safe for bottomNavigationBar slot
   Widget _buildNextButton(
       BuildContext context, IdVerificationState verificationState) {
     final isEnabled = verificationState.status == VerificationStatus.success &&
@@ -444,7 +423,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
             disabledBackgroundColor: Colors.grey[300],
             minimumSize: Size(
               double.infinity,
-              AppLayout.scaleHeight(context, 56),
+              AppLayout.scaleHeight(context, 52),
             ),
             shape: RoundedRectangleBorder(
               borderRadius:
@@ -467,7 +446,6 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
 
   Future<void> _handleVerification() async {
     if (!_formKey.currentState!.validate()) return;
-    // ✅ Uses real provider method signature: verifyId(String)
     await ref
         .read(idVerificationProvider.notifier)
         .verifyId(_idNumberController.text);

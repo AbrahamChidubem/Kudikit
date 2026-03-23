@@ -273,6 +273,7 @@ class TierManagementScreen extends ConsumerWidget {
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
           SizedBox(
             width: double.infinity,
+            height: AppLayout.scaleHeight(context, 52),
             child: ElevatedButton(
               onPressed: () {
                 Navigator.push(

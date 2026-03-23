@@ -1,11 +1,12 @@
-// lib/services/identity_verification_service.dart
+
 
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import 'package:kudipay/mock/mock_api_data.dart';
 
-// Import the necessary models and enums from provider
+
 enum IdentificationType {
   BVN,
   NIN,
@@ -201,15 +202,19 @@ class IdentityVerificationService {
       throw VerificationException('Invalid $idType format', 400);
     }
 
-    // Return mock successful verification
+    // Return mock successful verification using centralised MockKycData
+    final mock = MockKycData.verifyIdentitySuccess(
+      idNumber: idNumber,
+      idType: idType,
+    );
     return UserVerificationData(
-      firstName: 'MICHAEL',
-      middleName: 'ASUQUO',
-      lastName: 'TOLUWLASE',
-      fullName: 'MICHAEL ASUQUO TOLUWLASE',
-      dateOfBirth: DateTime(1990, 5, 15),
-      phoneNumber: '08012345678',
-      gender: 'Male',
+      firstName: mock['first_name'] as String,
+      middleName: mock['middle_name'] as String,
+      lastName: mock['last_name'] as String,
+      fullName: mock['full_name'] as String,
+      dateOfBirth: DateTime.parse(mock['date_of_birth'] as String),
+      phoneNumber: mock['phone_number'] as String,
+      gender: mock['gender'] as String,
       idNumber: idNumber,
       idType: idType,
     );

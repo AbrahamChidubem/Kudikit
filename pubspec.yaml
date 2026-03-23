@@ -150,7 +150,17 @@ dependencies:
   # Utilities
   intl:
   crypto:
-  shimmer: ^3.0.0
+  shimmer: 
+
+  # Location
+  geolocator: 
+  geocoding: 
+ 
+  # Maps
+  google_maps_flutter: 
+ 
+  # Phone calls
+  url_launcher: 
 
 dev_dependencies:
   flutter_test:

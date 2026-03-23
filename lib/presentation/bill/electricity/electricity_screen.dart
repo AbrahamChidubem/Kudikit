@@ -857,11 +857,7 @@ class _ProviderSelectionSheet extends ConsumerWidget {
   }
 }
 
-// ============================================================================
-// _ConfirmPaymentSheet  (Image 1 & 2)
-// Image 1 → single "Pay" button (first view)
-// Image 2 → "Recheck" + "Send" after user sees details
-// ============================================================================
+
 
 class _ConfirmPaymentSheet extends ConsumerStatefulWidget {
   const _ConfirmPaymentSheet();

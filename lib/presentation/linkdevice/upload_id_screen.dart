@@ -232,7 +232,7 @@ class _UploadIdScreenState extends ConsumerState<UploadIdScreen> {
       ),
       child: SizedBox(
         width: double.infinity,
-        height: AppLayout.scaleHeight(context, 56),
+        height: AppLayout.scaleHeight(context, 52),
         child: ElevatedButton(
           onPressed: _idDocument != null
               ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UploadSelfieScreen()))

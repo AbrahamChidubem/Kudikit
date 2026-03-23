@@ -635,7 +635,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return Center(
         child: CircularProgressIndicator(
           color: const Color(0xFF069494),
-          strokeWidth: AppLayout.scaleWidth(context, 3),
+          strokeWidth: AppLayout.scaleWidth(context, 1),
         ),
       );
     }

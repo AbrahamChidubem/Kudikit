@@ -307,7 +307,7 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: AppLayout.scaleHeight(context, 54),
+                    height: AppLayout.scaleHeight(context, 52),
                     child: OutlinedButton(
                       onPressed: () {
                         _shareReceipt(context, ref);
@@ -335,7 +335,7 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
                 SizedBox(width: AppLayout.scaleWidth(context, 12)),
                 Expanded(
                   child: SizedBox(
-                    height: AppLayout.scaleHeight(context, 54),
+                    height: AppLayout.scaleHeight(context, 52),
                     child: ElevatedButton(
                       onPressed: () {
                         _downloadReceipt(context, ref);

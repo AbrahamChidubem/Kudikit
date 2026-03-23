@@ -1,35 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/model/tier/tier_model.dart';
 import 'package:kudipay/presentation/Identity/chooseID.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
 import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/selfie/selfie_instruction.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
+import 'package:kudipay/provider/tier/tier_provider.dart';
 
 
 
-/// Smart KYC Flow Manager - Automatically navigates to the next incomplete step
+/// Smart KYC Flow Manager - Routes to the correct next KYC step based on
+/// both the user's SELECTED TIER and their current KYC completion status.
+///
+/// TIER ROUTING RULES
+/// ──────────────────
+/// Tier 1 (Basic)  → ID verification only → Dashboard
+/// Tier 2 (Pro)    → Selfie → ID → Dashboard
+/// Tier 3 (Mega)   → Selfie → ID → Address verification → Dashboard
+///
+/// The manager checks which steps are already complete so returning users
+/// are always dropped into their next *incomplete* step, not the first one.
 class KycFlowManager extends ConsumerWidget {
   const KycFlowManager({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
+    final user        = ref.watch(currentUserProvider);
+    final tierState   = ref.watch(tierProvider);
     final connectivityState = ref.watch(connectivityStateProvider);
 
-    // Check internet connection first
+    // ── Offline guard ────────────────────────────────────────────────────────
     if (!connectivityState.isConnected) {
       return Scaffold(
-        backgroundColor: Color(0xFFF9F9F9),
+        backgroundColor: const Color(0xFFF9F9F9),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(32.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Offline icon
                 Container(
                   width: 120,
                   height: 120,
@@ -37,88 +49,46 @@ class KycFlowManager extends ConsumerWidget {
                     color: Colors.red.shade50,
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    Icons.wifi_off,
-                    size: 64,
-                    color: Colors.red.shade700,
-                  ),
+                  child: Icon(Icons.wifi_off, size: 64, color: Colors.red.shade700),
                 ),
-                
                 const SizedBox(height: 32),
-
-                // Title
                 const Text(
                   'No Internet Connection',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
+                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                
                 const SizedBox(height: 16),
-
-                // Description
                 Text(
                   'KYC verification requires an active internet connection to proceed. Please check your connection and try again.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                    height: 1.5,
-                  ),
+                  style: TextStyle(fontSize: 16, color: Colors.grey[600], height: 1.5),
                 ),
-                
                 const SizedBox(height: 32),
-
-                // Retry button
                 SizedBox(
                   width: double.infinity,
                   height: 56,
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      ref.read(connectivityStateProvider.notifier).refresh();
-                    },
+                    onPressed: () =>
+                        ref.read(connectivityStateProvider.notifier).refresh(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF069494),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
+                          borderRadius: BorderRadius.circular(28)),
                       elevation: 0,
                     ),
-                    icon: const Icon(
-                      Icons.refresh,
-                      color: Colors.white,
-                    ),
+                    icon: const Icon(Icons.refresh, color: Colors.white),
                     label: const Text(
                       'Check Connection',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
-                // Back button
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text(
-                    'Go Back',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey[600],
-                    ),
-                  ),
+                  child: Text('Go Back', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
                 ),
-
                 const SizedBox(height: 32),
-
-                // Connection tips
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
@@ -131,19 +101,11 @@ class KycFlowManager extends ConsumerWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.info_outline,
-                            size: 20,
-                            color: Colors.blue.shade700,
-                          ),
+                          Icon(Icons.info_outline, size: 20, color: Colors.blue.shade700),
                           const SizedBox(width: 8),
                           Text(
                             'Connection Tips',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade900,
-                            ),
+                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
                           ),
                         ],
                       ),
@@ -162,22 +124,19 @@ class KycFlowManager extends ConsumerWidget {
       );
     }
 
-    // Loading state while checking user
-    if (user == null) {
+    // ── Loading guard ────────────────────────────────────────────────────────
+    if (user == null || tierState.isLoading) {
       return const Scaffold(
         backgroundColor: Colors.white,
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const AppLoadingIndicator(),
-              const SizedBox(height: 16),
+              AppLoadingIndicator(),
+              SizedBox(height: 16),
               Text(
                 'Loading your information...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             ],
           ),
@@ -185,27 +144,11 @@ class KycFlowManager extends ConsumerWidget {
       );
     }
 
-    // Determine next KYC step based on user's completion status
-    Widget nextScreen;
+    // ── Determine the correct next screen based on TIER + KYC status ────────
+    final tier = tierState.currentTier;
+    Widget nextScreen = _resolveNextScreen(tier, user);
 
-    if (user.isKycComplete) {
-      // All KYC complete - go to home
-      nextScreen = const HomeScreen();
-    } else if (!user.isSelfieVerified) {
-      // First step: Selfie verification
-      nextScreen = const SelfieInstructionsScreen();
-    } else if (!user.isBvnVerified) {
-      // Second step: ID/BVN verification
-      nextScreen = const IdVerificationScreen();
-    } else if (!user.isAddressVerified) {
-      // Third step: Address verification
-      nextScreen = const AddressVerificationScreen();
-    } else {
-      // Fallback to home if all checks pass
-      nextScreen = const HomeScreen();
-    }
-
-    // Navigate to the determined screen
+    // Navigate after the current frame finishes building.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
         Navigator.pushReplacement(
@@ -215,7 +158,7 @@ class KycFlowManager extends ConsumerWidget {
       }
     });
 
-    // Show loading while navigation is pending
+    // ── Loading placeholder while navigation is pending ──────────────────────
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -225,14 +168,10 @@ class KycFlowManager extends ConsumerWidget {
             const AppLoadingIndicator(),
             const SizedBox(height: 16),
             Text(
-              _getLoadingMessage(user),
-              style: const TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
+              _getLoadingMessage(tier, user),
+              style: const TextStyle(fontSize: 16, color: Colors.grey),
             ),
             const SizedBox(height: 32),
-            // Online indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -247,10 +186,7 @@ class KycFlowManager extends ConsumerWidget {
                 const SizedBox(width: 8),
                 const Text(
                   'Connected',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF069494),
-                  ),
+                  style: TextStyle(fontSize: 12, color: Color(0xFF069494)),
                 ),
               ],
             ),
@@ -260,44 +196,68 @@ class KycFlowManager extends ConsumerWidget {
     );
   }
 
+  // ---------------------------------------------------------------------------
+  // ROUTING LOGIC
+  // ---------------------------------------------------------------------------
+  // Each tier has a defined KYC funnel. We walk the funnel top-to-bottom and
+  // return the first step that is NOT yet complete.
+  //
+  //  Tier 1 (Basic):  [ID]
+  //  Tier 2 (Pro):    [Selfie → ID]
+  //  Tier 3 (Mega):   [Selfie → ID → Address]
+  // ---------------------------------------------------------------------------
+
+  Widget _resolveNextScreen(TierLevel tier, dynamic user) {
+    switch (tier) {
+      case TierLevel.basic:
+        // Tier 1 — only ID verification required.
+        if (!user.isBvnVerified) return const IdVerificationScreen();
+        return const HomeScreen();
+
+      case TierLevel.pro:
+        // Tier 2 — Selfie first, then ID.
+        if (!user.isSelfieVerified) return const SelfieInstructionsScreen();
+        if (!user.isBvnVerified)    return const IdVerificationScreen();
+        return const HomeScreen();
+
+      case TierLevel.mega:
+        // Tier 3 — Selfie, ID, then Address.
+        if (!user.isSelfieVerified)   return const SelfieInstructionsScreen();
+        if (!user.isBvnVerified)      return const IdVerificationScreen();
+        if (!user.isAddressVerified)  return const AddressVerificationScreen();
+        return const HomeScreen();
+    }
+  }
+
+  String _getLoadingMessage(TierLevel tier, dynamic user) {
+    switch (tier) {
+      case TierLevel.basic:
+        if (!user.isBvnVerified) return 'Preparing identity verification...';
+        return 'Preparing your dashboard...';
+      case TierLevel.pro:
+        if (!user.isSelfieVerified) return 'Preparing selfie verification...';
+        if (!user.isBvnVerified)    return 'Preparing identity verification...';
+        return 'Preparing your dashboard...';
+      case TierLevel.mega:
+        if (!user.isSelfieVerified)  return 'Preparing selfie verification...';
+        if (!user.isBvnVerified)     return 'Preparing identity verification...';
+        if (!user.isAddressVerified) return 'Preparing address verification...';
+        return 'Preparing your dashboard...';
+    }
+  }
+
   Widget _buildTip(String tip) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            '•  ',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.blue,
-            ),
-          ),
+          const Text('•  ', style: TextStyle(fontSize: 14, color: Colors.blue)),
           Expanded(
-            child: Text(
-              tip,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey[700],
-              ),
-            ),
+            child: Text(tip, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
           ),
         ],
       ),
     );
-  }
-
-  String _getLoadingMessage(dynamic user) {
-    if (user.isKycComplete) {
-      return 'Preparing your dashboard...';
-    } else if (!user.isSelfieVerified) {
-      return 'Preparing selfie verification...';
-    } else if (!user.isBvnVerified) {
-      return 'Preparing identity verification...';
-    } else if (!user.isAddressVerified) {
-      return 'Preparing address verification...';
-    } else {
-      return 'Setting up your account...';
-    }
   }
 }

@@ -186,7 +186,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
     return Container(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
-        color: const Color(0xFFE8F5E9),
+        color: const Color(0xFFF9FAFB),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -293,7 +293,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
               prefixIconConstraints: const BoxConstraints(minWidth: 0),
               contentPadding: EdgeInsets.symmetric(
                 horizontal: 12,
-                vertical: 14,
+                vertical: 12,
               ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
@@ -600,7 +600,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
             // Send Now button
             SizedBox(
               width: double.infinity,
-              height: AppLayout.scaleHeight(context, 56),
+              height: AppLayout.scaleHeight(context, 52),
               child: ElevatedButton(
                 onPressed: canSend
                     ? () {
@@ -616,7 +616,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                   disabledBackgroundColor: const Color(0xFFB2DFDB),
                 ),
                 child: Text(
-                  'Send Now',
+                  'Send',
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 16),
                     fontWeight: FontWeight.w600,
@@ -626,55 +626,55 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
               ),
             ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+            // SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
             // Schedule Payment button
-            SizedBox(
-              width: double.infinity,
-              height: AppLayout.scaleHeight(context, 56),
-              child: OutlinedButton(
-                onPressed: canSend
-                    ? () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const ScheduledTransferScreen(),
-                          ),
-                        );
-                      }
-                    : null,
-                style: OutlinedButton.styleFrom(
-                  side: BorderSide(
-                    color:
-                        canSend ? const Color(0xFF069494) : Colors.grey[300]!,
-                    width: 1.5,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                ),
-                child: Text(
-                  'Schedule Payment',
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 16),
-                    fontWeight: FontWeight.w600,
-                    color: canSend ? const Color(0xFF069494) : Colors.grey,
-                  ),
-                ),
-              ),
-            ),
+            // SizedBox(
+            //   width: double.infinity,
+            //   height: AppLayout.scaleHeight(context, 52),
+            //   child: OutlinedButton(
+            //     onPressed: canSend
+            //         ? () {
+            //             Navigator.push(
+            //               context,
+            //               MaterialPageRoute(
+            //                 builder: (context) =>
+            //                     const ScheduledTransferScreen(),
+            //               ),
+            //             );
+            //           }
+            //         : null,
+            //     style: OutlinedButton.styleFrom(
+            //       side: BorderSide(
+            //         color:
+            //             canSend ? const Color(0xFF069494) : Colors.grey[300]!,
+            //         width: 1.5,
+            //       ),
+            //       shape: RoundedRectangleBorder(
+            //         borderRadius: BorderRadius.circular(28),
+            //       ),
+            //     ),
+            //     child: Text(
+            //       'Schedule Payment',
+            //       style: TextStyle(
+            //         fontSize: AppLayout.fontSize(context, 16),
+            //         fontWeight: FontWeight.w600,
+            //         color: canSend ? const Color(0xFF069494) : Colors.grey,
+            //       ),
+            //     ),
+            //   ),
+            // ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            // SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-            Text(
-              'Send later at a specific date & time',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 12),
-                color: Colors.black54,
-              ),
-              textAlign: TextAlign.center,
-            ),
+            // Text(
+            //   'Send later at a specific date & time',
+            //   style: TextStyle(
+            //     fontSize: AppLayout.fontSize(context, 12),
+            //     color: Colors.black54,
+            //   ),
+            //   textAlign: TextAlign.center,
+            // ),
           ],
         ),
       ),

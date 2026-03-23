@@ -13,8 +13,8 @@ class ColorAppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     // const padding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
     return SizedBox(
-      height: 56,
-      width: 320,
+      height: 52,
+      width: double.infinity,
       child: ElevatedButton(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
@@ -31,7 +31,7 @@ class ColorAppButton extends StatelessWidget {
             style: const TextStyle(
               fontSize: 20,
               color: Colors.white,
-              fontFamily: 'Poppins',
+              fontFamily: 'PolySans',
               fontWeight: FontWeight.w500,
             ),
           ),

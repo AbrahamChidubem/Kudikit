@@ -90,7 +90,7 @@ class EmailChangeStepsScreen extends ConsumerWidget {
               // Get OTP Button
               SizedBox(
                 width: double.infinity,
-                height: AppLayout.scaleHeight(context, 54),
+                height: AppLayout.scaleHeight(context, 52),
                 child: ElevatedButton(
                   onPressed: emailChangeState.isLoading
                       ? null

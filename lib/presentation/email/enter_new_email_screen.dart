@@ -135,7 +135,7 @@ class _EnterNewEmailScreenState extends ConsumerState<EnterNewEmailScreen> {
                 // Change Button
                 SizedBox(
                   width: double.infinity,
-                  height: AppLayout.scaleHeight(context, 54),
+                  height: AppLayout.scaleHeight(context, 52),
                   child: ElevatedButton(
                     onPressed: emailChangeState.isLoading
                         ? null
@@ -173,7 +173,7 @@ class _EnterNewEmailScreenState extends ConsumerState<EnterNewEmailScreen> {
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(28),
                       ),
                       disabledBackgroundColor: Colors.grey[300],
                     ),

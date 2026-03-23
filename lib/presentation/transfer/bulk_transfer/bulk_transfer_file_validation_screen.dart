@@ -486,7 +486,7 @@ class _BulkTransferFileValidationScreenState
           children: [
             SizedBox(
               width: double.infinity,
-              height: AppLayout.scaleHeight(context, 54),
+              height: AppLayout.scaleHeight(context, 52),
               child: ElevatedButton(
                 onPressed: isEnabled
                     ? () {
@@ -515,7 +515,7 @@ class _BulkTransferFileValidationScreenState
             SizedBox(height: AppLayout.scaleHeight(context, 12)),
             SizedBox(
               width: double.infinity,
-              height: AppLayout.scaleHeight(context, 54),
+              height: AppLayout.scaleHeight(context, 52),
               child: OutlinedButton(
                 onPressed: () {
                   Navigator.pop(context);

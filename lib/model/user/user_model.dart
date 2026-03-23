@@ -13,6 +13,10 @@ class UserModel {
   final bool isDocumentVerified;
   final DateTime? createdAt;
   final DateTime? lastLogin;
+  // The tier the user selected during onboarding (1 = Basic, 2 = Pro, 3 = Mega).
+  // Defaults to 1. Stored on the model so it survives logout/login cycles via
+  // StorageService and is available everywhere without a separate provider read.
+  final int selectedTier;
 
   UserModel({
     required this.userId,
@@ -29,6 +33,7 @@ class UserModel {
     this.isDocumentVerified = false,
     this.createdAt,
     this.lastLogin,
+    this.selectedTier = 1,
   });
 
   // Check if KYC is complete
@@ -65,6 +70,7 @@ class UserModel {
     bool? isDocumentVerified,
     DateTime? createdAt,
     DateTime? lastLogin,
+    int? selectedTier,
   }) {
     return UserModel(
       userId: userId ?? this.userId,
@@ -81,6 +87,7 @@ class UserModel {
       isDocumentVerified: isDocumentVerified ?? this.isDocumentVerified,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
+      selectedTier: selectedTier ?? this.selectedTier,
     );
   }
 
@@ -100,6 +107,7 @@ class UserModel {
       'isDocumentVerified': isDocumentVerified,
       'createdAt': createdAt?.toIso8601String(),
       'lastLogin': lastLogin?.toIso8601String(),
+      'selectedTier': selectedTier,
     };
   }
 
@@ -123,6 +131,7 @@ class UserModel {
       lastLogin: json['lastLogin'] != null
           ? DateTime.parse(json['lastLogin'] as String)
           : null,
+      selectedTier: (json['selectedTier'] as int?) ?? (json['tier'] as int?) ?? 1,
     );
   }
 }

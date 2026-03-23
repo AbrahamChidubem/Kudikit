@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 
 class TransactionService {
@@ -19,47 +20,50 @@ class TransactionService {
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    try {
-      final queryParams = <String, String>{};
-      if (limit != null) queryParams['limit'] = limit.toString();
-      if (offset != null) queryParams['offset'] = offset.toString();
-      if (status != null) queryParams['status'] = status.value;
-      if (startDate != null) {
-        queryParams['start_date'] = startDate.toIso8601String();
-      }
-      if (endDate != null) {
-        queryParams['end_date'] = endDate.toIso8601String();
-      }
+    // ── Mock implementation ───────────────────────────────────────────────────
+    // Returns data from MockTransactionData so the Transactions screen is never
+    // empty during development. Replace with the real HTTP block below when
+    // the backend is ready.
+    return _mockGetTransactions(status: status);
 
-      final uri = Uri.parse('$baseUrl/transactions').replace(
-        queryParameters: queryParams.isNotEmpty ? queryParams : null,
-      );
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final queryParams = <String, String>{};
+    //   if (limit != null) queryParams['limit'] = limit.toString();
+    //   if (offset != null) queryParams['offset'] = offset.toString();
+    //   if (status != null) queryParams['status'] = status.value;
+    //   if (startDate != null) queryParams['start_date'] = startDate.toIso8601String();
+    //   if (endDate != null) queryParams['end_date'] = endDate.toIso8601String();
+    //
+    //   final uri = Uri.parse('$baseUrl/transactions').replace(
+    //     queryParameters: queryParams.isNotEmpty ? queryParams : null,
+    //   );
+    //   final response = await client.get(uri, headers: {
+    //     'Content-Type': 'application/json',
+    //     'Accept': 'application/json',
+    //   });
+    //   if (response.statusCode == 200) {
+    //     final body = json.decode(response.body);
+    //     final List<dynamic> list = body is List ? body : body['transactions'] as List;
+    //     return list.map((j) => Transaction.fromJson(j as Map<String, dynamic>)).toList();
+    //   } else {
+    //     throw TransactionException('Failed to load transactions: ${response.statusCode}', statusCode: response.statusCode);
+    //   }
+    // } catch (e) {
+    //   if (e is TransactionException) rethrow;
+    //   throw TransactionException('Network error: ${e.toString()}');
+    // }
+  }
 
-      final response = await client.get(
-        uri,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          // Add authorization header when available
-          // 'Authorization': 'Bearer $token',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        return jsonData
-            .map((json) => Transaction.fromJson(json as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw TransactionException(
-          'Failed to load transactions: ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
-      }
-    } catch (e) {
-      if (e is TransactionException) rethrow;
-      throw TransactionException('Network error: ${e.toString()}');
-    }
+  // ---------------------------------------------------------------------------
+  // Mock helper — parses MockTransactionData.transactionListResponse
+  // ---------------------------------------------------------------------------
+  Future<List<Transaction>> _mockGetTransactions({TransactionStatus? status}) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    final raw = MockTransactionData.transactionListResponse['transactions'] as List<dynamic>;
+    final all = raw.map((j) => Transaction.fromJson(j as Map<String, dynamic>)).toList();
+    if (status == null) return all;
+    return all.where((t) => t.status.value == status.value).toList();
   }
 
   /// Fetch a single transaction by ID
@@ -90,74 +94,24 @@ class TransactionService {
 
   /// Search transactions
   Future<List<Transaction>> searchTransactions(String query) async {
-    try {
-      final response = await client.get(
-        Uri.parse('$baseUrl/transactions/search').replace(
-          queryParameters: {'q': query},
-        ),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonData = json.decode(response.body);
-        return jsonData
-            .map((json) => Transaction.fromJson(json as Map<String, dynamic>))
-            .toList();
-      } else {
-        throw TransactionException(
-          'Failed to search transactions: ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
-      }
-    } catch (e) {
-      if (e is TransactionException) rethrow;
-      throw TransactionException('Network error: ${e.toString()}');
-    }
+    // Search within mock data
+    final all = await _mockGetTransactions();
+    final q = query.toLowerCase();
+    return all.where((t) =>
+      t.title.toLowerCase().contains(q) ||
+      t.id.toLowerCase().contains(q)
+    ).toList();
   }
 
   /// Download transactions (returns file path or download URL)
   Future<String> downloadTransactions({
-    String format = 'pdf', // pdf, csv, excel
+    String format = 'pdf',
     DateTime? startDate,
     DateTime? endDate,
   }) async {
-    try {
-      final queryParams = <String, String>{
-        'format': format,
-      };
-      if (startDate != null) {
-        queryParams['start_date'] = startDate.toIso8601String();
-      }
-      if (endDate != null) {
-        queryParams['end_date'] = endDate.toIso8601String();
-      }
-
-      final response = await client.get(
-        Uri.parse('$baseUrl/transactions/download').replace(
-          queryParameters: queryParams,
-        ),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final jsonData = json.decode(response.body);
-        return jsonData['download_url'] as String;
-      } else {
-        throw TransactionException(
-          'Failed to download transactions: ${response.statusCode}',
-          statusCode: response.statusCode,
-        );
-      }
-    } catch (e) {
-      if (e is TransactionException) rethrow;
-      throw TransactionException('Network error: ${e.toString()}');
-    }
+    // Return mock download URL from MockTransactionData
+    await Future.delayed(const Duration(milliseconds: 500));
+    return MockTransactionData.downloadResponse['download_url'] as String;
   }
 
   void dispose() {

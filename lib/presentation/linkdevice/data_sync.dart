@@ -20,8 +20,6 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
-      // FIX: Stack → SafeArea+Column so button is always visible and never
-      // obscures the scroll content. Loading overlay sits in outer Stack.
       body: Stack(
         children: [
           SafeArea(
@@ -64,7 +62,6 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
           Text(
             'Almost done',
             style: TextStyle(
@@ -73,9 +70,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
               color: Colors.black87,
             ),
           ),
-
           SizedBox(height: AppLayout.scaleHeight(context, 8)),
-
           Text(
             'Would you like to sync your data to this device? You can always change this later.',
             style: TextStyle(
@@ -84,9 +79,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
               height: 1.5,
             ),
           ),
-
           SizedBox(height: AppLayout.scaleHeight(context, 32)),
-
           _buildSyncOption(
             context,
             title: 'Saved Beneficiary',
@@ -98,13 +91,10 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
                   .updateSyncSelection(savedBeneficiary: value);
             },
           ),
-
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
           _buildSyncOption(
             context,
             title: 'Recent Transactions',
-            // FIX: typo "You last" → "Your last"
             subtitle: 'Your last 90 days of transactions',
             value: state.syncSelection.recentTransactions,
             onChanged: (value) {
@@ -113,9 +103,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
                   .updateSyncSelection(recentTransactions: value);
             },
           ),
-
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
           _buildSyncOption(
             context,
             title: 'App Preferences',
@@ -127,7 +115,6 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
                   .updateSyncSelection(appPreferences: value);
             },
           ),
-
           SizedBox(height: AppLayout.scaleHeight(context, 24)),
         ],
       ),
@@ -164,9 +151,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
               borderRadius: BorderRadius.circular(4),
             ),
           ),
-
           SizedBox(width: AppLayout.scaleWidth(context, 12)),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,8 +181,7 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
   }
 
   Widget _buildButton(BuildContext context, DeviceLinkingState state) {
-    // FIX: was Positioned inside Stack alongside a scrollable body —
-    // content would scroll behind the button. Now correctly anchored.
+    
     return Padding(
       padding: EdgeInsets.fromLTRB(
         AppLayout.scaleWidth(context, 24),
@@ -210,14 +194,12 @@ class _DataSyncScreenState extends ConsumerState<DataSyncScreen> {
         children: [
           SizedBox(
             width: double.infinity,
-            height: AppLayout.scaleHeight(context, 56),
+            height: AppLayout.scaleHeight(context, 52),
             child: ElevatedButton(
               onPressed: state.isSyncing
                   ? null
                   : () async {
-                      await ref
-                          .read(deviceLinkingProvider.notifier)
-                          .syncData();
+                      await ref.read(deviceLinkingProvider.notifier).syncData();
 
                       // FIX: read fresh state after await so we don't use
                       // stale isSyncing from the closure.

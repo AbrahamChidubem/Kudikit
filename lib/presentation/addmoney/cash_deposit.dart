@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 
 class CashDepositInstructionsScreen extends ConsumerWidget {
@@ -9,10 +10,12 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+   
+    final wallet = ref.watch(walletProvider);
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
-      body: _buildBody(context),
+      body: _buildBody(context, wallet),
     );
   }
 
@@ -36,7 +39,7 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context, WalletState wallet) {
     return SingleChildScrollView(
       padding: AppLayout.pagePadding(context),
       child: Column(
@@ -63,7 +66,7 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
             context,
             stepNumber: 2,
             title: 'Give cash to the Agent',
-            description: _buildAgentDetails(context),
+            description: _buildAgentDetails(context, wallet),
           ),
 
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
@@ -150,7 +153,7 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildAgentDetails(BuildContext context) {
+  Widget _buildAgentDetails(BuildContext context, WalletState wallet) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -164,7 +167,7 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
         ),
         SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-        // Account Details Box
+        // Account Details Box — values from MockWalletData via walletProvider
         Container(
           padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
           decoration: BoxDecoration(
@@ -174,19 +177,19 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              _buildAccountDetailRow(context, 'Bank Name:', 'Kudikit'),
+              _buildAccountDetailRow(context, 'Bank Name:', wallet.bankName),
               SizedBox(height: AppLayout.scaleHeight(context, 12)),
               _buildAccountDetailRow(
                 context,
                 'Bank Account:',
-                '8124608695',
+                wallet.accountNumber,
                 isCopyable: true,
               ),
               SizedBox(height: AppLayout.scaleHeight(context, 12)),
               _buildAccountDetailRow(
                 context,
                 'Beneficiary:',
-                'MICHAEL ASUQUO TOLUWLASE',
+                wallet.accountName.toUpperCase(),
               ),
             ],
           ),

@@ -201,8 +201,8 @@ class Contact {
   final String name;
   final String phone;
   final String? avatar;
-  final ContactStatus status;     // ✅ proper named param, no duplicate
-  final Color avatarColor;        // ✅ added missing field
+  final ContactStatus status;     
+  final Color avatarColor;        
   final bool isInvited;
   final bool isVerified;
 
@@ -257,42 +257,42 @@ class ContactData {
     const Contact(
       id: '1',
       name: 'Kemi Alabi',
-      phone: '+234 8124608695',
+      phone: '+2348031234567',
       status: ContactStatus.onApp,
       avatarColor: AppColors.avatarTeal,
     ),
     const Contact(
       id: '2',
       name: 'Asuquo Michael',
-      phone: '+234 8124608695',
+      phone: '+2348051234567',
       status: ContactStatus.onApp,
       avatarColor: AppColors.avatarDark,
     ),
     const Contact(
       id: '3',
       name: 'Ameachi Uche',
-      phone: '+234 8124608695',
+      phone: '+2348091234567',
       status: ContactStatus.invite,
       avatarColor: AppColors.avatarBlue,
     ),
     const Contact(
       id: '4',
       name: 'Paul Adegoke',
-      phone: '+234 8124608695',
+      phone: '+2349011234567',
       status: ContactStatus.invite,
       avatarColor: AppColors.avatarLightBlue,
     ),
     const Contact(
       id: '5',
       name: 'Tega Ibrahim',
-      phone: '+234 8124608695',
+      phone: '+2348071234567',
       status: ContactStatus.onApp,
       avatarColor: AppColors.avatarRed,
     ),
     const Contact(
       id: '6',
       name: 'Victor Obisi',
-      phone: '+234 8124608695',
+      phone: '+2348061234567',
       status: ContactStatus.onApp,
       avatarColor: AppColors.avatarOrange,
     ),

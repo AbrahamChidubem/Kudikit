@@ -11,8 +11,7 @@ class AccountActiveScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
-      // FIX: Stack+Positioned cut off centered content on small screens.
-      // Expanded+Column anchors content and button cleanly.
+     
       body: SafeArea(
         child: Column(
           children: [
@@ -28,7 +27,7 @@ class AccountActiveScreen extends ConsumerWidget {
     return AppBar(
       backgroundColor: const Color(0xFFF5F9F5),
       elevation: 0,
-      // FIX: hide back arrow — user must not return to linking flow on success.
+      
       automaticallyImplyLeading: false,
     );
   }
@@ -78,9 +77,9 @@ class AccountActiveScreen extends ConsumerWidget {
       ),
       child: SizedBox(
         width: double.infinity,
-        height: AppLayout.scaleHeight(context, 56),
+        height: AppLayout.scaleHeight(context, 52),
         child: ElevatedButton(
-          // FIX: pushAndRemoveUntil so back button cannot re-enter the linking flow.
+          
           onPressed: () => Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) => const BottomNavBar()),
             (_) => false,

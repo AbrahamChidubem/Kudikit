@@ -446,7 +446,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
           disabledForegroundColor: Colors.white,
           minimumSize: Size(
             double.infinity,
-            AppLayout.scaleHeight(context, 50),
+            AppLayout.scaleHeight(context, 52),
           ),
           shape: RoundedRectangleBorder(
             borderRadius:

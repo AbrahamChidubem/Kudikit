@@ -95,7 +95,7 @@ class _VerifyEmailOtpScreenState extends ConsumerState<VerifyEmailOtpScreen> {
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: Colors.grey[300]!,
                     width: 1,
@@ -178,7 +178,7 @@ class _VerifyEmailOtpScreenState extends ConsumerState<VerifyEmailOtpScreen> {
               // Continue Button
               SizedBox(
                 width: double.infinity,
-                height: AppLayout.scaleHeight(context, 54),
+                height: AppLayout.scaleHeight(context, 52),
                 child: ElevatedButton(
                   onPressed: emailChangeState.isLoading || _otpController.text.length != 6
                       ? null
@@ -210,7 +210,7 @@ class _VerifyEmailOtpScreenState extends ConsumerState<VerifyEmailOtpScreen> {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(28),
                     ),
                     disabledBackgroundColor: Colors.grey[300],
                   ),

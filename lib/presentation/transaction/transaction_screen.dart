@@ -5,6 +5,7 @@ import 'package:kudipay/core/utils/formatters.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/refresh/refresh_provider.dart';
 
 
 class TransactionsScreen extends ConsumerStatefulWidget {
@@ -243,11 +244,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: () async {
-        await ref
-            .read(transactionProvider.notifier)
-            .loadTransactions(refresh: true);
-      },
+      // Use the central orchestrator so wallet + transactions refresh together.
+      // The user sees one unified pull gesture that syncs all data at once.
+      onRefresh: () =>
+          ref.read(refreshProvider.notifier).refreshAll(),
       color: const Color(0xFF069494),
       child: ListView(
         controller: _scrollController,

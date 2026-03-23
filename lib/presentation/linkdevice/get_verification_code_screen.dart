@@ -218,7 +218,7 @@ class _GetVerificationCodeScreenState
       ),
       child: SizedBox(
         width: double.infinity,
-        height: AppLayout.scaleHeight(context, 56),
+        height: AppLayout.scaleHeight(context, 52),
         child: ElevatedButton(
           onPressed: state.isSendingCode
               ? null

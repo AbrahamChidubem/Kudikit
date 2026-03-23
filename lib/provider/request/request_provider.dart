@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import '../../model/request/request_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -116,7 +117,7 @@ class RequestProvider extends ChangeNotifier {
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       requesterId: 'current_user_id',
       requesterName: 'Current User',
-      requesterPhone: '+234 8124608695',
+      requesterPhone: '+2348012345678',
       amount: _amount!,
       reason: _reason,
       category: _category,
@@ -146,8 +147,10 @@ class RequestProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ✅ Fixed: all Contact() calls now include required `status` and `avatarColor`
-  // isLoading set during fetch so UI can show RequestListShimmer
+  // ✅ Fixed: contacts use distinct realistic phone numbers.
+  // Received/sent requests now sourced from MockRequestData so they stay in
+  // sync with the centralised mock API file.
+  // isLoading set during fetch so UI can show RequestListShimmer.
   Future<void> loadMockData() async {
     if (_isLoading) return; // prevent double-load
     _isLoading = true;
@@ -155,52 +158,54 @@ class RequestProvider extends ChangeNotifier {
 
     // Simulate network latency — remove when wired to real API
     await Future.delayed(const Duration(milliseconds: 800));
+
+    // ── Contacts ─────────────────────────────────────────────────────────────
     _allContacts.addAll([
-      Contact(
+      const Contact(
         id: '1',
         name: 'Kemi Alabi',
-        phone: '+234 8124608695',
+        phone: '+2348031234567',
         status: ContactStatus.onApp,
         avatarColor: AppColors.avatarTeal,
         isVerified: true,
       ),
-      Contact(
+      const Contact(
         id: '2',
         name: 'Asuquo Michael',
-        phone: '+234 8124608695',
+        phone: '+2348051234567',
         status: ContactStatus.onApp,
         avatarColor: AppColors.avatarDark,
         isVerified: true,
       ),
-      Contact(
+      const Contact(
         id: '3',
         name: 'Victor Obisi',
-        phone: '+234 8124608695',
+        phone: '+2348061234567',
         status: ContactStatus.onApp,
         avatarColor: AppColors.avatarOrange,
         isVerified: true,
       ),
-      Contact(
+      const Contact(
         id: '4',
         name: 'Tega Ibrahim',
-        phone: '+234 8124608695',
+        phone: '+2348071234567',
         status: ContactStatus.onApp,
         avatarColor: AppColors.avatarRed,
         isVerified: true,
       ),
-      Contact(
+      const Contact(
         id: '5',
         name: 'Ameachi Uche',
-        phone: '+234 8124608695',
+        phone: '+2348091234567',
         status: ContactStatus.invite,
         avatarColor: AppColors.avatarBlue,
         isInvited: true,
         isVerified: false,
       ),
-      Contact(
+      const Contact(
         id: '6',
         name: 'Paul Adegoke',
-        phone: '+234 8124608695',
+        phone: '+2349011234567',
         status: ContactStatus.invite,
         avatarColor: AppColors.avatarLightBlue,
         isInvited: true,
@@ -214,68 +219,22 @@ class RequestProvider extends ChangeNotifier {
       _allContacts[2],
     ]);
 
-    // Mock received requests
-    _receivedRequests.add(
-      MoneyRequest(
-        id: '1',
-        requesterId: '2',
-        requesterName: 'Kemi Alabi',
-        requesterPhone: '+234 8124608695',
-        amount: 10000.00,
-        category: 'Transportation',
-        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
-        status: RequestStatus.pending,
-        recipientIds: ['current_user'],
-      ),
-    );
+    // ── Requests — sourced from MockRequestData ───────────────────────────────
+    // REQ_001 in the mock is a pending request (received by current user).
+    // REQ_002 in the mock is a paid/sent request.
+    final raw = MockRequestData.requestListResponse['requests'] as List<dynamic>;
+    for (final item in raw) {
+      final map = item as Map<String, dynamic>;
+      final request = MoneyRequest.fromJson(map);
 
-    _receivedRequests.add(
-      MoneyRequest(
-        id: '2',
-        requesterId: '3',
-        requesterName: 'Tega Ibrahim',
-        requesterPhone: '+234 8124608695',
-        amount: 10000.00,
-        category: 'Dinner',
-        createdAt: DateTime.now().subtract(const Duration(days: 1)),
-        status: RequestStatus.partial,
-        paidAmount: 5000.00,
-        recipientIds: ['current_user'],
-      ),
-    );
-
-    _receivedRequests.add(
-      MoneyRequest(
-        id: '3',
-        requesterId: '4',
-        requesterName: 'Victor Obisi',
-        requesterPhone: '+234 8124608695',
-        amount: 10000.00,
-        category: 'Other',
-        createdAt: DateTime.now().subtract(const Duration(days: 3)),
-        status: RequestStatus.expired,
-        recipientIds: ['current_user'],
-      ),
-    );
-
-    // Mock sent request
-    _sentRequests.add(
-      MoneyRequest(
-        id: '4',
-        requesterId: 'current_user',
-        requesterName: 'Asuquo Michael',
-        requesterPhone: '+234 8124608695',
-        amount: 10000.00,
-        reason: 'Dinner',
-        category: 'Transportation',
-        description: 'Group dinner at Ocean Basket',
-        createdAt: DateTime.now().subtract(const Duration(days: 2)),
-        dueDate: DateTime.now().subtract(const Duration(days: 2)),
-        status: RequestStatus.pending,
-        isPrivate: true,
-        recipientIds: ['2'],
-      ),
-    );
+      // REQ_001 — pending incoming request → received list
+      // REQ_002 — paid request → sent list (mirrors a sent + paid scenario)
+      if (request.id == 'REQ_001') {
+        _receivedRequests.add(request);
+      } else {
+        _sentRequests.add(request);
+      }
+    }
 
     _isLoading = false;
     notifyListeners();

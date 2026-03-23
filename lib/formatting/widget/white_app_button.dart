@@ -12,8 +12,8 @@ class WhiteAppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 56,
-      width: 320,
+      height: 52,
+      width: double.infinity,
       child: ElevatedButton(
         style: TextButton.styleFrom(
           padding: const EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),

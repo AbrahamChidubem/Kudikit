@@ -5,16 +5,7 @@ import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/provider/transactionpin/transaction_pin_provider.dart';
 
 
-// =============================================================================
-// CreateTransactionPinScreen
-// -----------------------------------------------------------------------------
-// Two-step screen:
-//   Step 1 – "Create a passcode"   → user enters 4-digit PIN
-//   Step 2 – "Confirm your passcode" → user re-enters PIN
-//
-// Uses AnimatedSwitcher to cross-fade between the two title states.
-// On success → success overlay → navigate to BottomNavBar.
-// =============================================================================
+
 
 class CreateTransactionPinScreen extends ConsumerStatefulWidget {
   /// Set to true when called from Settings (change PIN) to use different nav.

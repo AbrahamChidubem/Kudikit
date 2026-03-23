@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/formatting/widget/color_app_button.dart';
-import 'package:kudipay/formatting/widget/white_app_button.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
 
@@ -10,85 +9,127 @@ class IntroviewPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = AppLayout.height(context);
+    final screenWidth = AppLayout.width(context);
+
     return Scaffold(
-      backgroundColor: Color(0xFFF9F9F9),
+      backgroundColor: AppColors.backgroundScreen,
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: AppLayout.pagePadding(context),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  // Image
-                  Container(
-                    width: double.infinity,
-                    height: 500,
-                    decoration: BoxDecoration(
-                      image: const DecorationImage(
-                        image: AssetImage("assets/images/introview.png"),
-                        fit: BoxFit.fitWidth,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+           
+           
+            SizedBox(
+              width: double.infinity,
+              height: screenHeight * 0.55,
+              child: Image.asset(
+                'assets/images/introview.png',
+                fit: BoxFit.cover,
+                alignment: Alignment.bottomCenter,
+              ),
+            ),
+
             
-                  const SizedBox(height: 15),
-            
-                  // Title
-                   Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 13),
-                    child: Text(
-                      'Join the KudiKit Tribe and start your journey today!',
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 24),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+                    // Title
+                    Text(
+                      'Join the Kudikit Tribe and start\nyour journey today!',
                       textAlign: TextAlign.left,
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 22),
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        height: 1.3,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textDark,
+                        height: 1.35,
                       ),
                     ),
-                  ),
-            
-                  const SizedBox(height: 30),
-            
-                  // Buttons
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 13),
-                    child: Column(
-                      children: [
-                        ColorAppButton(
-                          press: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SignUpScreen(),
-                              ),
-                            );
-                          },
-                          text: 'Get started',
+
+                    SizedBox(height: AppLayout.scaleHeight(context, 32)),
+
+              
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryTeal,
+                          disabledBackgroundColor:
+                              AppColors.primaryTeal.withOpacity(0.5),
+                          elevation: 0,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(28)),
+                          ),
                         ),
-                        const SizedBox(height: 16),
-                        WhiteAppButton(
-                          press: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const LoginPage(),
-                              ),
-                            );
-                          },
-                          text: "Login",
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SignUpScreen(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Get started',
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 17),
+                            color: AppColors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 40),
-                ],
+
+                    SizedBox(height: AppLayout.scaleHeight(context, 14)),
+
+                    // Login button — full width, outlined
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          backgroundColor: AppColors.white,
+                          side: const BorderSide(
+                            color: AppColors.primaryTeal,
+                            width: 1,
+                          ),
+                          shape: const RoundedRectangleBorder(
+                            borderRadius: BorderRadius.all(Radius.circular(28)),
+                          ),
+                        ),
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const LoginPage(),
+                            ),
+                          );
+                        },
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 17),
+                            color: AppColors.primaryTeal,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: AppLayout.scaleHeight(context, 32)),
+                  ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

@@ -6,7 +6,6 @@ import 'package:kudipay/model/transfer/bulk_transfer_model.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/add_recipient_screen.dart';
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
-
 class BulkTransferTemplatesScreen extends ConsumerWidget {
   const BulkTransferTemplatesScreen({Key? key}) : super(key: key);
 
@@ -38,22 +37,34 @@ class BulkTransferTemplatesScreen extends ConsumerWidget {
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
             child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  '36%',
-                  style: TextStyle(
-                    color: Color(0xFF069494),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              child: Stack(
+                children: [
+                  SizedBox(
+                    width: AppLayout.scaleWidth(context, 30),
+                    height: AppLayout.scaleWidth(context, 30),
+                    child: CircularProgressIndicator(
+                      value: 0.36,
+                      strokeWidth: AppLayout.scaleWidth(context, 2),
+                      backgroundColor: const Color(0xFFE0E0E0),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF069494)),
+                    ),
                   ),
-                ),
+                  Positioned.fill(
+                    child: Center(
+                      child: Text(
+                        '36%',
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 12),
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -103,7 +114,8 @@ class BulkTransferTemplatesScreen extends ConsumerWidget {
                     template: template,
                     currencyFormat: currencyFormat,
                     onUseTemplate: () {
-                      ref.read(bulkTransferProvider.notifier)
+                      ref
+                          .read(bulkTransferProvider.notifier)
                           .loadFromTemplate(template);
                       Navigator.pushReplacement(
                         context,
@@ -344,7 +356,7 @@ class _TemplateCard extends StatelessWidget {
           // Use Template Button
           SizedBox(
             width: double.infinity,
-            height: AppLayout.scaleHeight(context, 48),
+            height: AppLayout.scaleHeight(context, 52),
             child: ElevatedButton(
               onPressed: onUseTemplate,
               style: ElevatedButton.styleFrom(

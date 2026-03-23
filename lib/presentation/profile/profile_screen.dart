@@ -10,6 +10,7 @@ import 'package:kudipay/presentation/tier/upgrade_tier_screen.dart';
 // import 'package:kudipay/provider/auth_provider.dart';
 import 'package:kudipay/provider/kyc/kyc_provider.dart';
 import 'package:kudipay/provider/provider.dart';
+import 'package:kudipay/provider/refresh/refresh_provider.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
 
 class UserProfileScreen extends ConsumerStatefulWidget {
@@ -61,8 +62,18 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Column(
+      body: RefreshIndicator(
+        // Refreshes wallet balance + transactions together.
+        // ProfileScreen watches userInfoProvider (a StateProvider) which is
+        // updated by the auth flow, so no separate fetch is needed here.
+        onRefresh: () =>
+            ref.read(refreshProvider.notifier).refreshAll(),
+        color: const Color(0xFF069494),
+        backgroundColor: Colors.white,
+        strokeWidth: 2.5,
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Profile Header Card
@@ -442,8 +453,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
             const SizedBox(height: 100),
           ],
-        ),
-      ),
+        ),               // end Column
+      ),                 // end SingleChildScrollView
+    ),                   // end RefreshIndicator
     );
   }
 

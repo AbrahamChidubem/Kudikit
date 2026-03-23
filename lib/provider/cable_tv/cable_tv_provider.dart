@@ -4,6 +4,7 @@
 // ============================================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/cable_tv/cable_tv_model.dart';
 
 // ============================================================================
@@ -142,17 +143,22 @@ class CableTvNotifier extends StateNotifier<CableTvState> {
         clearAccountDetail: true,
       );
     } else {
-      // Mock expired status for 2343323441 alternate (Image 8 shows expired)
       final isExpired = iucNumber == '2343323441x';
+
+      // Pull the default plan name from MockBillsData so it stays in sync.
+      final packages = MockBillsData.dstvPackagesResponse['packages'] as List;
+      final defaultPlan = (packages.isNotEmpty)
+          ? packages.first['name'] as String
+          : 'DSTV Padi';
 
       state = state.copyWith(
         isValidatingIuc: false,
         isIucInvalid: false,
         accountDetail: CableTvAccountDetail(
           name: 'Adebayo Oluwakemi Peters',
-          decoderNumber: '2343456754',
+          decoderNumber: iucNumber,
           provider: state.selectedProvider.name,
-          currentPlan: state.selectedPlan?.name ?? 'DSTV Confam',
+          currentPlan: state.selectedPlan?.name ?? defaultPlan,
           isExpired: isExpired,
         ),
       );

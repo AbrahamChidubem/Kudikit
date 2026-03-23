@@ -17,7 +17,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
     );
   }
 
-  /// Returns up to 2 uppercase initials from a full name.
+ 
   String _initials(String name) {
     final parts = name.trim().split(RegExp(r'\s+'));
     if (parts.isEmpty) return '';
@@ -77,12 +77,14 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Kindly confirm',
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 16),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                  Center(
+                    child: Text(
+                      'Kindly confirm',
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 16),
+                        fontWeight: FontWeight.w400,
+                        color: Colors.black87,
+                      ),
                     ),
                   ),
                   GestureDetector(
@@ -112,8 +114,8 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                   currencyFormat.format(state.transferData.amount ?? 0),
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 32),
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF069494),
+                    fontWeight: FontWeight.w400,
+                    color: const Color(0xFF389165),
                   ),
                 ),
               ),

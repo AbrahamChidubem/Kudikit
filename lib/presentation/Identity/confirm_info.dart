@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/presentation/transactionpin/transaction_pin_screen.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
@@ -106,7 +105,7 @@ class ConfirmInfoScreen extends ConsumerWidget {
               // Submit Button
               SizedBox(
                 width: double.infinity,
-                height: 56,
+                height: 52,
                 child: ElevatedButton(
                   onPressed: () => _handleSubmit(context, ref),
                   style: ElevatedButton.styleFrom(

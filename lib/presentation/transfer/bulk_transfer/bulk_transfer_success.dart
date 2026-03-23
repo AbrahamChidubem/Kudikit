@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_detail_screen.dart';
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
@@ -252,7 +253,7 @@ class _BulkTransferSuccessDialogState
               children: [
                 Expanded(
                   child: SizedBox(
-                    height: AppLayout.scaleHeight(context, 54),
+                    height: AppLayout.scaleHeight(context, 52),
                     child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(context); // Close success dialog
@@ -266,8 +267,8 @@ class _BulkTransferSuccessDialogState
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(
-                          color: Color(0xFF389165),
-                          width: 1.5,
+                          color: AppColors.primaryTeal,
+                          width: 0.5,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(27),
@@ -287,7 +288,7 @@ class _BulkTransferSuccessDialogState
                 SizedBox(width: AppLayout.scaleWidth(context, 12)),
                 Expanded(
                   child: SizedBox(
-                    height: AppLayout.scaleHeight(context, 54),
+                    height: AppLayout.scaleHeight(context, 52),
                     child: ElevatedButton(
                       onPressed: () {
                         if (_saveAsTemplate) {
@@ -297,7 +298,7 @@ class _BulkTransferSuccessDialogState
                         Navigator.of(context).popUntil((route) => route.isFirst);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF389165),
+                        backgroundColor:  AppColors.primaryTeal,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(27),
                         ),

@@ -228,7 +228,7 @@ class _UploadSelfieScreenState extends ConsumerState<UploadSelfieScreen> {
       ),
       child: SizedBox(
         width: double.infinity,
-        height: AppLayout.scaleHeight(context, 56),
+        height: AppLayout.scaleHeight(context, 52),
         child: ElevatedButton(
           onPressed: _selfie != null
               ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => const VerificationInProgressScreen()))

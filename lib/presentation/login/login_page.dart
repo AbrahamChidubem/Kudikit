@@ -41,11 +41,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _isLoading = false;
 
   final ValueNotifier<String?> _errorNotifier = ValueNotifier<String?>(null);
+  // Drives the Continue button — true only when the password field has text.
+  final ValueNotifier<bool> _passwordNotEmpty = ValueNotifier<bool>(false);
 
   @override
   void initState() {
     super.initState();
-    _passwordCtrl.addListener(_clearErrorOnType);
+    _passwordCtrl.addListener(_onPasswordChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
     });
@@ -53,16 +55,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   void dispose() {
-    _passwordCtrl.removeListener(_clearErrorOnType);
+    _passwordCtrl.removeListener(_onPasswordChanged);
     _passwordCtrl.dispose();
     _errorNotifier.dispose();
+    _passwordNotEmpty.dispose();
     super.dispose();
   }
 
-  void _clearErrorOnType() {
+  void _onPasswordChanged() {
+    // Clear the error as soon as the user starts typing again.
     if (_errorNotifier.value != null) {
       _errorNotifier.value = null;
     }
+    // Keep the button state in sync with whether there is any text.
+    _passwordNotEmpty.value = _passwordCtrl.text.isNotEmpty;
   }
 
   void _setupConnectivityListener() {
@@ -447,6 +453,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 _ContinueButton(
                   isLoading: _isLoading,
                   isOnline: isOnline,
+                  passwordNotEmpty: _passwordNotEmpty,
                   onPressed: () => _handleLogin(user),
                 ),
 
@@ -669,45 +676,55 @@ class _PasswordField extends StatelessWidget {
 class _ContinueButton extends StatelessWidget {
   final bool isLoading;
   final bool isOnline;
+  final ValueNotifier<bool> passwordNotEmpty;
   final VoidCallback onPressed;
 
   const _ContinueButton({
     required this.isLoading,
     required this.isOnline,
+    required this.passwordNotEmpty,
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final disabled = isLoading || !isOnline;
-    return SizedBox(
-      width: double.infinity,
-      height: AppLayout.scaleHeight(context, 54),
-      child: ElevatedButton(
-        onPressed: disabled ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF069494),
-          disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.5),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(AppLayout.scaleWidth(context, 32)),
-          ),
-        ),
-        child: isLoading
-            ? const AppLoadingIndicator.button()
-            : Text(
-                isOnline ? 'Continue' : 'No Internet Connection',
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 16),
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
+    // ValueListenableBuilder rebuilds only this button on each keystroke,
+    // leaving the rest of the form untouched.
+    return ValueListenableBuilder<bool>(
+      valueListenable: passwordNotEmpty,
+      builder: (context, hasText, _) {
+        final disabled = isLoading || !isOnline || !hasText;
+        return SizedBox(
+          width: double.infinity,
+          height: AppLayout.scaleHeight(context, 54),
+          child: ElevatedButton(
+            onPressed: disabled ? null : onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF069494),
+              disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.5),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 32)),
               ),
-      ),
+            ),
+            child: isLoading
+                ? const AppLoadingIndicator.button()
+                : Text(
+                    isOnline ? 'Continue' : 'No Internet Connection',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+          ),
+        );
+      },
     );
   }
 }
+
 
 // =============================================================================
 // Sign-up row

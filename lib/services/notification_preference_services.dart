@@ -1,87 +1,95 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/services/storage_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationPreferencesService {
-  final String baseUrl = 'https://api.yourapp.com'; // Replace with your API URL
+  final String baseUrl = 'https://api.yourapp.com';
   final StorageService _storageService = StorageService();
 
-  /// Fetch notification preferences from server
+  /// Fetch notification preferences.
+  /// Returns data from [MockNotificationData] during development.
+  /// Replace the mock block with the real HTTP call when the backend is ready.
   Future<NotificationPreferences> fetchPreferences() async {
-    try {
-      final token = await _storageService.getAuthToken();
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(milliseconds: 400));
+    return NotificationPreferences.fromJson(
+      MockNotificationData.preferencesResponse['preferences']
+          as Map<String, dynamic>,
+    );
 
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/notifications/preferences'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return NotificationPreferences.fromJson(data['preferences']);
-      } else {
-        throw Exception('Failed to load notification preferences');
-      }
-    } catch (e) {
-      // Return default preferences if API fails
-      return NotificationPreferences();
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.get(
+    //     Uri.parse('$baseUrl/api/notifications/preferences'),
+    //     headers: {
+    //       'Authorization': 'Bearer $token',
+    //       'Content-Type': 'application/json',
+    //     },
+    //   );
+    //   if (response.statusCode == 200) {
+    //     final data = json.decode(response.body);
+    //     return NotificationPreferences.fromJson(data['preferences']);
+    //   } else {
+    //     throw Exception('Failed to load notification preferences');
+    //   }
+    // } catch (e) {
+    //   return NotificationPreferences();
+    // }
   }
 
   /// Update notification preferences on server
   Future<bool> updatePreferences(NotificationPreferences preferences) async {
-    try {
-      final token = await _storageService.getAuthToken();
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Persist locally so toggles survive a hot-restart during development.
+    await savePreferencesLocally(preferences);
+    return MockNotificationData.updatePreferencesSuccess['success'] as bool;
 
-      final response = await http.put(
-        Uri.parse('$baseUrl/api/notifications/preferences'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'preferences': preferences.toJson(),
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        return true;
-      } else {
-        throw Exception('Failed to update notification preferences');
-      }
-    } catch (e) {
-      print('Error updating preferences: $e');
-      return false;
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.put(
+    //     Uri.parse('$baseUrl/api/notifications/preferences'),
+    //     headers: {
+    //       'Authorization': 'Bearer $token',
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: json.encode({'preferences': preferences.toJson()}),
+    //   );
+    //   return response.statusCode == 200;
+    // } catch (e) {
+    //   print('Error updating preferences: $e');
+    //   return false;
+    // }
   }
 
   /// Update a single notification preference
   Future<bool> updateSinglePreference(String key, bool value) async {
-    try {
-      final token = await _storageService.getAuthToken();
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(milliseconds: 200));
+    return true;
 
-      final response = await http.patch(
-        Uri.parse('$baseUrl/api/notifications/preferences/$key'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'value': value,
-        }),
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      print('Error updating preference: $e');
-      return false;
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.patch(
+    //     Uri.parse('$baseUrl/api/notifications/preferences/$key'),
+    //     headers: {
+    //       'Authorization': 'Bearer $token',
+    //       'Content-Type': 'application/json',
+    //     },
+    //     body: json.encode({'value': value}),
+    //   );
+    //   return response.statusCode == 200;
+    // } catch (e) {
+    //   print('Error updating preference: $e');
+    //   return false;
+    // }
   }
 
   /// Save preferences locally using SharedPreferences

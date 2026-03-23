@@ -9,7 +9,7 @@ export 'transaction/transaction_provider.dart';
 export 'Identity_verify/identity_verify_provider.dart';
 export 'connectivity/connectivity_provider.dart';
 export 'device_linking/device_linking_provider.dart';
-export 'P2P_transfer/p2p_transfer_provider.dart';         // FIXED: was p2p_transfer_provider.dart
+export 'P2P_transfer/p2p_transfer_provider.dart';         
 export 'notification/notification_provider.dart';
 export 'email/email_provider.dart';
 export 'wallet/wallet_provider.dart';

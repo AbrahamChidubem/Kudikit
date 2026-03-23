@@ -18,7 +18,6 @@ class UssdCodeDisplayScreen extends ConsumerStatefulWidget {
 class _UssdCodeDisplayScreenState
     extends ConsumerState<UssdCodeDisplayScreen> {
   Timer? _countdownTimer;
-  // Match exact design value: 04:24
   Duration _timeRemaining = const Duration(minutes: 4, seconds: 24);
 
   @override
@@ -55,7 +54,6 @@ class _UssdCodeDisplayScreenState
     showDialog(
       context: context,
       barrierDismissible: false,
-      // Dark overlay matches the tinted screenshot in Image 1
       barrierColor: Colors.black.withOpacity(0.55),
       builder: (ctx) => _ExpiredDialog(
         ussdCode: ref.read(ussdTransferProvider).data?.ussdCode ?? '',
@@ -237,9 +235,7 @@ class _UssdCodeDisplayScreenState
     );
   }
 
-  // ── Countdown — plain spaced digits with colon, matching design exactly ───
-  // Design shows:  0   4  :  2   4
-  // Each digit is its own text widget with generous spacing → no boxes.
+  
   Widget _buildCountdown(BuildContext context) {
     final totalMinutes = _timeRemaining.inMinutes;
     final seconds = _timeRemaining.inSeconds % 60;

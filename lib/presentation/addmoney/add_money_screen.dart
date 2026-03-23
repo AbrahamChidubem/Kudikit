@@ -11,7 +11,7 @@ import 'package:kudipay/presentation/bankdeposit/ussd_code_display_screen.dart';
 import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
 
 import 'package:kudipay/provider/funding/funding_provider.dart';
-
+import 'package:kudipay/provider/refresh/refresh_provider.dart';
 
 class AddMoneyScreen extends ConsumerStatefulWidget {
   const AddMoneyScreen({Key? key}) : super(key: key);
@@ -77,27 +77,36 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
       return _buildErrorView(context, optionsState.error!);
     }
 
-    return SingleChildScrollView(
-      padding: AppLayout.pagePadding(context),
-      child: Column(
-        children: [
-          if (optionsState.options.isNotEmpty)
-            _buildBankTransferCard(context, accountDetailsState),
-          SizedBox(height: AppLayout.scaleHeight(context, 16)),
-          _buildOrDivider(context),
-          SizedBox(height: AppLayout.scaleHeight(context, 16)),
-          ...optionsState.options
-              .where((option) => option.type != AddMoneyType.bankTransfer)
-              .map((option) => Padding(
-                    padding: EdgeInsets.only(
-                      bottom: AppLayout.scaleHeight(context, 12),
-                    ),
-                    child: _buildAddMoneyOption(context, option),
-                  ))
-              .toList(),
-        ],
-      ),
-    );
+    return RefreshIndicator(
+      // Refreshes account details + wallet balance in one pull.
+      onRefresh: () => ref.read(refreshProvider.notifier).refreshAll(),
+      color: const Color(0xFF069494),
+      backgroundColor: Colors.white,
+      strokeWidth: 2.5,
+      displacement: 60,
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: AppLayout.pagePadding(context),
+        child: Column(
+          children: [
+            if (optionsState.options.isNotEmpty)
+              _buildBankTransferCard(context, accountDetailsState),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            _buildOrDivider(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            ...optionsState.options
+                .where((option) => option.type != AddMoneyType.bankTransfer)
+                .map((option) => Padding(
+                      padding: EdgeInsets.only(
+                        bottom: AppLayout.scaleHeight(context, 12),
+                      ),
+                      child: _buildAddMoneyOption(context, option),
+                    ))
+                .toList(),
+          ], // end Column children
+        ), // end Column
+      ), // end SingleChildScrollView
+    ); // end RefreshIndicator
   }
 
   Widget _buildBankTransferCard(
@@ -554,10 +563,9 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               child: Text(
                 'Got it',
                 style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 16),
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white
-                ),
+                    fontSize: AppLayout.fontSize(context, 16),
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white),
               ),
             ),
           ],

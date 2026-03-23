@@ -42,23 +42,34 @@ class _BulkTransferUploadFileScreenState
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
             child: Center(
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5E9),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  '36%',
-                  style: TextStyle(
-                    color: Color(0xFF069494),
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+              child: Stack(
+                children: [
+                  SizedBox(
+                    width: AppLayout.scaleWidth(context, 30),
+                    height: AppLayout.scaleWidth(context, 30),
+                    child: CircularProgressIndicator(
+                      value: 0.36,
+                      strokeWidth: AppLayout.scaleWidth(context, 2),
+                      backgroundColor: const Color(0xFFE0E0E0),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF069494)),
+                    ),
                   ),
-                ),
+                  Positioned.fill(
+                    child: Center(
+                      child: Text(
+                        '36%',
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 12),
+                          fontWeight: FontWeight.w400,
+                          color: Colors.grey[700],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -464,8 +475,7 @@ class _BulkTransferUploadFileScreenState
     // Copy a ready-to-use CSV template to the clipboard.
     // Users can paste this into any spreadsheet app, fill in their data,
     // save as .csv, and upload it here.
-    const template =
-        'account_number,account_name,bank_name,amount,narration\n'
+    const template = 'account_number,account_name,bank_name,amount,narration\n'
         '0123456789,John Doe,GTBank,5000,Salary payment\n'
         '9876543210,Jane Smith,Access Bank,10000,Invoice settlement\n';
     Clipboard.setData(const ClipboardData(text: template));

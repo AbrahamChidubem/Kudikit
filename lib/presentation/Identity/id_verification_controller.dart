@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/constant/id_type.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/IDdocument/id_verification_state.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
 
@@ -38,11 +39,17 @@ class IdVerificationController
 
     await Future.delayed(const Duration(seconds: 2));
 
-    // simulate response
+    // Use MockKycData so the verified name comes from the centralised mock,
+    // not a literal string buried in the controller.
+    final mockResponse = MockKycData.verifyIdentitySuccess(
+      idNumber: idNumber,
+      idType: state.idType.label,
+    );
+
     state = state.copyWith(
       status: VerificationStatus.success,
       data: {
-        'name': 'Chidubem Abraham',
+        'name': mockResponse['full_name'] as String,
         'idType': state.idType.label,
       },
     );

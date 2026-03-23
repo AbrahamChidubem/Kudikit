@@ -1,85 +1,60 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/services/storage_services.dart';
 
 class EmailChangeService {
-  final String baseUrl = 'https://api.yourapp.com'; // Replace with your API URL
+  final String baseUrl = 'https://api.yourapp.com';
   final StorageService _storageService = StorageService();
 
   /// Request OTP for email change
   Future<Map<String, dynamic>> requestOTP(String currentEmail) async {
-    try {
-      final token = await _storageService.getAuthToken();
-      
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/user/email/request-otp'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'email': currentEmail,
-        }),
-      );
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(seconds: 1));
+    return MockEmailChangeData.requestOtpSuccess(email: maskEmail(currentEmail));
 
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': data['message'] ?? 'OTP sent successfully',
-          'maskedEmail': data['maskedEmail'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to send OTP',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.post(
+    //     Uri.parse('$baseUrl/api/user/email/request-otp'),
+    //     headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    //     body: json.encode({'email': currentEmail}),
+    //   );
+    //   final data = json.decode(response.body);
+    //   if (response.statusCode == 200) {
+    //     return {'success': true, 'message': data['message'] ?? 'OTP sent successfully', 'maskedEmail': data['maskedEmail']};
+    //   } else {
+    //     return {'success': false, 'message': data['message'] ?? 'Failed to send OTP'};
+    //   }
+    // } catch (e) {
+    //   return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    // }
   }
 
   /// Verify OTP
   Future<Map<String, dynamic>> verifyOTP(String otp) async {
-    try {
-      final token = await _storageService.getAuthToken();
-      
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/user/email/verify-otp'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'otp': otp,
-        }),
-      );
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(seconds: 1));
+    return MockEmailChangeData.verifyOtpSuccess;
 
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': data['message'] ?? 'OTP verified successfully',
-          'verificationToken': data['verificationToken'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Invalid OTP',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.post(
+    //     Uri.parse('$baseUrl/api/user/email/verify-otp'),
+    //     headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    //     body: json.encode({'otp': otp}),
+    //   );
+    //   final data = json.decode(response.body);
+    //   if (response.statusCode == 200) {
+    //     return {'success': true, 'message': data['message'] ?? 'OTP verified successfully', 'verificationToken': data['verificationToken']};
+    //   } else {
+    //     return {'success': false, 'message': data['message'] ?? 'Invalid OTP'};
+    //   }
+    // } catch (e) {
+    //   return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    // }
   }
 
   /// Change email address
@@ -87,94 +62,58 @@ class EmailChangeService {
     required String newEmail,
     required String verificationToken,
   }) async {
-    try {
-      final token = await _storageService.getAuthToken();
-      
-      final response = await http.put(
-        Uri.parse('$baseUrl/api/user/email/change'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-        body: json.encode({
-          'newEmail': newEmail,
-          'verificationToken': verificationToken,
-        }),
-      );
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(seconds: 1));
+    return MockEmailChangeData.changeEmailSuccess(newEmail: newEmail);
 
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': data['message'] ?? 'Email changed successfully',
-          'newEmail': data['newEmail'],
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to change email',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.put(
+    //     Uri.parse('$baseUrl/api/user/email/change'),
+    //     headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    //     body: json.encode({'newEmail': newEmail, 'verificationToken': verificationToken}),
+    //   );
+    //   final data = json.decode(response.body);
+    //   if (response.statusCode == 200) {
+    //     return {'success': true, 'message': data['message'] ?? 'Email changed successfully', 'newEmail': data['newEmail']};
+    //   } else {
+    //     return {'success': false, 'message': data['message'] ?? 'Failed to change email'};
+    //   }
+    // } catch (e) {
+    //   return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    // }
   }
 
   /// Resend OTP
   Future<Map<String, dynamic>> resendOTP() async {
-    try {
-      final token = await _storageService.getAuthToken();
-      
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/user/email/resend-otp'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
+    // ── Mock implementation ───────────────────────────────────────────────────
+    await Future.delayed(const Duration(seconds: 1));
+    return MockEmailChangeData.requestOtpSuccess();
 
-      final data = json.decode(response.body);
-
-      if (response.statusCode == 200) {
-        return {
-          'success': true,
-          'message': data['message'] ?? 'OTP resent successfully',
-        };
-      } else {
-        return {
-          'success': false,
-          'message': data['message'] ?? 'Failed to resend OTP',
-        };
-      }
-    } catch (e) {
-      return {
-        'success': false,
-        'message': 'Network error: ${e.toString()}',
-      };
-    }
+    // ── Real implementation ───────────────────────────────────────────────────
+    // try {
+    //   final token = await _storageService.getAuthToken();
+    //   final response = await http.post(
+    //     Uri.parse('$baseUrl/api/user/email/resend-otp'),
+    //     headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    //   );
+    //   final data = json.decode(response.body);
+    //   if (response.statusCode == 200) {
+    //     return {'success': true, 'message': data['message'] ?? 'OTP resent successfully'};
+    //   } else {
+    //     return {'success': false, 'message': data['message'] ?? 'Failed to resend OTP'};
+    //   }
+    // } catch (e) {
+    //   return {'success': false, 'message': 'Network error: ${e.toString()}'};
+    // }
   }
 
-  /// Get current user email
+  /// Get current user email — reads from StorageService in mock mode
   Future<String?> getCurrentEmail() async {
     try {
-      final token = await _storageService.getAuthToken();
-      
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/user/profile'),
-        headers: {
-          'Authorization': 'Bearer $token',
-          'Content-Type': 'application/json',
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['email'];
-      }
+      final user = await _storageService.getUserModel();
+      return user?.email;
     } catch (e) {
       print('Error getting current email: $e');
     }
@@ -184,20 +123,13 @@ class EmailChangeService {
   /// Mask email for display (e.g., a****@gmail.com)
   String maskEmail(String email) {
     if (email.isEmpty) return '';
-    
     final parts = email.split('@');
     if (parts.length != 2) return email;
-    
     final username = parts[0];
     final domain = parts[1];
-    
-    if (username.length <= 2) {
-      return '${username[0]}***@$domain';
-    }
-    
+    if (username.length <= 2) return '${username[0]}***@$domain';
     final visibleStart = username[0];
     final maskedPart = '*' * (username.length - 1);
-    
     return '$visibleStart$maskedPart@$domain';
   }
 }

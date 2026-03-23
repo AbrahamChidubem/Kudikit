@@ -4,6 +4,7 @@
 // ============================================================================
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/electricity/electricity_model.dart';
 
 // ============================================================================
@@ -140,15 +141,18 @@ class ElectricityNotifier extends StateNotifier<ElectricityState> {
         clearAccountDetail: true,
       );
     } else {
+      final mock = MockBillsData.validateMeterSuccess(
+        meterNumber: meterNumber,
+      );
       state = state.copyWith(
         isValidatingMeter: false,
         isMeterInvalid: false,
         accountDetail: ElectricityAccountDetail(
-          name: 'Adebayo Oluwakemi Peters',
-          meterNumber: '1234567890',
+          name: mock['name'] as String,
+          meterNumber: mock['meter_number'] as String,
           meterType: state.meterType,
           provider: state.selectedProvider.name,
-          location: '12 Admiralty Way, Lekki',
+          location: mock['location'] as String,
         ),
       );
     }

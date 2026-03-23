@@ -12,7 +12,7 @@ class ProcessingPaymentScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: Color(0xFFF9F9F9),
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -21,7 +21,7 @@ class ProcessingPaymentScreen extends StatelessWidget {
               width: 40,
               height: 40,
               child: CircularProgressIndicator(
-                strokeWidth: 3,
+                strokeWidth: 1,
                 valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
                 backgroundColor: Color(0xFFD0EDED),
               ),

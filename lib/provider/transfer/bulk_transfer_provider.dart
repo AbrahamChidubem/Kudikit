@@ -143,8 +143,8 @@ final bulkTransferTemplatesProvider =
           id: '2',
           name: 'Jane Smith',
           accountType: TransferAccountType.kudikit,
-          accountNumber: '08124608695',
-          phoneNumber: '08124608695',
+          accountNumber: '8001234567',
+          phoneNumber: '+2348001234567',
           amount: 60000,
         ),
       ],
@@ -324,14 +324,19 @@ class IdentityVerificationService {
       throw VerificationException('Invalid $idType format');
     }
 
+    // Use centralised mock data — no more hardcoded names in provider files.
+    final mock = MockKycData.verifyIdentitySuccess(
+      idNumber: idNumber,
+      idType: idType,
+    );
     return UserVerificationData(
-      firstName: 'MICHAEL',
-      middleName: 'ASUQUO',
-      lastName: 'TOLUWLASE',
-      fullName: 'MICHAEL ASUQUO TOLUWLASE',
-      dateOfBirth: DateTime(1990, 5, 15),
-      phoneNumber: '08012345678',
-      gender: 'Male',
+      firstName: mock['first_name'] as String,
+      middleName: mock['middle_name'] as String,
+      lastName: mock['last_name'] as String,
+      fullName: mock['full_name'] as String,
+      dateOfBirth: DateTime.parse(mock['date_of_birth'] as String),
+      phoneNumber: mock['phone_number'] as String,
+      gender: mock['gender'] as String,
       idNumber: idNumber,
       idType: idType,
     );

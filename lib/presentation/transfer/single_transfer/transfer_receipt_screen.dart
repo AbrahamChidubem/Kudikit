@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
-
 import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
 import 'package:kudipay/provider/bill/bill_provider.dart';
-
 import 'package:kudipay/provider/provider.dart';
-import 'transfer_amount_screen.dart';
-import 'bank_selection_bottom_sheet.dart';
+import 'package:kudipay/presentation/transfer/single_transfer/transfer_amount_screen.dart';
+import 'package:kudipay/presentation/transfer/single_transfer/bank_selection_bottom_sheet.dart';
 
 class TransferRecipientScreen extends ConsumerStatefulWidget {
   const TransferRecipientScreen({Key? key}) : super(key: key);
@@ -70,9 +69,8 @@ class _TransferRecipientScreenState
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(p2pTransferProvider);
-    final isInputEmpty = _phoneController.text.isEmpty;
     return Scaffold(
-      backgroundColor:  AppColors.backgroundScreen,
+      backgroundColor: AppColors.backgroundScreen,
       appBar: _buildAppBar(context),
       body: Column(
         children: [
@@ -128,9 +126,9 @@ class _TransferRecipientScreenState
         horizontal: AppLayout.scaleWidth(context, 24),
         vertical: AppLayout.scaleHeight(context, 12),
       ),
-      decoration: const BoxDecoration(
-        color: Color(0xFFD5F2ED),
-      ),
+      decoration: BoxDecoration(
+          color: const Color(0xFFD5F2ED),
+          borderRadius: BorderRadius.circular(10)),
       child: Text(
         'Free Transfer to Kudikit accounts',
         textAlign: TextAlign.center,
@@ -156,10 +154,10 @@ class _TransferRecipientScreenState
       child: TabBar(
         controller: _tabController,
         indicatorSize: TabBarIndicatorSize.tab,
-        indicator: UnderlineTabIndicator(
+        indicator: const UnderlineTabIndicator(
           borderSide: BorderSide(
             width: 2,
-            color: const Color(0xFF339992),
+            color: Color(0xFF339992),
           ),
         ),
         labelColor: const Color(0xFF069494),
@@ -232,13 +230,13 @@ class _TransferRecipientScreenState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.05),
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -282,16 +280,16 @@ class _TransferRecipientScreenState
                 borderRadius: BorderRadius.circular(8),
                 borderSide: const BorderSide(
                   color: Color(0xFF069494),
-                  width: 2,
+                  width: 0.5,
                 ),
               ),
               suffixIcon: hasRecipient
-                  ? const Icon(Icons.check_circle, color: Color(0xFF069494))
+                  ? const Icon(Icons.check_circle_outline_rounded,
+                      color: Color(0xFF069494))
                   : null,
               counterText: '',
             ),
             onChanged: (value) {
-              // Don't auto-validate for other bank, wait for bank selection
               setState(() {});
             },
           ),
@@ -308,7 +306,6 @@ class _TransferRecipientScreenState
                         setState(() {
                           _selectedBank = bank;
                         });
-                        // Validate account with selected bank
                         ref.read(p2pTransferProvider.notifier).validateAccount(
                               _accountController.text,
                             );
@@ -390,10 +387,14 @@ class _TransferRecipientScreenState
               ),
               child: Row(
                 children: [
-                  Icon(
-                    Icons.check_circle,
-                    color: const Color(0xFF069494),
-                    size: AppLayout.scaleWidth(context, 16),
+                  SvgPicture.asset(
+                    'assets/icons/check.svg',
+                    width: AppLayout.scaleWidth(context, 12),
+                    height: AppLayout.scaleWidth(context, 12),
+                    colorFilter: const ColorFilter.mode(
+                      Color(0xFF069494),
+                      BlendMode.srcIn,
+                    ),
                   ),
                   SizedBox(width: AppLayout.scaleWidth(context, 8)),
                   Text(
@@ -467,13 +468,13 @@ class _TransferRecipientScreenState
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.05),
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -636,7 +637,7 @@ class _TransferRecipientScreenState
           // Continue button
           SizedBox(
             width: double.infinity,
-            height: AppLayout.scaleHeight(context, 48),
+            height: AppLayout.scaleHeight(context, 52),
             child: ElevatedButton(
               onPressed: hasRecipient && !state.isValidatingAccount
                   ? () {

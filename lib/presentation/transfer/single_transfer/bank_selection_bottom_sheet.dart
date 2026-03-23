@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 
 class Bank {
   final String name;
@@ -14,6 +15,24 @@ class Bank {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Shared provider — single source of truth for all bank lists in the app.
+// Reads from MockAddMoneyData.banksResponse in mock_api_data.dart.
+// TODO: Replace with a FutureProvider that calls GET $kBaseUrl/banks when
+//       the backend is ready.
+// ---------------------------------------------------------------------------
+final banksProvider = Provider<List<Bank>>((ref) {
+  final raw = MockAddMoneyData.banksResponse['banks'] as List<dynamic>;
+  return raw.map((b) {
+    final map = b as Map<String, dynamic>;
+    return Bank(
+      name: map['name'] as String,
+      code: map['code'] as String,
+      logo: map['logo'] as String?,
+    );
+  }).toList();
+});
+
 class BankSelectionBottomSheet extends ConsumerStatefulWidget {
   final Function(Bank) onBankSelected;
 
@@ -22,12 +41,14 @@ class BankSelectionBottomSheet extends ConsumerStatefulWidget {
     required this.onBankSelected,
   }) : super(key: key);
 
-  static void show(BuildContext context, {required Function(Bank) onBankSelected}) {
+  static void show(BuildContext context,
+      {required Function(Bank) onBankSelected}) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => BankSelectionBottomSheet(onBankSelected: onBankSelected),
+      builder: (context) =>
+          BankSelectionBottomSheet(onBankSelected: onBankSelected),
     );
   }
 
@@ -41,33 +62,19 @@ class _BankSelectionBottomSheetState
   final TextEditingController _searchController = TextEditingController();
   List<Bank> _filteredBanks = [];
 
-  final List<Bank> _banks = const [
-    Bank(name: 'Access Bank', code: '044'),
-    Bank(name: 'Citibank', code: '023'),
-    Bank(name: 'Diamond Bank', code: '063'),
-    Bank(name: 'Ecobank Nigeria', code: '050'),
-    Bank(name: 'Fidelity Bank', code: '070'),
-    Bank(name: 'First Bank of Nigeria', code: '011'),
-    Bank(name: 'First City Monument Bank', code: '214'),
-    Bank(name: 'Guaranty Trust Bank', code: '058'),
-    Bank(name: 'Heritage Bank', code: '030'),
-    Bank(name: 'Keystone Bank', code: '082'),
-    Bank(name: 'Polaris Bank', code: '076'),
-    Bank(name: 'Providus Bank', code: '101'),
-    Bank(name: 'Stanbic IBTC Bank', code: '221'),
-    Bank(name: 'Standard Chartered Bank', code: '068'),
-    Bank(name: 'Sterling Bank', code: '232'),
-    Bank(name: 'Union Bank of Nigeria', code: '032'),
-    Bank(name: 'United Bank for Africa', code: '033'),
-    Bank(name: 'Unity Bank', code: '215'),
-    Bank(name: 'Wema Bank', code: '035'),
-    Bank(name: 'Zenith Bank', code: '057'),
-  ];
+ 
 
   @override
   void initState() {
     super.initState();
-    _filteredBanks = _banks;
+   
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {
+          _filteredBanks = ref.read(banksProvider);
+        });
+      }
+    });
   }
 
   @override
@@ -77,13 +84,14 @@ class _BankSelectionBottomSheetState
   }
 
   void _filterBanks(String query) {
+    final allBanks = ref.read(banksProvider);
     setState(() {
       if (query.isEmpty) {
-        _filteredBanks = _banks;
+        _filteredBanks = allBanks;
       } else {
-        _filteredBanks = _banks
-            .where((bank) =>
-                bank.name.toLowerCase().contains(query.toLowerCase()))
+        _filteredBanks = allBanks
+            .where(
+                (bank) => bank.name.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });
@@ -94,7 +102,7 @@ class _BankSelectionBottomSheetState
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: const BoxDecoration(
-        color:  Color(0xFFF9F9F9),
+        color: Color(0xFFF9F9F9),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -103,7 +111,7 @@ class _BankSelectionBottomSheetState
       child: SafeArea(
         child: Column(
           children: [
-            // Header
+            
             Padding(
               padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
               child: Row(
@@ -127,7 +135,7 @@ class _BankSelectionBottomSheetState
               ),
             ),
 
-            // Search bar
+           
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: AppLayout.scaleWidth(context, 20),
@@ -165,7 +173,7 @@ class _BankSelectionBottomSheetState
 
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Bank list
+            
             Expanded(
               child: ListView.separated(
                 padding: EdgeInsets.symmetric(

@@ -7,6 +7,7 @@ import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/request/request_detail_screen.dart';
 import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
+import 'package:kudipay/provider/refresh/refresh_provider.dart';
 
 import '../../model/request/request_model.dart';
 
@@ -149,17 +150,26 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
 
           // ── Tab content ──────────────────────────────────────────────────
           Expanded(
-            child: provider.isLoading
-                ? const RequestListShimmer(itemCount: 5)
-                : TabBarView(
-                    controller: _tabController,
-                    children: [
-                      _buildReceivedTab(provider),
-                      _buildSentTab(provider),
-                      _buildPaidTab(provider),
-                      _buildExpiredTab(provider),
-                    ],
-                  ),
+            child: RefreshIndicator(
+              // Full refresh: wallet + transactions + requests all update together.
+              onRefresh: () =>
+                  ref.read(refreshProvider.notifier).refreshAll(),
+              color: const Color(0xFF069494),
+              backgroundColor: Colors.white,
+              strokeWidth: 2.5,
+              displacement: 60,
+              child: provider.isLoading
+                  ? const RequestListShimmer(itemCount: 5)
+                  : TabBarView(
+                      controller: _tabController,
+                      children: [
+                        _buildReceivedTab(provider),
+                        _buildSentTab(provider),
+                        _buildPaidTab(provider),
+                        _buildExpiredTab(provider),
+                      ],
+                    ),
+            ),
           ),
         ],
       ),

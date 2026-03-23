@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({Key? key}) : super(key: key);
@@ -11,8 +12,34 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
-  final List<_FaqItem> _faqs = const [
-    _FaqItem(
+  // ---------------------------------------------------------------------------
+  // Tier limits are sourced from MockTierData.tierRequirementsResponse so that
+  // a single edit to mock_api_data.dart propagates here automatically.
+  // TODO: When a backend is available, replace this with a provider/API call.
+  // ---------------------------------------------------------------------------
+  static String _buildTierLimitsAnswer() {
+    final tiers =
+        MockTierData.tierRequirementsResponse['tiers'] as List<dynamic>;
+    final t1 = tiers.firstWhere((t) => (t as Map)['tier'] == 1)
+        as Map<String, dynamic>;
+    final t2 = tiers.firstWhere((t) => (t as Map)['tier'] == 2)
+        as Map<String, dynamic>;
+    final t1Daily = t1['daily_limit'] as num;
+    final t2Daily = t2['daily_limit'] as num;
+
+    String _fmt(num v) {
+      if (v >= 1000000) return '₦${(v / 1000000).toStringAsFixed(0)}M';
+      if (v >= 1000) return '₦${(v / 1000).toStringAsFixed(0)},000';
+      return '₦$v';
+    }
+
+    return 'Tier 1 (Basic) accounts can transact up to ${_fmt(t1Daily)} daily. '
+        'Tier 2 (Pro) allows up to ${_fmt(t2Daily)} daily, and Tier 3 (Mega) '
+        'has significantly higher limits. Upgrade your tier for higher limits.';
+  }
+
+  late final List<_FaqItem> _faqs = [
+    const _FaqItem(
       question: 'How do I add money to my wallet?',
       answer:
           'You can add money via Bank Transfer, Card Top-up, Cash Deposit, Bank USSD, or QR Code. Go to Home → Add Money and choose a method.',
@@ -29,8 +56,7 @@ class _SupportScreenState extends State<SupportScreen> {
     ),
     _FaqItem(
       question: 'What are the transaction limits?',
-      answer:
-          'Tier 1 accounts can transact up to ₦50,000 daily. Tier 2 allows up to ₦200,000, and Tier 3 has no limits. Upgrade your tier for higher limits.',
+      answer: _buildTierLimitsAnswer(),
     ),
     _FaqItem(
       question: 'How do I reset my transaction PIN?',
@@ -212,7 +238,7 @@ class _SupportScreenState extends State<SupportScreen> {
               ),
               child: Icon(
                 icon,
-                color: AppColors.primaryTeal ,
+                color: AppColors.primaryTeal,
                 size: AppLayout.scaleWidth(context, 18),
               ),
             ),
@@ -313,7 +339,7 @@ class _SupportScreenState extends State<SupportScreen> {
                   isExpanded
                       ? Icons.keyboard_arrow_up
                       : Icons.keyboard_arrow_down,
-                  color: AppColors.primaryTeal ,
+                  color: AppColors.primaryTeal,
                   size: AppLayout.scaleWidth(context, 20),
                 ),
               ],
@@ -373,7 +399,7 @@ class _SupportScreenState extends State<SupportScreen> {
             children: [
               Icon(
                 Icons.access_time_outlined,
-                color: AppColors.primaryTeal ,
+                color: AppColors.primaryTeal,
                 size: AppLayout.scaleWidth(context, 18),
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 8)),
@@ -408,7 +434,7 @@ class _SupportScreenState extends State<SupportScreen> {
               '24/7 automated support via Live Chat',
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 12),
-                color: AppColors.primaryTeal ,
+                color: AppColors.primaryTeal,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -458,7 +484,7 @@ class _SupportScreenState extends State<SupportScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Opening live chat…'),
-        backgroundColor: AppColors.primaryTeal ,
+        backgroundColor: AppColors.primaryTeal,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
           bottom: AppLayout.scaleHeight(context, 16),
@@ -474,7 +500,7 @@ class _SupportScreenState extends State<SupportScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Email address copied'),
-        backgroundColor: AppColors.primaryTeal ,
+        backgroundColor: AppColors.primaryTeal,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
           bottom: AppLayout.scaleHeight(context, 16),
@@ -490,7 +516,7 @@ class _SupportScreenState extends State<SupportScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Phone number copied'),
-        backgroundColor: AppColors.primaryTeal ,
+        backgroundColor: AppColors.primaryTeal,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
           bottom: AppLayout.scaleHeight(context, 16),
@@ -554,8 +580,9 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
     Navigator.pop(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Your report has been submitted. We\'ll respond within 24 hours.'),
-        backgroundColor: AppColors.primaryTeal ,
+        content: const Text(
+            'Your report has been submitted. We\'ll respond within 24 hours.'),
+        backgroundColor: AppColors.primaryTeal,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
           bottom: AppLayout.scaleHeight(context, 16),
@@ -628,13 +655,13 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
                     ),
                     decoration: BoxDecoration(
                       color: selected
-                          ? AppColors.primaryTeal 
+                          ? AppColors.primaryTeal
                           : AppColors.backgroundScreen,
-                      borderRadius:
-                          BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
+                      borderRadius: BorderRadius.circular(
+                          AppLayout.scaleWidth(context, 20)),
                       border: Border.all(
                         color: selected
-                            ? AppColors.primaryTeal 
+                            ? AppColors.primaryTeal
                             : const Color(0xFFDDDDDD),
                       ),
                     ),
@@ -666,20 +693,20 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
                 filled: true,
                 fillColor: AppColors.backgroundScreen,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 10)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
                   borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 10)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
                   borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 10)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
                   borderSide: const BorderSide(
-                      color: AppColors.primaryTeal , width: 1.5),
+                      color: AppColors.primaryTeal, width: 1.5),
                 ),
                 contentPadding: EdgeInsets.symmetric(
                   horizontal: AppLayout.scaleWidth(context, 14),
@@ -704,22 +731,23 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
                 filled: true,
                 fillColor: AppColors.backgroundScreen,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 10)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
                   borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
                 ),
                 enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 10)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
                   borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
                 ),
                 focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 10)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
                   borderSide: const BorderSide(
-                      color: AppColors.primaryTeal , width: 1.5),
+                      color: AppColors.primaryTeal, width: 1.5),
                 ),
-                contentPadding: EdgeInsets.all(AppLayout.scaleWidth(context, 14)),
+                contentPadding:
+                    EdgeInsets.all(AppLayout.scaleWidth(context, 14)),
               ),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
@@ -728,11 +756,10 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
             ElevatedButton(
               onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primaryTeal ,
-                disabledBackgroundColor:
-                    AppColors.primaryTeal .withOpacity(0.4),
-                minimumSize: Size(
-                    double.infinity, AppLayout.scaleHeight(context, 52)),
+                backgroundColor: AppColors.primaryTeal,
+                disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.4),
+                minimumSize:
+                    Size(double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(
                   borderRadius:
                       BorderRadius.circular(AppLayout.scaleWidth(context, 30)),

@@ -25,6 +25,7 @@ import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/presentation/bill/bill_transaction_detail.dart';
 import 'package:kudipay/provider/bill/bill_provider.dart';
 import 'package:kudipay/provider/kyc/kyc_provider.dart';
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 
 
@@ -956,12 +957,19 @@ class _DetailRow extends StatelessWidget {
   }
 }
 
-class _PayingFromRow extends StatelessWidget {
+class _PayingFromRow extends ConsumerWidget {
   final String displayName;
   const _PayingFromRow({required this.displayName});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Pull live wallet data — account number and initials from the mock API,
+    // not hardcoded literals.
+    final wallet   = ref.watch(walletProvider);
+    final initials = wallet.initials;
+    final acctNum  = wallet.accountNumber;
+    final balance  = wallet.formattedBalance;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -991,10 +999,10 @@ class _PayingFromRow extends StatelessWidget {
                   color: const Color(0xFF4CAF8A),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'MA',
-                    style: TextStyle(
+                    initials,
+                    style: const TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -1008,7 +1016,7 @@ class _PayingFromRow extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '$displayName  8123456789',
+                      '$displayName  $acctNum',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 12),
                         fontWeight: FontWeight.w600,
@@ -1018,9 +1026,9 @@ class _PayingFromRow extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 2),
-                    const Text(
-                      '₦ 5,000.00',
-                      style: TextStyle(fontSize: 12, color: Color(0xFF9E9E9E)),
+                    Text(
+                      '₦ $balance',
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF9E9E9E)),
                     ),
                   ],
                 ),
