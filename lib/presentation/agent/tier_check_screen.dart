@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/page_transition.dart';
+import 'package:kudipay/presentation/kyc/kyc_flow_manager.dart';
+import 'package:kudipay/provider/tier/tier_provider.dart';
+import 'package:kudipay/model/tier/tier_model.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 // KudiCard, KudiPrimaryButton, KudiCircularProgress are defined in
 // agent_registration_flow.dart and imported here. Do NOT redefine them.
@@ -10,11 +14,20 @@ import 'agent_registration_flow.dart'
 
 // ── Screen: Tier 2 Required Gate ──────────────────────────────────────────────
 
-class TierCheckScreen extends StatelessWidget {
+class TierCheckScreen extends ConsumerWidget {
   const TierCheckScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final tierState = ref.watch(tierProvider);
+    final isTier2OrAbove = tierState.currentTier == TierLevel.pro || tierState.currentTier == TierLevel.mega;
+
+    // If the user already holds Tier 2+, skip the gate entirely and
+    // show the verified confirmation screen directly.
+    if (isTier2OrAbove) {
+      return const IdentityVerifiedScreen();
+    }
+
     return Scaffold(
       backgroundColor: AppColors.backgroundScreen,
       appBar: AppBar(
@@ -49,8 +62,23 @@ class TierCheckScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              // ── Lock icon ────────────────────────────────────────────────
+              Container(
+                width: AppLayout.scaleWidth(context, 72),
+                height: AppLayout.scaleWidth(context, 72),
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.lock_outline_rounded,
+                  color: AppColors.primaryTeal,
+                  size: AppLayout.scaleWidth(context, 34),
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
               Text(
-                'Upgrade to Tier 2',
+                'Tier 2 Verification Required',
                 style: TextStyle(
                   fontFamily: 'PolySans',
                   fontSize: AppLayout.fontSize(context, 20),
@@ -61,11 +89,11 @@ class TierCheckScreen extends StatelessWidget {
               ),
               SizedBox(height: AppLayout.scaleHeight(context, 12)),
               Text(
-                'You need to upgrade to tier 2 before applying to become a kudikit agent',
+                'You need to complete Tier 2 identity verification before applying to become a KudiKit agent.',
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 14),
                   color: AppColors.textGrey,
-                  height: 1.5,
+                  height: 1.6,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -75,11 +103,13 @@ class TierCheckScreen extends StatelessWidget {
                 height: AppLayout.scaleHeight(context, 52),
                 child: ElevatedButton(
                   onPressed: () {
-                    // TODO: Navigate to real Tier 2 KYC upgrade flow.
-                    // For demo, skip straight to the verified screen.
-                    Navigator.pushReplacement(
+                    // Navigate into the real KYC flow manager.
+                    // KycFlowManager reads tierProvider and routes the user
+                    // through Selfie → ID → Address for Tier 2, then
+                    // returns them here once complete (tier state updated).
+                    Navigator.push(
                       context,
-                      PageTransition(const IdentityVerifiedScreen()),
+                      PageTransition(const KycFlowManager()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -91,7 +121,7 @@ class TierCheckScreen extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Upgrade to Tier 2',
+                    'Start Identity Verification',
                     style: AppTextStyles.responsiveButtonText(context),
                   ),
                 ),
@@ -106,16 +136,19 @@ class TierCheckScreen extends StatelessWidget {
 
 // ── Screen: Identity Verified ─────────────────────────────────────────────────
 
-class IdentityVerifiedScreen extends StatelessWidget {
+class IdentityVerifiedScreen extends ConsumerWidget {
   const IdentityVerifiedScreen({super.key});
 
-  // TODO: replace with values from your auth provider
-  static const _fullName = 'Adewale Johnson';
-  static const _phone = '+234 803 456 7890';
-  static const _email = 'adewale.j@email.com';
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Read real user data from providers instead of hardcoded strings.
+    final tierState = ref.watch(tierProvider);
+    final currentTierLabel = tierState.currentTier == TierLevel.mega
+        ? "Tier 3 (Mega)"
+        : tierState.currentTier == TierLevel.pro
+            ? "Tier 2 (Pro)"
+            : "Tier 1 (Basic)";
+
     return Scaffold(
       backgroundColor: AppColors.backgroundScreen,
       appBar: AppBar(
@@ -139,7 +172,7 @@ class IdentityVerifiedScreen extends StatelessWidget {
         actions: [
           Padding(
             padding: EdgeInsets.only(right: AppLayout.scaleWidth(context, 16)),
-            child: KudiCircularProgress(progress: 0.36),
+            child: KudiCircularProgress(progress: 1.0),
           ),
         ],
       ),
@@ -149,7 +182,7 @@ class IdentityVerifiedScreen extends StatelessWidget {
           children: [
             SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
-            // ── Success banner ──────────────────────────────────────────────
+            // ── Success banner ─────────────────────────────────────────────
             KudiCard(
               child: Row(
                 children: [
@@ -182,7 +215,7 @@ class IdentityVerifiedScreen extends StatelessWidget {
                         ),
                         SizedBox(height: AppLayout.scaleHeight(context, 2)),
                         Text(
-                          'Your Tier 2 KYC verification is complete',
+                          'Your $currentTierLabel KYC verification is complete',
                           style: TextStyle(
                             fontSize: AppLayout.fontSize(context, 12),
                             color: AppColors.textGrey,
@@ -196,13 +229,13 @@ class IdentityVerifiedScreen extends StatelessWidget {
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // ── Verified information card ───────────────────────────────────
+            // ── What's next card ───────────────────────────────────────────
             KudiCard(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Verified Information',
+                    'You\'re ready to apply',
                     style: TextStyle(
                       fontFamily: 'PolySans',
                       fontSize: AppLayout.fontSize(context, 14),
@@ -210,13 +243,16 @@ class IdentityVerifiedScreen extends StatelessWidget {
                       color: AppColors.textDark,
                     ),
                   ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 10)),
+                  Text(
+                    'Your identity has been verified. Tap Continue below to complete your agent application.',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 13),
+                      color: AppColors.textGrey,
+                      height: 1.5,
+                    ),
+                  ),
                   SizedBox(height: AppLayout.scaleHeight(context, 16)),
-                  _InfoRow(label: 'Full Name', value: _fullName),
-                  Divider(height: AppLayout.scaleHeight(context, 20)),
-                  _InfoRow(label: 'Phone Number', value: _phone),
-                  Divider(height: AppLayout.scaleHeight(context, 20)),
-                  _InfoRow(label: 'Email Address', value: _email),
-                  Divider(height: AppLayout.scaleHeight(context, 20)),
                   const _BvnStatusRow(),
                 ],
               ),
@@ -226,7 +262,7 @@ class IdentityVerifiedScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: KudiPrimaryButton(
-        label: 'Continue',
+        label: 'Continue to Agent Application',
         onPressed: () => Navigator.pushReplacement(
           context,
           PageTransition(const AgentRegistrationFlow()),
@@ -238,71 +274,26 @@ class IdentityVerifiedScreen extends StatelessWidget {
 
 // ── Private sub-widgets (local to this file only) ─────────────────────────────
 
-class _InfoRow extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const _InfoRow({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 11),
-            color: AppColors.textLight,
-          ),
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 4)),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14),
-            color: AppColors.textDark,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 class _BvnStatusRow extends StatelessWidget {
   const _BvnStatusRow();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          'BVN Status',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 11),
-            color: AppColors.textLight,
-          ),
+        Icon(
+          Icons.check_circle_outline,
+          color: AppColors.primaryTeal,
+          size: AppLayout.scaleWidth(context, 16),
         ),
-        SizedBox(height: AppLayout.scaleHeight(context, 4)),
-        Row(
-          children: [
-            Icon(
-              Icons.check_circle_outline,
-              color: AppColors.primaryTeal,
-              size: AppLayout.scaleWidth(context, 16),
-            ),
-            SizedBox(width: AppLayout.scaleWidth(context, 4)),
-            Text(
-              'Verified',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 14),
-                color: AppColors.primaryTeal,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+        SizedBox(width: AppLayout.scaleWidth(context, 6)),
+        Text(
+          'BVN Verified',
+          style: TextStyle(
+            fontSize: AppLayout.fontSize(context, 13),
+            color: AppColors.primaryTeal,
+            fontWeight: FontWeight.w500,
+          ),
         ),
       ],
     );

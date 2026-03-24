@@ -450,7 +450,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
           ),
           shape: RoundedRectangleBorder(
             borderRadius:
-                BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                BorderRadius.circular(AppLayout.scaleWidth(context, 28)),
           ),
           elevation: 0,
         ),

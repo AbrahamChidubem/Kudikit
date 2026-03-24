@@ -59,15 +59,15 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context, isOnline),
+      bottomNavigationBar: _buildVerifyButton(context, isOnline),
       body: Stack(
         children: [
           _buildBody(context, isOnline),
-          _buildVerifyButton(context, isOnline),
           if (cardTopUpState.isLoading)
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF4CAF50)),
+                child: CircularProgressIndicator(color: Color(0xFF069494)),
               ),
             ),
         ],
@@ -94,12 +94,11 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             ),
           ),
           const SizedBox(width: 8),
-          // Connectivity indicator
           Container(
             width: 8,
             height: 8,
             decoration: BoxDecoration(
-              color: isOnline ? Color(0xFF069494) : Colors.red,
+              color: isOnline ? const Color(0xFF069494) : Colors.red,
               shape: BoxShape.circle,
             ),
           ),
@@ -116,7 +115,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Connectivity warning if offline
             if (!isOnline)
               Container(
                 padding: const EdgeInsets.all(12),
@@ -141,9 +139,8 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.refresh, size: 20),
-                      onPressed: () {
-                        ref.read(connectivityStateProvider.notifier).refresh();
-                      },
+                      onPressed: () =>
+                          ref.read(connectivityStateProvider.notifier).refresh(),
                       color: Colors.red.shade700,
                     ),
                   ],
@@ -152,15 +149,11 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // Instruction Text
             _buildInstructionText(context),
 
             SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-            // OTP Input Field
             _buildOtpField(context, isOnline),
-
-            SizedBox(height: AppLayout.scaleHeight(context, 120)),
           ],
         ),
       ),
@@ -169,7 +162,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
   Widget _buildInstructionText(BuildContext context) {
     return Text(
-      'Enter the code sent to your the number connected to the bank card details you filled.',
+      'Enter the code sent to the number connected to the bank card details you filled.',
       style: TextStyle(
         fontSize: AppLayout.fontSize(context, 14),
         color: Colors.black87,
@@ -200,19 +193,12 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             LengthLimitingTextInputFormatter(6),
           ],
           validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter OTP code';
-            }
-            if (value.length < 4) {
-              return 'Please enter valid OTP code';
-            }
+            if (value == null || value.isEmpty) return 'Please enter OTP code';
+            if (value.length < 4) return 'Please enter a valid OTP code';
             return null;
           },
           onChanged: (value) {
-            // Auto-submit when OTP is complete
-            if (value.length == 6 && isOnline) {
-              _handleVerify();
-            }
+            if (value.length == 6 && isOnline) _handleVerify();
           },
           style: TextStyle(
             fontSize: AppLayout.fontSize(context, 16),
@@ -246,7 +232,8 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              borderSide: const BorderSide(color: Color(0xFF4CAF50), width: 2),
+              borderSide:
+                  const BorderSide(color: Color(0xFF069494), width: 2),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:
@@ -268,10 +255,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
                 const SizedBox(width: 4),
                 Text(
                   'Connect to internet to verify payment',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.red[700],
-                  ),
+                  style: TextStyle(fontSize: 12, color: Colors.red[700]),
                 ),
               ],
             ),
@@ -280,32 +264,24 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
     );
   }
 
+  // Moved to bottomNavigationBar — no longer Positioned inside a Stack.
+  // Both BoxDecorations removed as requested.
   Widget _buildVerifyButton(BuildContext context, bool isOnline) {
-    return Positioned(
-      bottom: 0,
-      left: 0,
-      right: 0,
-      child: Container(
-        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, -2),
-            ),
-          ],
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 16),
+          AppLayout.scaleHeight(context, 8),
+          AppLayout.scaleWidth(context, 16),
+          AppLayout.scaleHeight(context, 16),
         ),
         child: ElevatedButton(
           onPressed: isOnline
               ? _handleVerify
-              : () {
-                  ConnectivitySnackBar.showNoInternet(context);
-                },
+              : () => ConnectivitySnackBar.showNoInternet(context),
           style: ElevatedButton.styleFrom(
             backgroundColor:
-                isOnline ? const Color(0xFF4CAF50) : Colors.grey[400],
+                isOnline ? const Color(0xFF069494) : Colors.grey[400],
             minimumSize: Size(
               double.infinity,
               AppLayout.scaleHeight(context, 50),
@@ -330,11 +306,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
               if (!isOnline)
                 const Padding(
                   padding: EdgeInsets.only(left: 8),
-                  child: Icon(
-                    Icons.wifi_off,
-                    size: 18,
-                    color: Colors.white,
-                  ),
+                  child: Icon(Icons.wifi_off, size: 18, color: Colors.white),
                 ),
             ],
           ),
@@ -344,7 +316,6 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   }
 
   Future<void> _handleVerify() async {
-    // Check connectivity first
     final isConnected = ref.read(currentConnectivityProvider);
     if (!isConnected) {
       await NoInternetDialog.show(context);

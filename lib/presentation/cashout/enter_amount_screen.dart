@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/agent/agent_model.dart';
 import 'package:kudipay/formatting/widget/confirm_bottomsheet.dart';
 import 'package:kudipay/provider/cashout/cashout_provider.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
+import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 import 'transaction_code_screen.dart';
 
@@ -56,6 +58,9 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
   void _continue() {
     if (!_isValid) return;
 
+    // Read live user data from providers — no hardcoding.
+    final wallet = ref.read(walletProvider);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -67,10 +72,9 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
         totalDebit: _totalDebit,
         onConfirm: _processTransaction,
         onCancel: () => Navigator.pop(context),
-        // TODO: Replace with values from your auth provider
-        userAccountNumber: '8123456789',
-        userName: 'MICHAEL ASUQUO TOLUWALASE',
-        userBalance: 500000.00,
+        userAccountNumber: wallet.accountNumber,
+        userName: wallet.accountName,
+        userBalance: wallet.balance,
       ),
     );
   }
@@ -78,10 +82,23 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
   Future<void> _processTransaction() async {
     Navigator.pop(context); // close bottom sheet
 
-    // TODO: Replace with actual user data from auth provider
-    const userId = 'user_001';
-    const userAccountNumber = '8123456789';
-    const userName = 'MICHAEL ASUQUO TOLUWALASE';
+    // Read live user data from providers — no hardcoding.
+    final user = ref.read(currentUserProvider);
+    final wallet = ref.read(walletProvider);
+
+    final userId = user?.userId ?? '';
+    final userAccountNumber = wallet.accountNumber;
+    final userName = wallet.accountName;
+
+    if (userId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Unable to process: user session expired. Please log in again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     final transaction = await ref.read(cashOutProvider.notifier).createTransaction(
       amount: _amount,
@@ -214,12 +231,10 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Quick amount chips — responsive via LayoutBuilder
+                  // Quick amount chips
                   LayoutBuilder(
                     builder: (context, constraints) {
-                      // Each chip occupies 1/3 of available width minus spacing
                       final chipWidth = (constraints.maxWidth - 16) / 3;
-                      // Keep chip height fixed at 38dp regardless of screen width
                       final aspectRatio = chipWidth / 38;
                       return GridView.count(
                         crossAxisCount: 3,
@@ -268,7 +283,7 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Fee breakdown (visible when amount is entered)
+            // Fee breakdown
             if (_showFeeBreakdown) ...[
               Container(
                 padding: const EdgeInsets.all(16),
@@ -317,16 +332,16 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
                 color: const Color(0xFF2BA89A).withOpacity(0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Row(
+              child: const Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(
+                  Icon(
                     Icons.info_outline,
                     color: Color(0xFF2BA89A),
                     size: 16,
                   ),
-                  const SizedBox(width: 10),
-                  const Expanded(
+                  SizedBox(width: 10),
+                  Expanded(
                     child: Text(
                       "You'll receive a 6-digit code to show the agent for cash collection. The code expires in 15 minutes.",
                       style: TextStyle(
@@ -381,13 +396,9 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
     );
   }
 
-  String _fmt(double amount) {
-    return amount.toStringAsFixed(0);
-  }
+  String _fmt(double amount) => amount.toStringAsFixed(0);
 
-  String _fmtAmount(double amount) {
-    return '${_addCommas(amount.toStringAsFixed(2))}';
-  }
+  String _fmtAmount(double amount) => _addCommas(amount.toStringAsFixed(2));
 
   String _addCommas(String numStr) {
     final parts = numStr.split('.');
