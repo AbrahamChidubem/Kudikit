@@ -79,9 +79,9 @@ class MockAuthData {
           'name': 'Abraham Chidubem',
           'isEmailVerified': true, // was: 'is_email_verified'
           'isPhoneVerified': true,
-          'isBvnVerified': false,
+          'isBvnVerified': true,
           'isAddressVerified': false,
-          'isSelfieVerified': false,
+          'isSelfieVerified': true,
           'isDocumentVerified': false,
           'createdAt': '2024-01-15T08:30:00Z', // was: 'created_at'
           'lastLogin': DateTime.now().toIso8601String(), // was: 'last_login'
@@ -107,9 +107,9 @@ class MockAuthData {
           'name': 'Abraham Chidubem',
           'isEmailVerified': true, // was: 'is_email_verified'
           'isPhoneVerified': true,
-          'isBvnVerified': false,
+          'isBvnVerified': true,
           'isAddressVerified': false,
-          'isSelfieVerified': false,
+          'isSelfieVerified': true,
           'isDocumentVerified': false,
           'createdAt': '2024-01-15T08:30:00Z', // was: 'created_at'
           'lastLogin': DateTime.now().toIso8601String(), // was: 'last_login'
@@ -126,9 +126,9 @@ class MockAuthData {
     'name': 'Abraham Chidubem Kudikit',
     'isEmailVerified': true, // was: 'is_email_verified'
     'isPhoneVerified': true, // was: missing
-    'isBvnVerified': false, // was: 'is_bvn_verified'
+    'isBvnVerified': true, // was: 'is_bvn_verified'
     'isAddressVerified': false, // was: 'is_address_verified'
-    'isSelfieVerified': false, // was: 'is_selfie_verified'
+    'isSelfieVerified': true, // was: 'is_selfie_verified'
     'isDocumentVerified': false, // was: 'is_document_verified'
     'createdAt': '2024-01-15T08:30:00Z', // was: 'created_at'
     'lastLogin': '2024-01-15T08:30:00Z', // was: missing
@@ -140,7 +140,7 @@ class MockAuthData {
     'gender': 'Male',
     'address': '15 Victoria Island, Lagos',
     'state': 'Lagos',
-    'tier': 2,
+    'tier': 1,
     'profilePhotoUrl': null,
   };
 }
@@ -648,7 +648,7 @@ class MockKycData {
     'bvn_verified': true,
     'nin_verified': true,
     'address_verified': false,
-    'selfie_verified': false,
+    'selfie_verified': true,
     'document_verified': false,
     'kyc_level': 1,
     'pending_review': false,

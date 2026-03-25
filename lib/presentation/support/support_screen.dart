@@ -1,8 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Data models
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _Category {
+  final String title;
+  final String svgAsset;    // path in assets/icons/
+  final int articleCount;
+  const _Category({
+    required this.title,
+    required this.svgAsset,
+    this.articleCount = 12,
+  });
+}
+
+class _Article {
+  final String title;
+  final String readTime;
+  const _Article({required this.title, required this.readTime});
+}
+
+class _HelpVideo {
+  final String title;
+  final String duration;
+  const _HelpVideo({required this.title, required this.duration});
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Screen
+// ─────────────────────────────────────────────────────────────────────────────
 
 class SupportScreen extends StatefulWidget {
   const SupportScreen({Key? key}) : super(key: key);
@@ -12,254 +44,244 @@ class SupportScreen extends StatefulWidget {
 }
 
 class _SupportScreenState extends State<SupportScreen> {
-  // ---------------------------------------------------------------------------
-  // Tier limits are sourced from MockTierData.tierRequirementsResponse so that
-  // a single edit to mock_api_data.dart propagates here automatically.
-  // TODO: When a backend is available, replace this with a provider/API call.
-  // ---------------------------------------------------------------------------
-  static String _buildTierLimitsAnswer() {
-    final tiers =
-        MockTierData.tierRequirementsResponse['tiers'] as List<dynamic>;
-    final t1 = tiers.firstWhere((t) => (t as Map)['tier'] == 1)
-        as Map<String, dynamic>;
-    final t2 = tiers.firstWhere((t) => (t as Map)['tier'] == 2)
-        as Map<String, dynamic>;
-    final t1Daily = t1['daily_limit'] as num;
-    final t2Daily = t2['daily_limit'] as num;
+  final _searchController = TextEditingController();
 
-    String _fmt(num v) {
-      if (v >= 1000000) return '₦${(v / 1000000).toStringAsFixed(0)}M';
-      if (v >= 1000) return '₦${(v / 1000).toStringAsFixed(0)},000';
-      return '₦$v';
-    }
+  // ── Static data ────────────────────────────────────────────────────────────
+  static const _categories = [
+    _Category(title: 'Get started',     svgAsset: 'assets/icons/rocket.svg'),
+    _Category(title: 'Payment',         svgAsset: 'assets/icons/cashout.svg'),
+    _Category(title: 'Security',        svgAsset: 'assets/icons/shield.svg'),
+    _Category(title: 'Account',         svgAsset: 'assets/icons/person.svg'),
+    _Category(title: 'Troubleshooting', svgAsset: 'assets/icons/fix.svg'),
+    _Category(title: 'Refund',          svgAsset: 'assets/icons/clock.svg'),
+  ];
 
-    return 'Tier 1 (Basic) accounts can transact up to ${_fmt(t1Daily)} daily. '
-        'Tier 2 (Pro) allows up to ${_fmt(t2Daily)} daily, and Tier 3 (Mega) '
-        'has significantly higher limits. Upgrade your tier for higher limits.';
-  }
-
-  late final List<_FaqItem> _faqs = [
-    const _FaqItem(
-      question: 'How do I add money to my wallet?',
-      answer:
-          'You can add money via Bank Transfer, Card Top-up, Cash Deposit, Bank USSD, or QR Code. Go to Home → Add Money and choose a method.',
+  static const _articles = [
+    _Article(
+      title: 'How to request for a refund for transaction',
+      readTime: '3 mins read',
     ),
-    _FaqItem(
-      question: 'How long does a bank transfer take?',
-      answer:
-          'Bank transfers typically reflect within a few minutes. If your funds do not arrive within 30 minutes, please contact support.',
+    _Article(
+      title: 'Why was my payment declined',
+      readTime: '3 mins read',
     ),
-    _FaqItem(
-      question: 'How do I upgrade my account tier?',
-      answer:
-          'Navigate to Profile → Account Tier to view requirements for each tier and begin the upgrade process.',
-    ),
-    _FaqItem(
-      question: 'What are the transaction limits?',
-      answer: _buildTierLimitsAnswer(),
-    ),
-    _FaqItem(
-      question: 'How do I reset my transaction PIN?',
-      answer:
-          'Go to Profile → Security → Change Transaction PIN. You will need to verify your identity via OTP before setting a new PIN.',
-    ),
-    _FaqItem(
-      question: 'My transfer failed but I was debited. What do I do?',
-      answer:
-          'Failed debits are reversed automatically within 24 hours. If the reversal does not happen, tap "Live Chat" below to speak to an agent immediately.',
+    _Article(
+      title: 'How do i update my BVN on Kudikit',
+      readTime: '3 mins read',
     ),
   ];
 
-  final Set<int> _expandedIndices = {};
+  static const _videos = [
+    _HelpVideo(title: 'Making first payment',      duration: '1:20'),
+    _HelpVideo(title: 'Resolving failed transfers', duration: '1:20'),
+    _HelpVideo(title: 'Making first payment',      duration: '1:20'),
+  ];
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundScreen,
       appBar: _buildAppBar(context),
-      body: _buildBody(context),
+      // Sticky bottom button lives outside the scroll area
+      bottomNavigationBar: _buildContactButton(context),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.only(
+          left: AppLayout.scaleWidth(context, 16),
+          right: AppLayout.scaleWidth(context, 16),
+          top: AppLayout.scaleHeight(context, 16),
+          bottom: AppLayout.scaleHeight(context, 24),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar
+            _buildSearchBar(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            // Category 2×3 grid
+            _buildCategoryGrid(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 28)),
+
+            // Popular help articles
+            _sectionLabel(context, 'Popular help articles'),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+            _buildArticlesList(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 28)),
+
+            // Help videos
+            _sectionLabel(context, 'Help Videos'),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+            _buildVideoRow(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 40)),
+          ],
+        ),
+      ),
     );
   }
 
+  // ── AppBar ─────────────────────────────────────────────────────────────────
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: AppColors.white,
+      backgroundColor: AppColors.backgroundScreen,
       elevation: 0,
       automaticallyImplyLeading: false,
+      leading: IconButton(
+        icon: Icon(
+          Icons.arrow_back_ios,
+          color: AppColors.textDark,
+          size: AppLayout.scaleWidth(context, 18),
+        ),
+        onPressed: () => Navigator.maybePop(context),
+      ),
       title: Text(
-        'Help & Support',
+        'Support',
         style: TextStyle(
+          fontFamily: 'PolySans',
           color: AppColors.textDark,
           fontSize: AppLayout.fontSize(context, 18),
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
         ),
       ),
       centerTitle: true,
+      actions: [
+        TextButton(
+          onPressed: () => _showReportSheet(context),
+          child: Text(
+            'Tickets',
+            style: TextStyle(
+              color: AppColors.primaryTeal,
+              fontSize: AppLayout.fontSize(context, 14),
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildBody(BuildContext context) {
-    return SingleChildScrollView(
-      padding: AppLayout.pagePadding(context),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(height: AppLayout.scaleHeight(context, 8)),
-
-          // Header
-          _buildHeader(context),
-          SizedBox(height: AppLayout.scaleHeight(context, 28)),
-
-          // Quick contact cards
-          _buildQuickContactSection(context),
-          SizedBox(height: AppLayout.scaleHeight(context, 32)),
-
-          // FAQ section
-          _buildFaqSection(context),
-          SizedBox(height: AppLayout.scaleHeight(context, 32)),
-
-          // Business hours
-          _buildBusinessHours(context),
-          SizedBox(height: AppLayout.scaleHeight(context, 24)),
-        ],
+  // ── Search bar ─────────────────────────────────────────────────────────────
+  Widget _buildSearchBar(BuildContext context) {
+    return Container(
+      height: AppLayout.scaleHeight(context, 48),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        border: Border.all(color: const Color(0xFFEEEEEE)),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: TextStyle(
+          fontSize: AppLayout.fontSize(context, 14),
+          color: AppColors.textDark,
+        ),
+        decoration: InputDecoration(
+          hintText: 'Search for what you want...',
+          hintStyle: TextStyle(
+            fontSize: AppLayout.fontSize(context, 14),
+            color: AppColors.textGrey,
+          ),
+          prefixIcon: Icon(
+            Icons.search,
+            color: AppColors.textGrey,
+            size: AppLayout.scaleWidth(context, 20),
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            vertical: AppLayout.scaleHeight(context, 13),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'How can we help you?',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 22),
-            fontWeight: FontWeight.w700,
-            color: AppColors.textDark,
-          ),
-        ),
-        SizedBox(height: AppLayout.scaleHeight(context, 6)),
-        Text(
-          'Choose a channel below or browse common questions.',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 14),
-            color: AppColors.textGrey,
-            height: 1.4,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickContactSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(context, 'Contact Us'),
-        SizedBox(height: AppLayout.scaleHeight(context, 12)),
+  // ── Category grid ──────────────────────────────────────────────────────────
+  Widget _buildCategoryGrid(BuildContext context) {
+    // 2-column grid — we build it manually for full responsive control
+    final List<Widget> rows = [];
+    for (int i = 0; i < _categories.length; i += 2) {
+      final left  = _categories[i];
+      final right = i + 1 < _categories.length ? _categories[i + 1] : null;
+      rows.add(
         Row(
           children: [
-            Expanded(
-              child: _buildContactCard(
-                context,
-                icon: Icons.chat_bubble_outline,
-                label: 'Live Chat',
-                subtitle: 'Chat with us now',
-                onTap: () => _launchLiveChat(context),
-              ),
-            ),
+            Expanded(child: _buildCategoryCard(context, left)),
             SizedBox(width: AppLayout.scaleWidth(context, 12)),
             Expanded(
-              child: _buildContactCard(
-                context,
-                icon: Icons.mail_outline,
-                label: 'Email Us',
-                subtitle: 'support@kudikit.com',
-                onTap: () => _copyEmail(context),
-              ),
+              child: right != null
+                  ? _buildCategoryCard(context, right)
+                  : const SizedBox(),
             ),
           ],
         ),
-        SizedBox(height: AppLayout.scaleHeight(context, 12)),
-        Row(
-          children: [
-            Expanded(
-              child: _buildContactCard(
-                context,
-                icon: Icons.phone_outlined,
-                label: 'Call Us',
-                subtitle: '+234 700 000 0000',
-                onTap: () => _copyPhone(context),
-              ),
-            ),
-            SizedBox(width: AppLayout.scaleWidth(context, 12)),
-            Expanded(
-              child: _buildContactCard(
-                context,
-                icon: Icons.article_outlined,
-                label: 'Report Issue',
-                subtitle: 'Send a ticket',
-                onTap: () => _showReportSheet(context),
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
+      );
+      if (i + 2 < _categories.length) {
+        rows.add(SizedBox(height: AppLayout.scaleHeight(context, 12)));
+      }
+    }
+    return Column(children: rows);
   }
 
-  Widget _buildContactCard(
-    BuildContext context, {
-    required IconData icon,
-    required String label,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
+  Widget _buildCategoryCard(BuildContext context, _Category cat) {
+    final iconBoxSize = AppLayout.scaleWidth(context, 40);
+    final iconSize    = AppLayout.scaleWidth(context, 20);
+
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {},
       child: Container(
         padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius:
-              BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           border: Border.all(color: const Color(0xFFEEEEEE)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Icon box
             Container(
-              width: AppLayout.scaleWidth(context, 36),
-              height: AppLayout.scaleWidth(context, 36),
+              width: iconBoxSize,
+              height: iconBoxSize,
               decoration: BoxDecoration(
                 color: AppColors.lightGreen,
-                borderRadius:
-                    BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
               ),
-              child: Icon(
-                icon,
-                color: AppColors.primaryTeal,
-                size: AppLayout.scaleWidth(context, 18),
+              child: Center(
+                child: SvgPicture.asset(
+                  cat.svgAsset,
+                  width: iconSize,
+                  height: iconSize,
+                  colorFilter: const ColorFilter.mode(
+                    AppColors.primaryTeal,
+                    BlendMode.srcIn,
+                  ),
+                ),
               ),
             ),
-            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+
             Text(
-              label,
+              cat.title,
               style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 14),
+                fontFamily: 'PolySans',
+                fontSize: AppLayout.fontSize(context, 15),
                 fontWeight: FontWeight.w600,
                 color: AppColors.textDark,
               ),
             ),
-            SizedBox(height: AppLayout.scaleHeight(context, 2)),
+            SizedBox(height: AppLayout.scaleHeight(context, 3)),
             Text(
-              subtitle,
+              '${cat.articleCount} Articles',
               style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 11),
+                fontSize: AppLayout.fontSize(context, 12),
                 color: AppColors.textGrey,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -267,210 +289,232 @@ class _SupportScreenState extends State<SupportScreen> {
     );
   }
 
-  Widget _buildFaqSection(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildSectionTitle(context, 'Frequently Asked Questions'),
-        SizedBox(height: AppLayout.scaleHeight(context, 12)),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.white,
-            borderRadius:
-                BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-            border: Border.all(color: const Color(0xFFEEEEEE)),
-          ),
-          child: Column(
-            children: List.generate(_faqs.length, (index) {
-              final isLast = index == _faqs.length - 1;
-              return _buildFaqItem(context, index, isLast);
-            }),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFaqItem(BuildContext context, int index, bool isLast) {
-    final isExpanded = _expandedIndices.contains(index);
-    final faq = _faqs[index];
-
-    return Column(
-      children: [
-        InkWell(
-          onTap: () {
-            setState(() {
-              if (isExpanded) {
-                _expandedIndices.remove(index);
-              } else {
-                _expandedIndices.add(index);
-              }
-            });
-          },
-          borderRadius: isLast
-              ? BorderRadius.only(
-                  bottomLeft:
-                      Radius.circular(AppLayout.scaleWidth(context, 12)),
-                  bottomRight:
-                      Radius.circular(AppLayout.scaleWidth(context, 12)),
-                )
-              : BorderRadius.zero,
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 16),
-              vertical: AppLayout.scaleHeight(context, 14),
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    faq.question,
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 14),
-                      fontWeight: FontWeight.w500,
-                      color: AppColors.textDark,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-                SizedBox(width: AppLayout.scaleWidth(context, 8)),
-                Icon(
-                  isExpanded
-                      ? Icons.keyboard_arrow_up
-                      : Icons.keyboard_arrow_down,
-                  color: AppColors.primaryTeal,
-                  size: AppLayout.scaleWidth(context, 20),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Answer (animated)
-        AnimatedCrossFade(
-          firstChild: const SizedBox(width: double.infinity),
-          secondChild: Container(
-            width: double.infinity,
-            padding: EdgeInsets.fromLTRB(
-              AppLayout.scaleWidth(context, 16),
-              0,
-              AppLayout.scaleWidth(context, 16),
-              AppLayout.scaleHeight(context, 14),
-            ),
-            child: Text(
-              faq.answer,
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 13),
-                color: AppColors.textGrey,
-                height: 1.5,
-              ),
-            ),
-          ),
-          crossFadeState:
-              isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 200),
-        ),
-
-        if (!isLast)
-          Divider(
-            height: 1,
-            color: const Color(0xFFF0F0F0),
-            indent: AppLayout.scaleWidth(context, 16),
-            endIndent: AppLayout.scaleWidth(context, 16),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildBusinessHours(BuildContext context) {
+  // ── Popular articles ───────────────────────────────────────────────────────
+  Widget _buildArticlesList(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         border: Border.all(color: const Color(0xFFEEEEEE)),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        children: List.generate(_articles.length, (i) {
+          final isLast = i == _articles.length - 1;
+          return Column(
             children: [
-              Icon(
-                Icons.access_time_outlined,
-                color: AppColors.primaryTeal,
-                size: AppLayout.scaleWidth(context, 18),
-              ),
-              SizedBox(width: AppLayout.scaleWidth(context, 8)),
-              Text(
-                'Business Hours',
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 14),
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.textDark,
+              _buildArticleRow(context, _articles[i], isFirst: i == 0, isLast: isLast),
+              if (!isLast)
+                Divider(
+                  height: 1,
+                  color: const Color(0xFFF0F0F0),
+                  indent: AppLayout.scaleWidth(context, 16),
+                  endIndent: AppLayout.scaleWidth(context, 16),
                 ),
-              ),
             ],
-          ),
-          SizedBox(height: AppLayout.scaleHeight(context, 12)),
-          _buildHoursRow(context, 'Monday – Friday', '8:00 AM – 8:00 PM'),
-          SizedBox(height: AppLayout.scaleHeight(context, 6)),
-          _buildHoursRow(context, 'Saturday', '9:00 AM – 5:00 PM'),
-          SizedBox(height: AppLayout.scaleHeight(context, 6)),
-          _buildHoursRow(context, 'Sunday & Holidays', 'Closed'),
-          SizedBox(height: AppLayout.scaleHeight(context, 12)),
-          Container(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppLayout.scaleWidth(context, 10),
-              vertical: AppLayout.scaleHeight(context, 6),
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.lightGreen,
-              borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 6)),
-            ),
-            child: Text(
-              '24/7 automated support via Live Chat',
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 12),
-                color: AppColors.primaryTeal,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
+          );
+        }),
       ),
     );
   }
 
-  Widget _buildHoursRow(BuildContext context, String day, String hours) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          day,
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 13),
-            color: AppColors.textGrey,
-          ),
+  Widget _buildArticleRow(
+    BuildContext context,
+    _Article article, {
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    return InkWell(
+      onTap: () {},
+      borderRadius: BorderRadius.vertical(
+        top: isFirst ? Radius.circular(AppLayout.scaleWidth(context, 12)) : Radius.zero,
+        bottom: isLast ? Radius.circular(AppLayout.scaleWidth(context, 12)) : Radius.zero,
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 14),
         ),
-        Text(
-          hours,
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 13),
-            fontWeight: FontWeight.w500,
-            color: hours == 'Closed' ? Colors.red[400] : AppColors.textDark,
-          ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    article.title,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 14),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 3)),
+                  Text(
+                    article.readTime,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: AppLayout.scaleWidth(context, 14),
+              color: AppColors.textLight,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
+  // ── Help videos ────────────────────────────────────────────────────────────
+  Widget _buildVideoRow(BuildContext context) {
+    final cardWidth     = AppLayout.scaleWidth(context, 130);
+    final thumbHeight   = AppLayout.scaleHeight(context, 90);
+    final playIconSize  = AppLayout.scaleWidth(context, 28);
+
+    return SizedBox(
+      height: AppLayout.scaleHeight(context, 150),
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _videos.length,
+        separatorBuilder: (_, __) =>
+            SizedBox(width: AppLayout.scaleWidth(context, 12)),
+        itemBuilder: (context, i) {
+          final video = _videos[i];
+          return GestureDetector(
+            onTap: () {},
+            child: Container(
+              width: cardWidth,
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                border: Border.all(color: const Color(0xFFEEEEEE)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Thumbnail placeholder with play button
+                  Container(
+                    width: double.infinity,
+                    height: thumbHeight,
+                    decoration: BoxDecoration(
+                      color: AppColors.lightGreen,
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(AppLayout.scaleWidth(context, 12)),
+                      ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        width: playIconSize,
+                        height: playIconSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.primaryTeal,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppColors.primaryTeal,
+                          size: AppLayout.scaleWidth(context, 18),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Title + duration
+                  Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.scaleWidth(context, 10),
+                      vertical: AppLayout.scaleHeight(context, 8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          video.title,
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 12),
+                            fontWeight: FontWeight.w500,
+                            color: AppColors.textDark,
+                            height: 1.3,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        SizedBox(height: AppLayout.scaleHeight(context, 3)),
+                        Text(
+                          video.duration,
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 11),
+                            color: AppColors.textGrey,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // ── Sticky Contact Support button ─────────────────────────────────────────
+  Widget _buildContactButton(BuildContext context) {
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 16),
+          AppLayout.scaleHeight(context, 8),
+          AppLayout.scaleWidth(context, 16),
+          AppLayout.scaleHeight(context, 16),
+        ),
+        child: ElevatedButton.icon(
+          onPressed: () => _launchLiveChat(context),
+          icon: Icon(
+            Icons.chat_bubble_outline_rounded,
+            size: AppLayout.scaleWidth(context, 18),
+            color: AppColors.white,
+          ),
+          label: Text(
+            'Contact Support',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 16),
+              fontWeight: FontWeight.w600,
+              color: AppColors.white,
+            ),
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryTeal,
+            minimumSize: Size(
+              double.infinity,
+              AppLayout.scaleHeight(context, 54),
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 30)),
+            ),
+            elevation: 0,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Section label ──────────────────────────────────────────────────────────
+  Widget _sectionLabel(BuildContext context, String text) {
     return Text(
-      title,
+      text,
       style: TextStyle(
+        fontFamily: 'PolySans',
         fontSize: AppLayout.fontSize(context, 15),
         fontWeight: FontWeight.w600,
         color: AppColors.textDark,
@@ -478,44 +522,11 @@ class _SupportScreenState extends State<SupportScreen> {
     );
   }
 
-  // ─── Actions ──────────────────────────────────────────────────────────────
-
+  // ── Actions ────────────────────────────────────────────────────────────────
   void _launchLiveChat(BuildContext context) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text('Opening live chat…'),
-        backgroundColor: AppColors.primaryTeal,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          bottom: AppLayout.scaleHeight(context, 16),
-          left: AppLayout.scaleWidth(context, 16),
-          right: AppLayout.scaleWidth(context, 16),
-        ),
-      ),
-    );
-  }
-
-  void _copyEmail(BuildContext context) {
-    Clipboard.setData(const ClipboardData(text: 'support@kudikit.com'));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Email address copied'),
-        backgroundColor: AppColors.primaryTeal,
-        behavior: SnackBarBehavior.floating,
-        margin: EdgeInsets.only(
-          bottom: AppLayout.scaleHeight(context, 16),
-          left: AppLayout.scaleWidth(context, 16),
-          right: AppLayout.scaleWidth(context, 16),
-        ),
-      ),
-    );
-  }
-
-  void _copyPhone(BuildContext context) {
-    Clipboard.setData(const ClipboardData(text: '+2347000000000'));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Phone number copied'),
         backgroundColor: AppColors.primaryTeal,
         behavior: SnackBarBehavior.floating,
         margin: EdgeInsets.only(
@@ -537,7 +548,9 @@ class _SupportScreenState extends State<SupportScreen> {
   }
 }
 
-// ─── Report Issue Bottom Sheet ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// Report Issue Bottom Sheet (preserved from original)
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _ReportIssueSheet extends StatefulWidget {
   @override
@@ -596,9 +609,8 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: Container(
         padding: EdgeInsets.fromLTRB(
           AppLayout.scaleWidth(context, 20),
@@ -617,13 +629,12 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle
             Center(
               child: Container(
                 width: AppLayout.scaleWidth(context, 40),
                 height: AppLayout.scaleHeight(context, 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
+                  color: AppColors.divider,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -633,6 +644,7 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
             Text(
               'Report an Issue',
               style: TextStyle(
+                fontFamily: 'PolySans',
                 fontSize: AppLayout.fontSize(context, 18),
                 fontWeight: FontWeight.w700,
                 color: AppColors.textDark,
@@ -640,7 +652,6 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-            // Category chips
             Wrap(
               spacing: AppLayout.scaleWidth(context, 8),
               runSpacing: AppLayout.scaleHeight(context, 8),
@@ -662,7 +673,7 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
                       border: Border.all(
                         color: selected
                             ? AppColors.primaryTeal
-                            : const Color(0xFFDDDDDD),
+                            : AppColors.divider,
                       ),
                     ),
                     child: Text(
@@ -670,7 +681,7 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 12),
                         fontWeight: FontWeight.w500,
-                        color: selected ? Colors.white : AppColors.textGrey,
+                        color: selected ? AppColors.white : AppColors.textGrey,
                       ),
                     ),
                   ),
@@ -679,90 +690,23 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Subject
-            TextField(
-              controller: _subjectController,
-              onChanged: (_) => setState(() {}),
-              style: TextStyle(fontSize: AppLayout.fontSize(context, 14)),
-              decoration: InputDecoration(
-                hintText: 'Subject',
-                hintStyle: TextStyle(
-                  color: AppColors.textLight,
-                  fontSize: AppLayout.fontSize(context, 14),
-                ),
-                filled: true,
-                fillColor: AppColors.backgroundScreen,
-                border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
-                  borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
-                  borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
-                  borderSide: const BorderSide(
-                      color: AppColors.primaryTeal, width: 1.5),
-                ),
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppLayout.scaleWidth(context, 14),
-                  vertical: AppLayout.scaleHeight(context, 12),
-                ),
-              ),
-            ),
+            _buildField(context, _subjectController, 'Subject', maxLines: 1),
             SizedBox(height: AppLayout.scaleHeight(context, 12)),
-
-            // Message
-            TextField(
-              controller: _messageController,
-              onChanged: (_) => setState(() {}),
-              maxLines: 4,
-              style: TextStyle(fontSize: AppLayout.fontSize(context, 14)),
-              decoration: InputDecoration(
-                hintText: 'Describe the issue in detail…',
-                hintStyle: TextStyle(
-                  color: AppColors.textLight,
-                  fontSize: AppLayout.fontSize(context, 14),
-                ),
-                filled: true,
-                fillColor: AppColors.backgroundScreen,
-                border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
-                  borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
-                  borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
-                  borderSide: const BorderSide(
-                      color: AppColors.primaryTeal, width: 1.5),
-                ),
-                contentPadding:
-                    EdgeInsets.all(AppLayout.scaleWidth(context, 14)),
-              ),
-            ),
+            _buildField(context, _messageController,
+                'Describe the issue in detail…', maxLines: 4),
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-            // Submit
             ElevatedButton(
               onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryTeal,
-                disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.4),
-                minimumSize:
-                    Size(double.infinity, AppLayout.scaleHeight(context, 52)),
+                disabledBackgroundColor:
+                    AppColors.primaryTeal.withOpacity(0.4),
+                minimumSize: Size(
+                    double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 30)),
+                  borderRadius: BorderRadius.circular(
+                      AppLayout.scaleWidth(context, 30)),
                 ),
                 elevation: 0,
               ),
@@ -771,16 +715,14 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                        color: Colors.white,
-                        strokeWidth: 2,
-                      ),
+                          color: Colors.white, strokeWidth: 2),
                     )
                   : Text(
                       'Submit Report',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 16),
                         fontWeight: FontWeight.w600,
-                        color: Colors.white,
+                        color: AppColors.white,
                       ),
                     ),
             ),
@@ -789,12 +731,50 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
       ),
     );
   }
-}
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-class _FaqItem {
-  final String question;
-  final String answer;
-  const _FaqItem({required this.question, required this.answer});
+  Widget _buildField(
+    BuildContext context,
+    TextEditingController controller,
+    String hint, {
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      onChanged: (_) => setState(() {}),
+      maxLines: maxLines,
+      style: TextStyle(
+        fontSize: AppLayout.fontSize(context, 14),
+        color: AppColors.textDark,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: AppColors.textLight,
+          fontSize: AppLayout.fontSize(context, 14),
+        ),
+        filled: true,
+        fillColor: AppColors.backgroundScreen,
+        border: OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+          borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+          borderSide: const BorderSide(color: Color(0xFFEEEEEE)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+          borderSide:
+              const BorderSide(color: AppColors.primaryTeal, width: 1.5),
+        ),
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 14),
+          vertical: AppLayout.scaleHeight(context, 12),
+        ),
+      ),
+    );
+  }
 }

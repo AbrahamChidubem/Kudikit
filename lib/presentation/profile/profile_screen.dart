@@ -1,17 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/email/change_email_screen.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
 import 'package:kudipay/presentation/tier/upgrade_tier_screen.dart';
-// import 'package:kudipay/provider/auth_provider.dart';
-import 'package:kudipay/provider/kyc/kyc_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/provider/refresh/refresh_provider.dart';
-import 'package:kudipay/provider/tier/tier_provider.dart';
+
+
+// ── SVG icon paths ──────────────────────────────────────────────────────────
+const _iconPerson = 'assets/icons/person.svg';
+const _iconEmail  = 'assets/icons/email.svg';
+const _iconPhone  = 'assets/icons/phone.svg';
+const _iconBell   = 'assets/icons/bell.svg';
+const _iconLock   = 'assets/icons/lock.svg';
+const _iconFaceId = 'assets/icons/face_id.svg';
+
+// Extra colour not in AppColors
+const _iconTeal  = Color(0xFF339992);
+const _headerBg  = Color(0xFFE8F5F3);
+const _iconBg    = Color(0xFFF5F5F5);
+const _dividerC  = Color(0xFFF0F0F0);
+const _arrowC    = Color(0xFFBDBDBD);
+const _phoneFg   = Color(0xFF5C5C5C);
+const _tierSub   = Color(0xFF777777);
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({Key? key}) : super(key: key);
@@ -21,625 +37,705 @@ class UserProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
-  bool useFaceIdForPasscode = false;
-  bool useFaceIdForTransaction = false;
+  bool _faceIdPasscode    = false;
+  bool _faceIdTransaction = false;
 
   @override
-  Widget build(BuildContext context,) {
-    final user = ref.watch(currentUserProvider);
-    final userInfo = ref.watch(userInfoProvider);
-    final tierState = ref.watch(tierProvider);
-    final currentTierObject = tierState.getTierObject();
-    final canUpgrade = tierState.canUpgrade();
-    // The name comes from the BVN/NIN verification!
-    final firstName = userInfo?.firstName ?? 'User';
+  Widget build(BuildContext context) {
+    final user           = ref.watch(currentUserProvider);
+    final userInfo       = ref.watch(userInfoProvider);
+    final tierState      = ref.watch(tierProvider);
+    final currentTierObj = tierState.getTierObject();
+
+    final firstName = userInfo?.firstName ??
+        user?.name?.split(' ').first ?? 'User';
+    final fullName = userInfo != null
+        ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'.trim()
+        : user?.name ?? 'Full name not set';
+
     if (user == null) {
-      // Fix 6: show ProfileShimmer while auth resolves instead of a jarring
-      // 'Not logged in' flash. If the user is genuinely unauthenticated,
-      // the auth provider should redirect — this state is transient.
       return const Scaffold(
-        backgroundColor: Color(0xFFF9F9F9),
+        backgroundColor: AppColors.backgroundScreen,
         body: SafeArea(child: ProfileShimmer()),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: AppColors.backgroundScreen,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textDark,
+            size: AppLayout.scaleWidth(context, 18),
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Profile',
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
+            fontFamily: 'PolySans',
+            color: AppColors.textDark,
+            fontSize: AppLayout.fontSize(context, 18),
             fontWeight: FontWeight.w700,
           ),
         ),
         centerTitle: true,
       ),
       body: RefreshIndicator(
-        // Refreshes wallet balance + transactions together.
-        // ProfileScreen watches userInfoProvider (a StateProvider) which is
-        // updated by the auth flow, so no separate fetch is needed here.
-        onRefresh: () =>
-            ref.read(refreshProvider.notifier).refreshAll(),
-        color: const Color(0xFF069494),
-        backgroundColor: Colors.white,
-        strokeWidth: 2.5,
+        onRefresh: () => ref.read(refreshProvider.notifier).refreshAll(),
+        color: AppColors.primaryTeal,
+        backgroundColor: AppColors.backgroundScreen,
+        strokeWidth: 1.5,
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Profile Header Card
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5F3),
-                borderRadius: BorderRadius.circular(16),
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeaderCard(context, user, firstName),
+              SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+              _sectionLabel(context, 'Current tier'),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildTierCard(context, currentTierObj),
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+              _sectionLabel(context, 'Personal Information'),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildPersonalInfoCard(context, fullName, user),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+
+              _buildSingleCard(
+                context,
+                svgPath: _iconBell,
+                title: 'Notification Preference',
+                showArrow: true,
+                onTap: () => Navigator.push(context, MaterialPageRoute(
+                  builder: (_) => const NotificationPreferenceScreen(),
+                )),
               ),
-              child: Row(
-                children: [
-                  // Profile Image
-                  Container(
-                    width: 60,
-                    height: 60,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.asset(
-                        'assets/images/img_placeholder.png',
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            color: const Color(0xFF069494),
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                          );
-                        },
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+              _sectionLabel(context, 'Security'),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+
+              _buildSingleCard(context,
+                svgPath: _iconLock,
+                title: 'Change Transaction PIN',
+                showArrow: true,
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildSingleCard(context,
+                svgPath: _iconLock,
+                title: 'Change Passcode',
+                showArrow: true,
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildSwitchCard(
+                context,
+                svgPath: _iconFaceId,
+                title: 'Use Face ID',
+                subtitle: 'For passcode',
+                value: _faceIdPasscode,
+                onChanged: (v) => setState(() => _faceIdPasscode = v),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildSwitchCard(
+                context,
+                svgPath: _iconFaceId,
+                title: 'Use Face ID',
+                subtitle: 'For transaction PIN',
+                value: _faceIdTransaction,
+                onChanged: (v) => setState(() => _faceIdTransaction = v),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+              _buildSingleCard(context,
+                svgPath: _iconPhone,
+                title: 'App management',
+                showArrow: true,
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildLogoutCard(context),
+              SizedBox(height: AppLayout.scaleHeight(context, 100)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Header card ─────────────────────────────────────────────────────────────
+  Widget _buildHeaderCard(BuildContext context, user, String firstName) {
+    final photoSize    = AppLayout.scaleWidth(context, 64);
+    final photoRadius  = AppLayout.scaleWidth(context, 12);
+    final tierNumber   = ref.watch(tierProvider).getTierObject().tierNumber;
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(
+        AppLayout.scaleWidth(context, 16),
+        AppLayout.scaleHeight(context, 16),
+        AppLayout.scaleWidth(context, 16),
+        0,
+      ),
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
+      decoration: BoxDecoration(
+        color: _headerBg,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile photo
+          ClipRRect(
+            borderRadius: BorderRadius.circular(photoRadius),
+            child: Image.asset(
+              'assets/images/img_placeholder.png',
+              width: photoSize,
+              height: photoSize,
+              fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: photoSize,
+                height: photoSize,
+                decoration: BoxDecoration(
+                  color: AppColors.primaryTeal,
+                  borderRadius: BorderRadius.circular(photoRadius),
+                ),
+                child: Icon(Icons.person,
+                    color: AppColors.white,
+                    size: AppLayout.scaleWidth(context, 32)),
+              ),
+            ),
+          ),
+          SizedBox(width: AppLayout.scaleWidth(context, 16)),
+
+          // Name / phone / tier
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        'Hello, $firstName',
+                        style: TextStyle(
+                          fontFamily: 'PolySans',
+                          fontSize: AppLayout.fontSize(context, 20),
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textDark,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-
-                  // User Info
-                  Expanded(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Hi $firstName',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF069494).withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Icon(
-                                    Icons.check_circle,
-                                    size: 14,
-                                    color: Color(0xFF069494),
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Verified',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: Colors.green[700],
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          user.phoneNumber,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[700],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF069494),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            'Tier ${currentTierObject.tierNumber}',
-                            style: const TextStyle(
-                              fontSize: 11,
-                              color: Colors.white,
+                    SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                    // Verified badge
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.scaleWidth(context, 8),
+                        vertical: AppLayout.scaleHeight(context, 4),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryTeal.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(
+                            AppLayout.scaleWidth(context, 20)),
+                        border: Border.all(
+                            color: AppColors.primaryTeal.withOpacity(0.25)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.check_circle_outline,
+                              size: AppLayout.scaleWidth(context, 13),
+                              color: AppColors.primaryTeal),
+                          SizedBox(width: AppLayout.scaleWidth(context, 3)),
+                          Text(
+                            'Verified',
+                            style: TextStyle(
+                              fontSize: AppLayout.fontSize(context, 11),
+                              color: AppColors.primaryTeal,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Current Tier Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Current tier',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            // Tier Card
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF069494).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      currentTierObject.icon,
-                      color: Color(0xFF069494),
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tier ${currentTierObject.tierNumber}',
-                          style: TextStyle(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Single Transaction Max: ₦${_formatAmount(currentTierObject.dailySendLimit)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        Text(
-                          'Max Balance: ₦${_formatAmount(currentTierObject.dailyReceiveLimit)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      // Fix 10: removed duplicate SnackBar — navigate is the action,
-                      // showing a "coming soon" toast at the same time is confusing
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UpgradeTierScreen(tier: currentTierObject),
-                        ),
-                      );
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFFE8F5F3),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                    ),
-                    child: const Text(
-                      'Upgrade Tier',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Color(0xFF151717),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Personal Information Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Personal Information',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            _buildInfoTile(
-              icon: Icons.person_outline,
-              // Fix 7: use userInfo name if available, fall back to user.name,
-              // avoid hardcoding 'Michael Taluwalase Asuquo' as a fallback
-              title: userInfo != null
-                  ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'.trim()
-                  : user.name ?? 'Full name not set',
-              subtitle: 'Full name',
-            ),
-            _buildInfoTile(
-              icon: Icons.email_outlined,
-              title: _maskEmail(user.email),
-              subtitle: 'Email address',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ChangeEmailScreen(),
-                  ),
-                );
-              },
-            ),
-            _buildInfoTile(
-              icon: Icons.phone_outlined,
-              title: _maskPhone(user.phoneNumber),
-              subtitle: 'Phone number',
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildSectionTile(
-              icon: Icons.notifications_outlined,
-              title: 'Notification Preference',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const NotificationPreferenceScreen(),
-                  ),
-                );
-              },
-            ),
-
-            const SizedBox(height: 24),
-
-            // Security Section
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Security',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-
-            _buildSectionTile(
-              icon: Icons.lock_outline,
-              title: 'Change Transaction PIN',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
-            ),
-            _buildSectionTile(
-              icon: Icons.lock_outline,
-              title: 'Change Passcode',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
-            ),
-            _buildSwitchTile(
-              icon: Icons.face,
-              title: 'Use Face ID',
-              subtitle: 'For passcode',
-              value: useFaceIdForPasscode,
-              onChanged: (value) {
-                setState(() {
-                  useFaceIdForPasscode = value;
-                });
-              },
-            ),
-            _buildSwitchTile(
-              icon: Icons.face,
-              title: 'Use Face ID',
-              subtitle: 'For transaction PIN',
-              value: useFaceIdForTransaction,
-              onChanged: (value) {
-                setState(() {
-                  useFaceIdForTransaction = value;
-                });
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildSectionTile(
-              icon: Icons.grid_view_outlined,
-              title: 'App management',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
-            ),
-
-            const SizedBox(height: 16),
-
-            _buildSectionTile(
-              icon: Icons.logout,
-              title: 'Log out',
-              trailing: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
-              ),
-              onTap: () => _showLogoutDialog(),
-            ),
-
-            const SizedBox(height: 100),
-          ],
-        ),               // end Column
-      ),                 // end SingleChildScrollView
-    ),                   // end RefreshIndicator
-    );
-  }
-
-  Widget _buildInfoTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    Widget? trailing,
-    VoidCallback? onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppLayout.scaleWidth(context, 16),
-          vertical: AppLayout.scaleHeight(context, 16),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: AppLayout.scaleWidth(context, 40),
-              height: AppLayout.scaleWidth(context, 40),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF5C7C6F),
-                size: AppLayout.scaleWidth(context, 20),
-              ),
-            ),
-            SizedBox(width: AppLayout.scaleWidth(context, 12)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 15),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  SizedBox(height: AppLayout.scaleHeight(context, 4)),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 12),
-                      color: Colors.black54,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (trailing != null) trailing,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSectionTile({
-    required IconData icon,
-    required String title,
-    Widget? trailing,
-    VoidCallback? onTap,
-    String? subtitle,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppLayout.scaleWidth(context, 16),
-          vertical: AppLayout.scaleHeight(context, 16),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: AppLayout.scaleWidth(context, 40),
-              height: AppLayout.scaleWidth(context, 40),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(
-                icon,
-                color: const Color(0xFF5C7C6F),
-                size: AppLayout.scaleWidth(context, 20),
-              ),
-            ),
-            SizedBox(width: AppLayout.scaleWidth(context, 12)),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 15),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  if (subtitle != null) ...[
-                    SizedBox(height: AppLayout.scaleHeight(context, 4)),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: AppLayout.fontSize(context, 12),
-                        color: Colors.black54,
+                        ],
                       ),
                     ),
                   ],
-                ],
-              ),
+                ),
+                SizedBox(height: AppLayout.scaleHeight(context, 4)),
+
+                Text(
+                  user.phoneNumber,
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 14),
+                    color: _phoneFg,
+                  ),
+                ),
+                SizedBox(height: AppLayout.scaleHeight(context, 10)),
+
+                // Tier pill
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppLayout.scaleWidth(context, 12),
+                    vertical: AppLayout.scaleHeight(context, 4),
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryTeal,
+                    borderRadius: BorderRadius.circular(
+                        AppLayout.scaleWidth(context, 20)),
+                  ),
+                  child: Text(
+                    'Tier $tierNumber',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 11),
+                      color: AppColors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
-            if (trailing != null) trailing,
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSwitchTile({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
+  // ── Tier card ────────────────────────────────────────────────────────────────
+  Widget _buildTierCard(BuildContext context, currentTierObj) {
+    final iconBoxSize = AppLayout.scaleWidth(context, 38);
+
     return Container(
-      margin: EdgeInsets.symmetric(
+      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      padding: EdgeInsets.symmetric(
         horizontal: AppLayout.scaleWidth(context, 16),
-        vertical: AppLayout.scaleHeight(context, 4),
+        vertical: AppLayout.scaleHeight(context, 14),
       ),
-      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: AppLayout.scaleWidth(context, 8),
             offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
-          Icon(icon, color: Colors.grey[700], size: 20),
-          const SizedBox(width: 16),
+          Container(
+            width: iconBoxSize,
+            height: iconBoxSize,
+            decoration: BoxDecoration(
+              color: AppColors.primaryTeal.withOpacity(0.12),
+              borderRadius:
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+            ),
+            child: Icon(currentTierObj.icon,
+                color: AppColors.primaryTeal,
+                size: AppLayout.scaleWidth(context, 20)),
+          ),
+          SizedBox(width: AppLayout.scaleWidth(context, 12)),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black87,
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: currentTierObj.name,
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 14),
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' (Tier ${currentTierObj.tierNumber})',
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 13),
+                          fontWeight: FontWeight.w400,
+                          color: _tierSub,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                SizedBox(height: AppLayout.scaleHeight(context, 3)),
                 Text(
-                  subtitle,
+                  'Single Transaction Max: ₦${_fmtAmount(currentTierObj.dailySendLimit)}',
                   style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[600],
-                  ),
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: AppColors.textGrey),
+                ),
+                Text(
+                  'Max Balance: ₦${_fmtAmount(currentTierObj.dailyReceiveLimit)}',
+                  style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: AppColors.textGrey),
                 ),
               ],
             ),
           ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: const Color(0xFF069494),
+
+          TextButton(
+            onPressed: () => Navigator.push(context, MaterialPageRoute(
+              builder: (_) => UpgradeTierScreen(tier: currentTierObj),
+            )),
+            style: TextButton.styleFrom(
+              backgroundColor: _headerBg,
+              padding: EdgeInsets.symmetric(
+                horizontal: AppLayout.scaleWidth(context, 14),
+                vertical: AppLayout.scaleHeight(context, 7),
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
+              ),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              'Upgrade Tier',
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 11),
+                color: AppColors.textDark,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ),
         ],
       ),
+    );
+  }
+
+  // ── Personal info grouped card ────────────────────────────────────────────────
+  Widget _buildPersonalInfoCard(BuildContext context, String fullName, user) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: AppLayout.scaleWidth(context, 8),
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _infoRow(context,
+              svgPath: _iconPerson,
+              title: fullName,
+              subtitle: 'Full name',
+              isFirst: true),
+          _divider(context),
+          _infoRow(context,
+              svgPath: _iconEmail,
+              title: _maskEmail(user.email),
+              subtitle: 'Email address',
+              showArrow: true,
+              onTap: () => Navigator.push(context, MaterialPageRoute(
+                    builder: (_) => const ChangeEmailScreen()))),
+          _divider(context),
+          _infoRow(context,
+              svgPath: _iconPhone,
+              title: _maskPhone(user.phoneNumber),
+              subtitle: 'Phone number',
+              isLast: true),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoRow(
+    BuildContext context, {
+    required String svgPath,
+    required String title,
+    required String subtitle,
+    bool showArrow = false,
+    VoidCallback? onTap,
+    bool isFirst = false,
+    bool isLast = false,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.vertical(
+        top: isFirst
+            ? Radius.circular(AppLayout.scaleWidth(context, 12))
+            : Radius.zero,
+        bottom: isLast
+            ? Radius.circular(AppLayout.scaleWidth(context, 12))
+            : Radius.zero,
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 14),
+        ),
+        child: Row(
+          children: [
+            _svgIcon(context, svgPath),
+            SizedBox(width: AppLayout.scaleWidth(context, 14)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 14),
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 2)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (showArrow)
+              Icon(Icons.arrow_forward_ios,
+                  size: AppLayout.scaleWidth(context, 14), color: _arrowC),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Single-row card ───────────────────────────────────────────────────────────
+  Widget _buildSingleCard(
+    BuildContext context, {
+    required String svgPath,
+    required String title,
+    bool showArrow = false,
+    VoidCallback? onTap,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: AppLayout.scaleWidth(context, 8),
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppLayout.scaleWidth(context, 16),
+            vertical: AppLayout.scaleHeight(context, 14),
+          ),
+          child: Row(
+            children: [
+              _svgIcon(context, svgPath),
+              SizedBox(width: AppLayout.scaleWidth(context, 14)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 14),
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ),
+              if (showArrow)
+                Icon(Icons.arrow_forward_ios,
+                    size: AppLayout.scaleWidth(context, 14), color: _arrowC),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Switch card ───────────────────────────────────────────────────────────────
+  Widget _buildSwitchCard(
+    BuildContext context, {
+    required String svgPath,
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: AppLayout.scaleWidth(context, 8),
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 12),
+        ),
+        child: Row(
+          children: [
+            _svgIcon(context, svgPath),
+            SizedBox(width: AppLayout.scaleWidth(context, 14)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 14),
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.textDark,
+                    ),
+                  ),
+                  SizedBox(height: AppLayout.scaleHeight(context, 2)),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 12),
+                      color: AppColors.textGrey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeColor: AppColors.primaryTeal,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Logout card ───────────────────────────────────────────────────────────────
+  Widget _buildLogoutCard(BuildContext context) {
+    final iconBoxSize = AppLayout.scaleWidth(context, 36);
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: AppColors.white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: AppLayout.scaleWidth(context, 8),
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: _showLogoutDialog,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppLayout.scaleWidth(context, 16),
+            vertical: AppLayout.scaleHeight(context, 14),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: iconBoxSize,
+                height: iconBoxSize,
+                decoration: BoxDecoration(
+                  color: _iconBg,
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+                ),
+                child: Icon(Icons.logout,
+                    color: _iconTeal,
+                    size: AppLayout.scaleWidth(context, 18)),
+              ),
+              SizedBox(width: AppLayout.scaleWidth(context, 14)),
+              Expanded(
+                child: Text(
+                  'Log out',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 14),
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textDark,
+                  ),
+                ),
+              ),
+              Icon(Icons.arrow_forward_ios,
+                  size: AppLayout.scaleWidth(context, 14), color: _arrowC),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Shared helpers ────────────────────────────────────────────────────────────
+
+  Widget _svgIcon(BuildContext context, String path) {
+    final boxSize  = AppLayout.scaleWidth(context, 36);
+    final iconSize = AppLayout.scaleWidth(context, 16);
+    return Container(
+      width: boxSize,
+      height: boxSize,
+      decoration: BoxDecoration(
+        color: _iconBg,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+      ),
+      child: Center(
+        child: SvgPicture.asset(
+          path,
+          width: iconSize,
+          height: iconSize,
+          colorFilter: const ColorFilter.mode(_iconTeal, BlendMode.srcIn),
+        ),
+      ),
+    );
+  }
+
+  Widget _sectionLabel(BuildContext context, String text) {
+    return Padding(
+      padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16)),
+      child: Text(
+        text,
+        style: AppTextStyles.responsiveLabel(context).copyWith(
+          fontWeight: FontWeight.w500,
+        ),
+      ),
+    );
+  }
+
+  Widget _divider(BuildContext context) {
+    return Divider(
+      height: 1,
+      indent: AppLayout.scaleWidth(context, 66),
+      endIndent: 0,
+      color: _dividerC,
     );
   }
 
@@ -647,9 +743,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final parts = email.split('@');
     if (parts.length != 2) return email;
     final username = parts[0];
-    final domain = parts[1];
-    if (username.length <= 2) return email;
-    return '${username.substring(0, 1)}${'*' * 7}@${domain}';
+    if (username.length <= 1) return email;
+    return '${username[0]}${'*' * 7}@${parts[1]}';
   }
 
   String _maskPhone(String phone) {
@@ -657,21 +752,36 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     return '+234******${phone.substring(phone.length - 4)}';
   }
 
+  String _fmtAmount(double amount) {
+    if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
+    if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)}K';
+    return amount.toStringAsFixed(0);
+  }
+
   void _showLogoutDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(
+                AppLayout.scaleWidth(context, 16))),
+        title: Text(
+          'Log out',
+          style: TextStyle(fontSize: AppLayout.fontSize(context, 16)),
         ),
-        title: const Text('Log out'),
-        content: const Text('Are you sure you want to log out?'),
+        content: Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(fontSize: AppLayout.fontSize(context, 14)),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
               'Cancel',
-              style: TextStyle(color: Colors.grey),
+              style: TextStyle(
+                color: AppColors.textGrey,
+                fontSize: AppLayout.fontSize(context, 14),
+              ),
             ),
           ),
           ElevatedButton(
@@ -688,10 +798,17 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(
+                    AppLayout.scaleWidth(context, 8)),
               ),
             ),
-            child: const Text('Log out',style: TextStyle(color: Color(0xFFF9F9F9)),),
+            child: Text(
+              'Log out',
+              style: TextStyle(
+                color: AppColors.white,
+                fontSize: AppLayout.fontSize(context, 14),
+              ),
+            ),
           ),
         ],
       ),
@@ -699,42 +816,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   }
 }
 
-Widget _buildLimitItem(String label, String value) {
-  return Container(
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: Colors.white.withOpacity(0.2),
-      borderRadius: BorderRadius.circular(12),
-    ),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: GoogleFonts.openSans(
-            fontSize: 12,
-            color: Colors.white.withOpacity(0.9),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: GoogleFonts.openSans(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
-      ],
-    ),
-  );
-}
-
+// ── File-level helper ─────────────────────────────────────────────────────────
 String _formatAmount(double amount) {
-  if (amount >= 1000000) {
-    return '${(amount / 1000000).toStringAsFixed(1)}M';
-  } else if (amount >= 1000) {
-    return '${(amount / 1000).toStringAsFixed(0)}K';
-  }
+  if (amount >= 1000000) return '${(amount / 1000000).toStringAsFixed(1)}M';
+  if (amount >= 1000) return '${(amount / 1000).toStringAsFixed(0)}K';
   return amount.toStringAsFixed(0);
 }
