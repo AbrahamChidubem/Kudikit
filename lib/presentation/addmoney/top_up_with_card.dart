@@ -419,52 +419,43 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
 
   // ─── Confirm Button ───────────────────────────────────────────────────────────
 
-  Widget _buildConfirmButton(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(
-        AppLayout.scaleWidth(context, 16),
-        AppLayout.scaleHeight(context, 12),
-        AppLayout.scaleWidth(context, 16),
-        AppLayout.scaleHeight(context, 12) +
-            MediaQuery.of(context).padding.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: ElevatedButton(
-        onPressed: _isFormValid ? _handleConfirm : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: _primaryColor,
-          disabledBackgroundColor: _primaryColor.withOpacity(0.4),
-          disabledForegroundColor: Colors.white,
-          minimumSize: Size(
-            double.infinity,
-            AppLayout.scaleHeight(context, 52),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius:
-                BorderRadius.circular(AppLayout.scaleWidth(context, 28)),
-          ),
-          elevation: 0,
+Widget _buildConfirmButton(BuildContext context) {
+  return Padding(
+    padding: EdgeInsets.fromLTRB(
+      AppLayout.scaleWidth(context, 16),
+      AppLayout.scaleHeight(context, 12),
+      AppLayout.scaleWidth(context, 16),
+      AppLayout.scaleHeight(context, 20) +
+          MediaQuery.of(context).padding.bottom,
+    ),
+    child: ElevatedButton(
+      onPressed: _isFormValid ? _handleConfirm : null,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _primaryColor,
+        disabledBackgroundColor: _primaryColor.withOpacity(0.4),
+        disabledForegroundColor: Colors.white,
+        minimumSize: Size(
+          double.infinity,
+          AppLayout.scaleHeight(context, 52),
         ),
-        child: Text(
-          'Confirm',
-          style: TextStyle(
-            fontSize: AppLayout.fontSize(context, 16),
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(
+            AppLayout.scaleWidth(context, 28),
           ),
         ),
+        elevation: 0,
       ),
-    );
-  }
+      child: Text(
+        'Confirm',
+        style: TextStyle(
+          fontSize: AppLayout.fontSize(context, 16),
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+      ),
+    ),
+  );
+}
 
   // ─── Handler ─────────────────────────────────────────────────────────────────
 

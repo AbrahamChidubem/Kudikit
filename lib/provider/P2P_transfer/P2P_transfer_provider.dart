@@ -77,8 +77,8 @@ class TransferData {
     this.amount,
     this.category,
     this.note,
-    this.balance = 5000.00,
-    this.fee = 0.0,
+    this.balance = 100000.00,
+    this.fee = 10.0,
   });
 
   TransferData copyWith({

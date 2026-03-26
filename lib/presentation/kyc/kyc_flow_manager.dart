@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/formatting/widget/bottom_nav.dart';
 import 'package:kudipay/model/tier/tier_model.dart';
 import 'package:kudipay/presentation/Identity/chooseID.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
@@ -212,20 +213,20 @@ class KycFlowManager extends ConsumerWidget {
       case TierLevel.basic:
         // Tier 1 — only ID verification required.
         if (!user.isBvnVerified) return const IdVerificationScreen();
-        return const HomeScreen();
+        return const BottomNavBar();
 
       case TierLevel.pro:
         // Tier 2 — Selfie first, then ID.
         if (!user.isSelfieVerified) return const SelfieInstructionsScreen();
         if (!user.isBvnVerified)    return const IdVerificationScreen();
-        return const HomeScreen();
+        return const BottomNavBar();
 
       case TierLevel.mega:
         // Tier 3 — Selfie, ID, then Address.
         if (!user.isSelfieVerified)   return const SelfieInstructionsScreen();
         if (!user.isBvnVerified)      return const IdVerificationScreen();
         if (!user.isAddressVerified)  return const AddressVerificationScreen();
-        return const HomeScreen();
+        return const BottomNavBar();
     }
   }
 

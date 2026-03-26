@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_screen.dart';
-
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_receipt_screen.dart';
 
 class TransferMenuScreen extends StatelessWidget {
@@ -10,38 +11,41 @@ class TransferMenuScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
+      backgroundColor: AppColors.backgroundScreen,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.backgroundScreen,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          icon: const Icon(
+            Icons.arrow_back_ios,
+            color: AppColors.textDark,
+            size: 20,
+          ),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Transfer Menu',
           style: TextStyle(
-            color: Colors.black,
-            fontSize: 18,
+            fontFamily: 'PolySans',
+            color: AppColors.textDark,
+            fontSize: AppLayout.fontSize(context, 18),
             fontWeight: FontWeight.w600,
           ),
         ),
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 16),
+        ),
         child: Column(
           children: [
-            SizedBox(height: AppLayout.scaleHeight(context, 16)),
-            
-            // Single Transfer Option
-            _buildTransferOption(
-              context: context,
-              icon: Icons.person_outline,
-              iconColor: const Color(0xFF069494),
-              iconBgColor: const Color(0xFFE8F5E9),
+            _MenuCard(
+              svgAsset: 'assets/icons/person.svg',
               title: 'Single Transfer',
               subtitle: 'Send money to one recipient',
+              iconBackgroundColor: const Color(0xFFf2fbf9),
               onTap: () {
                 Navigator.push(
                   context,
@@ -51,17 +55,12 @@ class TransferMenuScreen extends StatelessWidget {
                 );
               },
             ),
-            
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
-            
-            // Bulk Transfer Option
-            _buildTransferOption(
-              context: context,
-              icon: Icons.group_outlined,
-              iconColor: const Color(0xFF069494),
-              iconBgColor: const Color(0xFFE8F5E9),
+            _MenuCard(
+              svgAsset: 'assets/icons/bulk.svg',
               title: 'Bulk Transfer',
               subtitle: 'Send money to up to 15 people at once',
+              iconBackgroundColor: const Color(0xFFf2fbf9),
               onTap: () {
                 Navigator.push(
                   context,
@@ -76,87 +75,97 @@ class TransferMenuScreen extends StatelessWidget {
       ),
     );
   }
+}
 
-  Widget _buildTransferOption({
-    required BuildContext context,
-    required IconData icon,
-    required Color iconColor,
-    required Color iconBgColor,
-    required String title,
-    required String subtitle,
-    required VoidCallback onTap,
-  }) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+class _MenuCard extends StatelessWidget {
+  final String svgAsset;
+  final String title;
+  final String subtitle;
+  final Color iconBackgroundColor;
+
+  final VoidCallback onTap;
+
+  const _MenuCard({
+    required this.svgAsset,
+    required this.title,
+    required this.subtitle,
+    required this.iconBackgroundColor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+        child: Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: AppLayout.scaleWidth(context, 16),
+            vertical: AppLayout.scaleHeight(context, 18),
           ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
-            child: Row(
-              children: [
-                // Icon
-                Container(
-                  width: AppLayout.scaleWidth(context, 48),
-                  height: AppLayout.scaleWidth(context, 48),
-                  decoration: BoxDecoration(
-                    color: iconBgColor,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: iconColor,
-                    size: AppLayout.scaleWidth(context, 24),
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius:
+                BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: AppLayout.scaleWidth(context, 12),
+                offset: Offset(0, AppLayout.scaleHeight(context, 4)),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              // Icon container
+              Container(
+                width: AppLayout.scaleWidth(context, 30),
+                height: AppLayout.scaleWidth(context, 30),
+                decoration: BoxDecoration(
+                  color: iconBackgroundColor,
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 14)),
+                ),
+                child: Center(
+                  child: SvgPicture.asset(
+                    svgAsset,
+                    width: AppLayout.scaleWidth(context, 17),
+                    height: AppLayout.scaleWidth(context, 17),
                   ),
                 ),
-                
-                SizedBox(width: AppLayout.scaleWidth(context, 16)),
-                
-                // Text
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 16),
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black,
-                        ),
+              ),
+              SizedBox(width: AppLayout.scaleWidth(context, 14)),
+              // Text content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      title,
+                      style: TextStyle(
+                        fontFamily: 'PolySans',
+                        fontSize: AppLayout.fontSize(context, 15),
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textDark,
                       ),
-                      SizedBox(height: AppLayout.scaleHeight(context, 4)),
-                      Text(
-                        subtitle,
-                        style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 14),
-                          color: Colors.grey[600],
-                        ),
+                    ),
+                    SizedBox(height: AppLayout.scaleHeight(context, 3)),
+                    Text(
+                      subtitle,
+                      style: TextStyle(
+                        fontFamily: 'PolySans',
+                        fontSize: AppLayout.fontSize(context, 11),
+                        fontWeight: FontWeight.w400,
+                        color: AppColors.textGrey,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                
-                // Arrow
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: AppLayout.scaleWidth(context, 16),
-                  color: Colors.grey[400],
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

@@ -1,933 +1,1383 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
-
 import '../../model/request/request_model.dart';
 
+// ─── Colours ───────────────────────────────────────────────────────────────────
+const _teal     = AppColors.primaryTeal;
+const _bg       = AppColors.backgroundScreen;
+const _textDark = AppColors.textDark;
+const _textGrey = AppColors.textGrey;
+const _white    = AppColors.white;
+
+// ─── Request Detail Screen ─────────────────────────────────────────────────────
 class RequestDetailScreen extends ConsumerStatefulWidget {
   final MoneyRequest request;
 
   const RequestDetailScreen({super.key, required this.request});
 
   @override
-  ConsumerState<RequestDetailScreen> createState() => _RequestDetailScreenState();
+  ConsumerState<RequestDetailScreen> createState() =>
+      _RequestDetailScreenState();
 }
 
-class _RequestDetailScreenState extends ConsumerState<RequestDetailScreen> {
-  void _showPartialPaymentDialog() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _PartialPaymentSheet(request: widget.request),
-    );
-  }
+class _RequestDetailScreenState
+    extends ConsumerState<RequestDetailScreen> {
 
-  void _showPaymentConfirmation(double amount) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _PaymentConfirmationSheet(
-        request: widget.request,
-        amount: amount,
-      ),
-    );
-  }
+  // Determine if the current user is the requester (sender) or the recipient
+  // For now we treat the request based on its requesterId vs a mock userId
+  bool get _isSender => widget.request.requesterId == 'current_user';
 
-  void _showCounterOfferDialog() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (_) => SafeArea(
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: AppLayout.scaleWidth(context, 24),
-            vertical: AppLayout.scaleHeight(context, 28),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 52,
-                height: 52,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE8F5EE),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.compare_arrows_rounded,
-                    color: Color(0xFF069494), size: 26),
-              ),
-              SizedBox(height: AppLayout.scaleHeight(context, 14)),
-              Text(
-                'Counter Offer Coming Soon',
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 18),
-                  fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A2E),
-                ),
-              ),
-              SizedBox(height: AppLayout.scaleHeight(context, 8)),
-              Text(
-                'The ability to send a counter offer is being '
-                'built and will be available shortly.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 14),
-                  color: const Color(0xFF9E9E9E),
-                  height: 1.5,
-                ),
-              ),
-              SizedBox(height: AppLayout.scaleHeight(context, 24)),
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF069494),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(28),
-                    ),
-                  ),
-                  child: Text(
-                    'Got it',
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 15),
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  MoneyRequest get _req => widget.request;
 
-  void _declineRequest() {
+  // ── Bottom sheets ─────────────────────────────────────────────────────────
+
+  void _showPaymentOptions() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Decline Request?',
-            style: GoogleFonts.openSans(fontWeight: FontWeight.w600)),
-        content: Text('Are you sure you want to decline this request?',
-            style: GoogleFonts.openSans()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Cancel',
-                style: GoogleFonts.openSans(color: Colors.grey[600])),
-          ),
-          TextButton(
-            onPressed: () async {
-              // ✅ Riverpod — ref.read, no context needed
-              await ref
-                  .read(requestProvider.notifier)
-                  .declineRequest(widget.request);
-              if (mounted) {
-                Navigator.pop(context);
-                Navigator.pop(context);
-              }
-            },
-            child: Text('Decline',
-                style: GoogleFonts.openSans(
-                    color: Colors.red, fontWeight: FontWeight.w600)),
-          ),
-        ],
+      barrierColor: Colors.black45,
+      builder: (_) => _PaymentOptionsDialog(
+        onPayFull: () {
+          Navigator.pop(context);
+          _showConfirmPayment(_req.amount);
+        },
+        onPayPartial: () {
+          Navigator.pop(context);
+          _showPartialPaymentSheet();
+        },
+        onCounter: () {
+          Navigator.pop(context);
+          _showCounterOfferSheet();
+        },
       ),
     );
   }
+
+  void _showPartialPaymentSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _PartialPaymentSheet(
+        request: _req,
+        onContinue: (amount) {
+          Navigator.pop(context);
+          _showConfirmPayment(amount);
+        },
+      ),
+    );
+  }
+
+  void _showConfirmPayment(double amount) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ConfirmPaymentSheet(
+        request: _req,
+        amount: amount,
+        onPay: () async {
+          Navigator.pop(context);
+          await ref.read(requestProvider).payRequest(_req, amount);
+          if (mounted) Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  void _showCounterOfferSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CounterOfferSheet(request: _req),
+    );
+  }
+
+  void _showDeclineSheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _DeclineSheet(
+        onDecline: (reason) async {
+          Navigator.pop(context);
+          await ref.read(requestProvider).declineRequest(_req);
+          if (mounted) Navigator.pop(context);
+        },
+      ),
+    );
+  }
+
+  // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final request = widget.request;
+    final isPaid    = _req.status == RequestStatus.paid;
+    final isExpired = _req.status == RequestStatus.expired;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF9F9F9),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF9F9F9),
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'My Request',
-          style: GoogleFonts.openSans(
-            color: Colors.black,
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ),
+      backgroundColor: _bg,
+      appBar: _buildAppBar(context),
+      bottomNavigationBar: _buildBottomBar(context, isPaid, isExpired),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 16),
+          vertical: AppLayout.scaleHeight(context, 16),
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Requester Info
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor: Colors.black,
-                    child: Text(
-                      request.requesterName.substring(0, 2).toUpperCase(),
-                      style: GoogleFonts.openSans(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          request.requesterName,
-                          style: GoogleFonts.openSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          request.requesterPhone,
-                          style: GoogleFonts.openSans(
-                            fontSize: 13,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
+            // Requester info
+            _buildRequesterRow(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Amount Card
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF069494),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Money Requesting',
-                    style: GoogleFonts.openSans(
-                      color: Colors.white70,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '₦${NumberFormat('#,###.00').format(request.amount)}',
-                    style: GoogleFonts.openSans(
-                      color: Colors.white,
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
+            // Amount card (teal)
+            _buildAmountCard(context, isPaid, isExpired),
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
-            // Overdue Warning (if applicable)
-            if (request.isOverdue)
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFEBEE),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.warning_amber, color: Colors.red),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Overdue',
-                            style: GoogleFonts.openSans(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.red,
-                            ),
-                          ),
-                          Text(
-                            'This request was due ${request.daysOverdue} day${request.daysOverdue > 1 ? 's' : ''} ago',
-                            style: GoogleFonts.openSans(
-                              fontSize: 12,
-                              color: Colors.red[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            if (request.isOverdue) const SizedBox(height: 16),
+            // Overdue banner (when applicable)
+            if (_req.isOverdue && !isPaid && !isExpired)
+              _buildOverdueBanner(context),
 
-            // Request Details
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Request Details',
-                    style: GoogleFonts.openSans(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow('Category', request.category),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    'Due date',
-                    request.dueDate != null
-                        ? DateFormat('MMMM dd, yyyy').format(request.dueDate!)
-                        : 'Not set',
-                    icon: Icons.calendar_today,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    'Privacy',
-                    request.isPrivate ? 'Private' : 'Public',
-                    icon: Icons.lock_outline,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildDetailRow(
-                    'Status',
-                    request.statusText,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
+            // Request details
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            _buildSectionTitle(context, 'Request Details'),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            _buildDetailsCard(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Description (if available)
-            if (request.description != null) ...[
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Description',
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      request.description!,
-                      style: GoogleFonts.openSans(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
+            // Description
+            _buildSectionTitle(context, 'Description'),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            _buildDescriptionCard(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+            // Payment history (paid only)
+            if (isPaid) ...[
+              _buildSectionTitle(context, 'Payment History'),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              _buildPaymentHistory(context),
+              SizedBox(height: AppLayout.scaleHeight(context, 16)),
             ],
           ],
         ),
       ),
-      bottomNavigationBar: request.status == RequestStatus.pending ||
-              request.status == RequestStatus.partial
-          ? Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
-              ),
-              child: SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    ElevatedButton(
-                      onPressed: () =>
-                          _showPaymentConfirmation(request.remainingAmount),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF069494),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 0,
-                      ),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Text(
-                          'Pay Full Amount  ₦${NumberFormat('#,###').format(request.remainingAmount)}',
-                          textAlign: TextAlign.center,
-                          style: GoogleFonts.openSans(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _showPartialPaymentDialog,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF069494),
-                              side: const BorderSide(color: Color(0xFF069494)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Pay partial',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _showCounterOfferDialog,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF069494),
-                              side: const BorderSide(color: Color(0xFF069494)),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Counter',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: _declineRequest,
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red,
-                              side: const BorderSide(color: Colors.red),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Decline',
-                              style: GoogleFonts.openSans(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : null,
     );
   }
 
-  Widget _buildDetailRow(String label, String value, {IconData? icon}) {
+  // ── AppBar ─────────────────────────────────────────────────────────────────
+  PreferredSizeWidget _buildAppBar(BuildContext context) {
+    return AppBar(
+      backgroundColor: _bg,
+      elevation: 0,
+      leading: IconButton(
+        icon: Icon(Icons.arrow_back_ios,
+            color: _textDark, size: AppLayout.scaleWidth(context, 18)),
+        onPressed: () => Navigator.pop(context),
+      ),
+      title: Text(
+        'My Request',
+        style: TextStyle(
+          fontFamily: 'PolySans',
+          color: _textDark,
+          fontSize: AppLayout.fontSize(context, 18),
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      centerTitle: true,
+    );
+  }
+
+  // ── Requester row ──────────────────────────────────────────────────────────
+  Widget _buildRequesterRow(BuildContext context) {
     return Row(
       children: [
-        Expanded(
+        CircleAvatar(
+          radius: AppLayout.scaleWidth(context, 26),
+          backgroundColor: _avatarColor(_req),
           child: Text(
-            label,
-            style: GoogleFonts.openSans(
-              fontSize: 13,
-              color: Colors.grey[600],
+            _initials(_req.requesterName),
+            style: TextStyle(
+              color: _white,
+              fontWeight: FontWeight.w700,
+              fontSize: AppLayout.fontSize(context, 14),
             ),
           ),
         ),
-        if (icon != null) ...[
-          Icon(icon, size: 16, color: Colors.grey[600]),
-          const SizedBox(width: 6),
-        ],
-        Text(
-          value,
-          style: GoogleFonts.openSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
+        SizedBox(width: AppLayout.scaleWidth(context, 12)),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _req.requesterName,
+              style: TextStyle(
+                fontFamily: 'PolySans',
+                fontSize: AppLayout.fontSize(context, 16),
+                fontWeight: FontWeight.w700,
+                color: _textDark,
+              ),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 2)),
+            Text(
+              _req.requesterPhone,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 13),
+                color: _textGrey,
+              ),
+            ),
+          ],
         ),
       ],
     );
   }
+
+  // ── Amount card ────────────────────────────────────────────────────────────
+  Widget _buildAmountCard(BuildContext context, bool isPaid, bool isExpired) {
+    final label = isPaid
+        ? 'Amount Paid'
+        : isExpired
+            ? 'Money Expired'
+            : 'Money Requesting';
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
+      decoration: BoxDecoration(
+        color: isExpired ? const Color(0xFF2E7D6E) : _teal,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 12),
+              color: _white.withOpacity(0.8),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: AppLayout.scaleHeight(context, 6)),
+          Text(
+            '₦${NumberFormat('#,##0.00').format(isPaid ? (_req.paidAmount ?? _req.amount) : _req.amount)}',
+            style: TextStyle(
+              fontFamily: 'PolySans',
+              fontSize: AppLayout.fontSize(context, 28),
+              fontWeight: FontWeight.w700,
+              color: _white,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Overdue banner ─────────────────────────────────────────────────────────
+  Widget _buildOverdueBanner(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 14),
+        vertical: AppLayout.scaleHeight(context, 12),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.red.shade50,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        border: Border.all(color: Colors.red.shade100),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.warning_amber_rounded,
+              color: Colors.red.shade400,
+              size: AppLayout.scaleWidth(context, 20)),
+          SizedBox(width: AppLayout.scaleWidth(context, 10)),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Overdue',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 13),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.red.shade700,
+                ),
+              ),
+              Text(
+                'This request was due ${_req.daysOverdue} day${_req.daysOverdue != 1 ? 's' : ''} ago',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 12),
+                  color: Colors.red.shade500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Details card ───────────────────────────────────────────────────────────
+  Widget _buildDetailsCard(BuildContext context) {
+    final dueText = _req.dueDate != null
+        ? DateFormat('MMMM d, yyyy').format(_req.dueDate!)
+        : '—';
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+        horizontal: AppLayout.scaleWidth(context, 16),
+        vertical: AppLayout.scaleHeight(context, 4),
+      ),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8, offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          _detailRow(context, 'Category', _req.category),
+          _divider(),
+          _detailRow(
+            context,
+            'Due date',
+            dueText,
+            leadIcon: Icons.calendar_today_outlined,
+          ),
+          _divider(),
+          _detailRow(
+            context,
+            'Privacy',
+            _req.isPrivate ? 'Private' : 'Public',
+            leadIcon: Icons.lock_outline,
+          ),
+          _divider(),
+          _detailRow(context, 'Status', _req.statusText),
+        ],
+      ),
+    );
+  }
+
+  Widget _detailRow(BuildContext context, String label, String value,
+      {IconData? leadIcon}) {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 12)),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 13),
+                color: _textGrey,
+              ),
+            ),
+          ),
+          if (leadIcon != null) ...[
+            Icon(leadIcon, size: AppLayout.scaleWidth(context, 13), color: _textGrey),
+            SizedBox(width: AppLayout.scaleWidth(context, 4)),
+          ],
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 13),
+              fontWeight: FontWeight.w600,
+              color: _textDark,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _divider() =>
+      const Divider(height: 1, color: Color(0xFFF5F5F5));
+
+  // ── Description card ───────────────────────────────────────────────────────
+  Widget _buildDescriptionCard(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 8, offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Text(
+        _req.description ?? _req.reason ?? 'No description provided.',
+        style: TextStyle(
+          fontSize: AppLayout.fontSize(context, 14),
+          color: _textDark,
+          height: 1.5,
+        ),
+      ),
+    );
+  }
+
+  // ── Payment history ────────────────────────────────────────────────────────
+  Widget _buildPaymentHistory(BuildContext context) {
+    final paidAmt = _req.paidAmount ?? _req.amount;
+    final paidDate = _req.paidAt ?? _req.createdAt;
+
+    return Container(
+      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+      decoration: BoxDecoration(
+        color: AppColors.lightGreen,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Full Payment',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 14),
+                    fontWeight: FontWeight.w600,
+                    color: _textDark,
+                  ),
+                ),
+                SizedBox(height: AppLayout.scaleHeight(context, 3)),
+                Text(
+                  _timeAgo(paidDate),
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 12),
+                    color: _textGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            '₦${NumberFormat('#,##0.00').format(paidAmt)}',
+            style: TextStyle(
+              fontFamily: 'PolySans',
+              fontSize: AppLayout.fontSize(context, 14),
+              fontWeight: FontWeight.w700,
+              color: _textDark,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Text(
+      title,
+      style: TextStyle(
+        fontFamily: 'PolySans',
+        fontSize: AppLayout.fontSize(context, 14),
+        fontWeight: FontWeight.w600,
+        color: _textDark,
+      ),
+    );
+  }
+
+  // ── Bottom navigation bar ─────────────────────────────────────────────────
+  Widget? _buildBottomBar(BuildContext context, bool isPaid, bool isExpired) {
+    // Paid or expired — no actions
+    if (isPaid || isExpired) return const SizedBox(height: 0);
+
+    // Sender view — show "Send Reminder"
+    if (_isSender) {
+      return SafeArea(
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(
+            AppLayout.scaleWidth(context, 16),
+            AppLayout.scaleHeight(context, 8),
+            AppLayout.scaleWidth(context, 16),
+            AppLayout.scaleHeight(context, 8),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Reminder sent!'),
+                      backgroundColor: _teal,
+                      behavior: SnackBarBehavior.floating,
+                      margin: EdgeInsets.only(
+                        bottom: AppLayout.scaleHeight(context, 16),
+                        left: AppLayout.scaleWidth(context, 16),
+                        right: AppLayout.scaleWidth(context, 16),
+                      ),
+                    ),
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _teal,
+                  minimumSize: Size(double.infinity, AppLayout.scaleHeight(context, 52)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 30)),
+                  ),
+                  elevation: 0,
+                ),
+                child: Text(
+                  'Send Reminder',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 16),
+                    fontWeight: FontWeight.w600,
+                    color: _white,
+                  ),
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 8)),
+              Text(
+                'We will send a reminder, requesting for payment',
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 12),
+                  color: _textGrey,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Recipient view — "Pay Full Amount" + three action buttons
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 16),
+          AppLayout.scaleHeight(context, 8),
+          AppLayout.scaleWidth(context, 16),
+          AppLayout.scaleHeight(context, 12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Primary: Pay Full Amount
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _showConfirmPayment(_req.amount),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _teal,
+                      minimumSize: Size(0, AppLayout.scaleHeight(context, 52)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius:
+                            BorderRadius.circular(AppLayout.scaleWidth(context, 30)),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: Text(
+                      'Pay Full Amount  ₦${NumberFormat('#,###').format(_req.amount)}',
+                      style: TextStyle(
+                        fontSize: AppLayout.fontSize(context, 15),
+                        fontWeight: FontWeight.w600,
+                        color: _white,
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(width: AppLayout.scaleWidth(context, 10)),
+                // ••• menu button
+                GestureDetector(
+                  onTap: _showPaymentOptions,
+                  child: Container(
+                    width: AppLayout.scaleWidth(context, 48),
+                    height: AppLayout.scaleHeight(context, 52),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF0F0F0),
+                      borderRadius:
+                          BorderRadius.circular(AppLayout.scaleWidth(context, 14)),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '•••',
+                        style: TextStyle(
+                          fontSize: AppLayout.fontSize(context, 16),
+                          color: _textDark,
+                          letterSpacing: 2,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+
+            // Secondary: Pay partial | Counter | Decline
+            Row(
+              children: [
+                Expanded(
+                  child: _SecondaryButton(
+                    label: 'Pay partial',
+                    onTap: _showPartialPaymentSheet,
+                  ),
+                ),
+                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                Expanded(
+                  child: _SecondaryButton(
+                    label: 'Counter',
+                    onTap: _showCounterOfferSheet,
+                  ),
+                ),
+                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                Expanded(
+                  child: _SecondaryButton(
+                    label: 'Decline',
+                    onTap: _showDeclineSheet,
+                    textColor: Colors.red,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+  String _initials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    return name.length >= 2 ? name.substring(0, 2).toUpperCase() : name[0].toUpperCase();
+  }
+
+  Color _avatarColor(MoneyRequest r) {
+    const colors = [
+      AppColors.avatarTeal, AppColors.avatarRed, AppColors.avatarOrange,
+      AppColors.avatarDark, AppColors.avatarBlue,
+    ];
+    return colors[r.id.hashCode.abs() % colors.length];
+  }
+
+  String _timeAgo(DateTime dt) {
+    final diff = DateTime.now().difference(dt);
+    if (diff.inDays > 0) return '${diff.inDays} day${diff.inDays > 1 ? 's' : ''} ago';
+    if (diff.inHours > 0) return '${diff.inHours} hour${diff.inHours > 1 ? 's' : ''} ago';
+    return 'Just now';
+  }
 }
 
+// ─── Secondary action button ───────────────────────────────────────────────────
+class _SecondaryButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+  final Color? textColor;
+
+  const _SecondaryButton({
+    required this.label,
+    required this.onTap,
+    this.textColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: AppLayout.scaleHeight(context, 44),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+          border: Border.all(color: const Color(0xFFE0E0E0)),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 13),
+              fontWeight: FontWeight.w500,
+              color: textColor ?? _textDark,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Payment Options Dialog (Image 7) ─────────────────────────────────────────
+class _PaymentOptionsDialog extends StatelessWidget {
+  final VoidCallback onPayFull;
+  final VoidCallback onPayPartial;
+  final VoidCallback onCounter;
+
+  const _PaymentOptionsDialog({
+    required this.onPayFull,
+    required this.onPayPartial,
+    required this.onCounter,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Payment Option',
+                  style: TextStyle(
+                    fontFamily: 'PolySans',
+                    fontSize: AppLayout.fontSize(context, 16),
+                    fontWeight: FontWeight.w700,
+                    color: _textDark,
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.close,
+                      color: _textGrey, size: AppLayout.scaleWidth(context, 20)),
+                ),
+              ],
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+            _OptionTile(label: 'Pay Full', onTap: onPayFull),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            _OptionTile(label: 'Pay partial', onTap: onPayPartial),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            _OptionTile(label: 'Counter', onTap: onCounter),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionTile extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _OptionTile({required this.label, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 14)),
+        decoration: BoxDecoration(
+          color: _bg,
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 14),
+              fontWeight: FontWeight.w500,
+              color: _textDark,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Partial Payment Sheet (Image 11) ─────────────────────────────────────────
 class _PartialPaymentSheet extends StatefulWidget {
   final MoneyRequest request;
+  final void Function(double amount) onContinue;
 
-  const _PartialPaymentSheet({required this.request});
+  const _PartialPaymentSheet({required this.request, required this.onContinue});
 
   @override
   State<_PartialPaymentSheet> createState() => _PartialPaymentSheetState();
 }
 
 class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
-  final TextEditingController _amountController = TextEditingController();
-  double _selectedPercentage = 0.25;
+  final _ctrl = TextEditingController();
+  double _amount = 0;
+
+  double get _remaining => widget.request.remainingAmount;
 
   @override
   void dispose() {
-    _amountController.dispose();
+    _ctrl.dispose();
     super.dispose();
   }
 
-  void _selectPercentage(double percentage) {
+  void _setPercent(double pct) {
+    final val = (_remaining * pct).roundToDouble();
     setState(() {
-      _selectedPercentage = percentage;
-      final amount = widget.request.remainingAmount * percentage;
-      _amountController.text = NumberFormat('#,###').format(amount);
+      _amount = val;
+      _ctrl.text = val.toStringAsFixed(0);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final remaining = widget.request.remainingAmount;
-
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 20),
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 32) + MediaQuery.of(context).padding.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.vertical(
+            top: Radius.circular(AppLayout.scaleWidth(context, 24)),
+          ),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _sheetHandle(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Partial Payment',
-                  style: GoogleFonts.openSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
+                Text('Partial Payment',
+                    style: TextStyle(
+                        fontFamily: 'PolySans',
+                        fontSize: AppLayout.fontSize(context, 18),
+                        fontWeight: FontWeight.w700,
+                        color: _textDark)),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.close,
+                      color: _textGrey, size: AppLayout.scaleWidth(context, 20)),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Enter the amount you want to pay now',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              'Amount',
-              style: GoogleFonts.openSans(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
-            ),
-            const SizedBox(height: 8),
+            SizedBox(height: AppLayout.scaleHeight(context, 4)),
+            Text('Enter the amount you want to pay now',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13), color: _textGrey)),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+            Text('Amount',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13),
+                    fontWeight: FontWeight.w600,
+                    color: _textDark)),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
             TextField(
-              controller: _amountController,
+              controller: _ctrl,
               keyboardType: TextInputType.number,
-              style: GoogleFonts.openSans(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              onChanged: (v) => setState(() => _amount = double.tryParse(v) ?? 0),
               decoration: InputDecoration(
                 prefixText: '₦ ',
-                prefixStyle: GoogleFonts.openSans(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                ),
+                prefixStyle: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 15), color: _textGrey),
                 filled: true,
-                fillColor: const Color(0xFFF5F5F5),
+                fillColor: _bg,
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
+                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+                    borderSide: BorderSide.none),
+                contentPadding: EdgeInsets.symmetric(
+                    horizontal: AppLayout.scaleWidth(context, 14),
+                    vertical: AppLayout.scaleHeight(context, 14)),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: AppLayout.scaleHeight(context, 6)),
             Text(
-              'Remaining: ₦${NumberFormat('#,###.00').format(remaining)}',
-              style: GoogleFonts.openSans(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              'Remaining:  ₦${NumberFormat('#,##0.00').format(_remaining)}',
+              style: TextStyle(fontSize: AppLayout.fontSize(context, 12), color: _textGrey),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: AppLayout.scaleHeight(context, 14)),
             Row(
               children: [
-                _PercentageChip(
-                  label:
-                      '25% ( ₦${NumberFormat('#,###').format(remaining * 0.25)})',
-                  percentage: 0.25,
-                  selectedPercentage: _selectedPercentage,
-                  onTap: _selectPercentage,
-                ),
-                const SizedBox(width: 8),
-                _PercentageChip(
-                  label:
-                      '50% ( ₦${NumberFormat('#,###').format(remaining * 0.50)})',
-                  percentage: 0.50,
-                  selectedPercentage: _selectedPercentage,
-                  onTap: _selectPercentage,
-                ),
-                const SizedBox(width: 8),
-                _PercentageChip(
-                  label:
-                      '75% ( ₦${NumberFormat('#,###').format(remaining * 0.75)})',
-                  percentage: 0.75,
-                  selectedPercentage: _selectedPercentage,
-                  onTap: _selectPercentage,
-                ),
+                _percentChip(context, '25% (₦${NumberFormat('#,###').format(_remaining * 0.25)})', 0.25),
+                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                _percentChip(context, '50% (₦${NumberFormat('#,###').format(_remaining * 0.50)})', 0.50),
+                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                _percentChip(context, '75% (₦${NumberFormat('#,###').format(_remaining * 0.75)})', 0.75),
               ],
             ),
-            const SizedBox(height: 24),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
             ElevatedButton(
-              onPressed: () {
-                final amount = double.tryParse(
-                  _amountController.text.replaceAll(',', ''),
-                );
-                if (amount != null && amount > 0 && amount <= remaining) {
-                  Navigator.pop(context);
-                  // Show confirmation
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: Colors.transparent,
-                    builder: (context) => _PaymentConfirmationSheet(
-                      request: widget.request,
-                      amount: amount,
-                    ),
-                  );
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter a valid amount'),
-                    ),
-                  );
-                }
-              },
+              onPressed: _amount > 0 ? () => widget.onContinue(_amount) : null,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF069494),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: _teal,
+                disabledBackgroundColor: _teal.withOpacity(0.4),
+                minimumSize: Size(double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                    borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 30))),
                 elevation: 0,
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  'Continue to Payment',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              child: Text('Continue to Payment',
+                  style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: _white)),
             ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  'Cancel',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ),
-            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            _cancelButton(context),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _percentChip(BuildContext context, String label, double pct) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => _setPercent(pct),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 8)),
+          decoration: BoxDecoration(
+            color: _bg,
+            borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+            border: Border.all(color: const Color(0xFFE0E0E0)),
+          ),
+          child: Center(
+            child: Text(label,
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 11),
+                    color: _textDark,
+                    fontWeight: FontWeight.w500)),
+          ),
         ),
       ),
     );
   }
 }
 
-class _PercentageChip extends StatelessWidget {
-  final String label;
-  final double percentage;
-  final double selectedPercentage;
-  final Function(double) onTap;
+// ─── Confirm Payment Sheet (Image 12) ─────────────────────────────────────────
+class _ConfirmPaymentSheet extends StatelessWidget {
+  final MoneyRequest request;
+  final double amount;
+  final VoidCallback onPay;
 
-  const _PercentageChip({
-    required this.label,
-    required this.percentage,
-    required this.selectedPercentage,
-    required this.onTap,
+  const _ConfirmPaymentSheet({
+    required this.request,
+    required this.amount,
+    required this.onPay,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = percentage == selectedPercentage;
-    return Expanded(
-      child: GestureDetector(
-        onTap: () => onTap(percentage),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          decoration: BoxDecoration(
-            color: isSelected ? const Color(0xFFE8F5E9) : Colors.grey[100],
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: isSelected ? const Color(0xFF069494) : Colors.transparent,
-            ),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            label,
-            style: GoogleFonts.openSans(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? const Color(0xFF069494) : Colors.grey[700],
-            ),
-          ),
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 20),
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 32) + MediaQuery.of(context).padding.bottom,
         ),
-      ),
-    );
-  }
-}
-
-class _PaymentConfirmationSheet extends ConsumerWidget {
-  final MoneyRequest request;
-  final double amount;
-
-  const _PaymentConfirmationSheet({
-    required this.request,
-    required this.amount,
-  });
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppLayout.scaleWidth(context, 24))),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            _sheetHandle(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  'Confirm Payment',
-                  style: GoogleFonts.openSans(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
+                Text('Confirm Payment',
+                    style: TextStyle(
+                        fontFamily: 'PolySans',
+                        fontSize: AppLayout.fontSize(context, 18),
+                        fontWeight: FontWeight.w700,
+                        color: _textDark)),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.close,
+                      color: _textGrey, size: AppLayout.scaleWidth(context, 20)),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Text(
-              'Review payment details',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildDetailRow('Paying to', request.requesterName),
-            const SizedBox(height: 12),
-            _buildDetailRow(
-                'Amount', '₦${NumberFormat('#,###.00').format(amount)}'),
-            const SizedBox(height: 12),
-            _buildDetailRow('Reason', request.reason ?? 'Dinner'),
-            const SizedBox(height: 24),
+            SizedBox(height: AppLayout.scaleHeight(context, 4)),
+            Text('Review payment details',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13), color: _textGrey)),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            // Details box
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
               decoration: BoxDecoration(
-                color: const Color(0xFFE3F2FD),
-                borderRadius: BorderRadius.circular(8),
+                color: _bg,
+                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  const Icon(Icons.info_outline,
-                      color: Color(0xFF2196F3), size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Note: Your payment will be processed immediately and ${request.requesterName} will be notified',
-                      style: GoogleFonts.openSans(
-                        fontSize: 12,
-                        color: const Color(0xFF1976D2),
-                      ),
-                    ),
-                  ),
+                  _confirmRow(context, 'Paying to', request.requesterName),
+                  SizedBox(height: AppLayout.scaleHeight(context, 10)),
+                  _confirmRow(context, 'Amount',
+                      '₦${NumberFormat('#,##0.00').format(amount)}'),
+                  SizedBox(height: AppLayout.scaleHeight(context, 10)),
+                  _confirmRow(context, 'Reason',
+                      request.reason ?? request.category),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () async {
-                // ✅ Riverpod
-                await ref
-                    .read(requestProvider.notifier)
-                    .payRequest(request, amount);
+            SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
-                if (context.mounted) {
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Payment successful!'),
-                      backgroundColor: Color(0xFF4CAF50),
-                    ),
-                  );
-                }
-              },
+            // Note banner
+            Container(
+              padding: EdgeInsets.all(AppLayout.scaleWidth(context, 14)),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEBF3FA),
+                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+              ),
+              child: Text(
+                'Note: Your payment will be processed immediately and ${request.requesterName} will be notified',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 12),
+                    color: const Color(0xFF2E6BA0),
+                    height: 1.4),
+              ),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            ElevatedButton(
+              onPressed: onPay,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF069494),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                backgroundColor: _teal,
+                minimumSize: Size(double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                    borderRadius:
+                        BorderRadius.circular(AppLayout.scaleWidth(context, 30))),
                 elevation: 0,
               ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  'Pay Now',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+              child: Text('Pay Now',
+                  style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: _white)),
             ),
-            const SizedBox(height: 12),
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: Text(
-                  'Cancel',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.openSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey[600],
-                  ),
-                ),
-              ),
-            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            _cancelButton(context),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
+  Widget _confirmRow(BuildContext context, String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          label,
-          style: GoogleFonts.openSans(
-            fontSize: 13,
-            color: Colors.grey[600],
-          ),
-        ),
-        Text(
-          value,
-          style: GoogleFonts.openSans(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
+        Text(label,
+            style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 13), color: _textGrey)),
+        Text(value,
+            style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 13),
+                fontWeight: FontWeight.w600,
+                color: _textDark)),
       ],
     );
   }
+}
+
+// ─── Counter Offer Sheet (Image 10) ───────────────────────────────────────────
+class _CounterOfferSheet extends StatefulWidget {
+  final MoneyRequest request;
+  const _CounterOfferSheet({required this.request});
+
+  @override
+  State<_CounterOfferSheet> createState() => _CounterOfferSheetState();
+}
+
+class _CounterOfferSheetState extends State<_CounterOfferSheet> {
+  final _amountCtrl = TextEditingController();
+  final _reasonCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    _reasonCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 20),
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 32) + MediaQuery.of(context).padding.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppLayout.scaleWidth(context, 24))),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _sheetHandle(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Counter Offer',
+                    style: TextStyle(
+                        fontFamily: 'PolySans',
+                        fontSize: AppLayout.fontSize(context, 18),
+                        fontWeight: FontWeight.w700,
+                        color: _textDark)),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.close,
+                      color: _textGrey, size: AppLayout.scaleWidth(context, 20)),
+                ),
+              ],
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 4)),
+            Text('Suggest a different amount',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13), color: _textGrey)),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            Text('Proposed Amount',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13),
+                    fontWeight: FontWeight.w600,
+                    color: _textDark)),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            _sheetTextField(context, _amountCtrl, '₦',
+                keyboardType: TextInputType.number),
+            SizedBox(height: AppLayout.scaleHeight(context, 6)),
+            Text(
+              'Original:  ₦${NumberFormat('#,##0.00').format(widget.request.amount)}',
+              style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 12), color: _textGrey),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+            Text('Reason (optional)',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13),
+                    fontWeight: FontWeight.w600,
+                    color: _textDark)),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            _sheetTextField(context, _reasonCtrl,
+                'Explain your counter reason', maxLines: 4),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _teal,
+                minimumSize: Size(double.infinity, AppLayout.scaleHeight(context, 52)),
+                shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppLayout.scaleWidth(context, 30))),
+                elevation: 0,
+              ),
+              child: Text('Send Counter Offer',
+                  style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: _white)),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            _cancelButton(context),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Decline Sheet (Image 9) ───────────────────────────────────────────────────
+class _DeclineSheet extends StatefulWidget {
+  final void Function(String? reason) onDecline;
+  const _DeclineSheet({required this.onDecline});
+
+  @override
+  State<_DeclineSheet> createState() => _DeclineSheetState();
+}
+
+class _DeclineSheetState extends State<_DeclineSheet> {
+  final _reasonCtrl = TextEditingController();
+
+  @override
+  void dispose() {
+    _reasonCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Container(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 20),
+          AppLayout.scaleWidth(context, 20),
+          AppLayout.scaleHeight(context, 32) + MediaQuery.of(context).padding.bottom,
+        ),
+        decoration: BoxDecoration(
+          color: _white,
+          borderRadius: BorderRadius.vertical(
+              top: Radius.circular(AppLayout.scaleWidth(context, 24))),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _sheetHandle(context),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Decline Request',
+                    style: TextStyle(
+                        fontFamily: 'PolySans',
+                        fontSize: AppLayout.fontSize(context, 18),
+                        fontWeight: FontWeight.w700,
+                        color: _textDark)),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Icon(Icons.close,
+                      color: _textGrey, size: AppLayout.scaleWidth(context, 20)),
+                ),
+              ],
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 4)),
+            Text('Let them know why you\'re declining',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13), color: _textGrey)),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            Text('Reason (optional)',
+                style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 13),
+                    fontWeight: FontWeight.w600,
+                    color: _textDark)),
+            SizedBox(height: AppLayout.scaleHeight(context, 8)),
+            _sheetTextField(context, _reasonCtrl, 'Add reason', maxLines: 4),
+            SizedBox(height: AppLayout.scaleHeight(context, 20)),
+
+            ElevatedButton(
+              onPressed: () =>
+                  widget.onDecline(_reasonCtrl.text.trim().isEmpty ? null : _reasonCtrl.text),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                minimumSize: Size(double.infinity, AppLayout.scaleHeight(context, 52)),
+                shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(AppLayout.scaleWidth(context, 30))),
+                elevation: 0,
+              ),
+              child: Text('Decline Request',
+                  style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w600,
+                      color: _white)),
+            ),
+            SizedBox(height: AppLayout.scaleHeight(context, 10)),
+            _cancelButton(context),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Shared sheet helpers ──────────────────────────────────────────────────────
+
+Widget _sheetHandle(BuildContext context) {
+  return Center(
+    child: Container(
+      width: AppLayout.scaleWidth(context, 40),
+      height: AppLayout.scaleHeight(context, 4),
+      decoration: BoxDecoration(
+        color: AppColors.divider,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    ),
+  );
+}
+
+Widget _sheetTextField(
+  BuildContext context,
+  TextEditingController ctrl,
+  String hint, {
+  int maxLines = 1,
+  TextInputType keyboardType = TextInputType.text,
+}) {
+  return TextField(
+    controller: ctrl,
+    maxLines: maxLines,
+    keyboardType: keyboardType,
+    style: TextStyle(
+        fontSize: AppLayout.fontSize(context, 14), color: _textDark),
+    decoration: InputDecoration(
+      hintText: hint,
+      hintStyle: TextStyle(
+          fontSize: AppLayout.fontSize(context, 13), color: AppColors.textLight),
+      filled: true,
+      fillColor: _bg,
+      border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+          borderSide: BorderSide.none),
+      focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+          borderSide: const BorderSide(color: _teal, width: 1.5)),
+      contentPadding: EdgeInsets.symmetric(
+          horizontal: AppLayout.scaleWidth(context, 14),
+          vertical: AppLayout.scaleHeight(context, 14)),
+    ),
+  );
+}
+
+Widget _cancelButton(BuildContext context) {
+  return GestureDetector(
+    onTap: () => Navigator.pop(context),
+    child: Container(
+      width: double.infinity,
+      height: AppLayout.scaleHeight(context, 52),
+      decoration: BoxDecoration(
+        color: _white,
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 30)),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Center(
+        child: Text(
+          'Cancel',
+          style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 15),
+              fontWeight: FontWeight.w600,
+              color: _textDark),
+        ),
+      ),
+    ),
+  );
 }

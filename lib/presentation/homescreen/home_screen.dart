@@ -274,21 +274,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     Color(0xFF069494),
-                                    Color(0xFF013838)
+                                    Color(0xFF339992)
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(
                                     AppLayout.scaleWidth(context, 20)),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF069494)
-                                        .withOpacity(0.5),
-                                    blurRadius:
-                                        AppLayout.scaleWidth(context, 20),
-                                    offset: Offset(
-                                        0, AppLayout.scaleHeight(context, 8)),
-                                  ),
-                                ],
+                                // boxShadow: [
+                                //   BoxShadow(
+                                //     color: const Color(0xFF069494)
+                                //         .withOpacity(0.5),
+                                //     blurRadius:
+                                //         AppLayout.scaleWidth(context, 20),
+                                //     offset: Offset(
+                                //         0, AppLayout.scaleHeight(context, 8)),
+                                //   ),
+                                // ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -472,7 +472,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // ── Quick Actions row (Transfer / Request / Cash out) ─────
                       Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: AppLayout.scaleWidth(context, 16)),
+                            horizontal: AppLayout.scaleWidth(context, 16),
+                            vertical: AppLayout.scaleWidth(context, 12),),
                         child: Row(
                           children: [
                             _buildActionCard(
@@ -747,6 +748,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Container(
             padding: EdgeInsets.symmetric(
               vertical: AppLayout.scaleHeight(context, 12),
+              horizontal: AppLayout.scaleWidth(context, 12),
             ),
             decoration: BoxDecoration(
               border: Border.all(color: AppColors.textGrey, width: 0.35),

@@ -110,14 +110,8 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFF5F9F5),
       appBar: _buildAppBar(context),
-      body: Column(
-        children: [
-          Expanded(
-            child: _buildBody(context, state, quickAmounts),
-          ),
-          _buildBottomButtons(context, state),
-        ],
-      ),
+      bottomNavigationBar: _buildBottomButtons(context, state),
+      body: _buildBody(context, state, quickAmounts),
     );
   }
 
@@ -578,104 +572,40 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
         state.transferData.amount! > 0 &&
         !state.transferData.hasInsufficientBalance;
 
-    return Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppLayout.scaleWidth(context, 24),
-        vertical: AppLayout.scaleHeight(context, 16),
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Send Now button
-            SizedBox(
-              width: double.infinity,
-              height: AppLayout.scaleHeight(context, 52),
-              child: ElevatedButton(
-                onPressed: canSend
-                    ? () {
-                        ConfirmTransferBottomSheet.show(context);
-                      }
-                    : null,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF069494),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  elevation: 0,
-                  disabledBackgroundColor: const Color(0xFFB2DFDB),
-                ),
-                child: Text(
-                  'Send',
-                  style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 16),
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppLayout.scaleWidth(context, 30),
+          AppLayout.scaleHeight(context, 12),
+          AppLayout.scaleWidth(context, 24),
+          AppLayout.scaleHeight(context, 30),
+        ),
+        child: SizedBox(
+          width: double.infinity,
+          height: AppLayout.scaleHeight(context, 52),
+          child: ElevatedButton(
+            onPressed: canSend
+                ? () {
+                    ConfirmTransferBottomSheet.show(context);
+                  }
+                : null,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF069494),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              elevation: 0,
+              disabledBackgroundColor: const Color(0xFFB2DFDB),
+            ),
+            child: Text(
+              'Send',
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 16),
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
               ),
             ),
-
-            // SizedBox(height: AppLayout.scaleHeight(context, 12)),
-
-            // Schedule Payment button
-            // SizedBox(
-            //   width: double.infinity,
-            //   height: AppLayout.scaleHeight(context, 52),
-            //   child: OutlinedButton(
-            //     onPressed: canSend
-            //         ? () {
-            //             Navigator.push(
-            //               context,
-            //               MaterialPageRoute(
-            //                 builder: (context) =>
-            //                     const ScheduledTransferScreen(),
-            //               ),
-            //             );
-            //           }
-            //         : null,
-            //     style: OutlinedButton.styleFrom(
-            //       side: BorderSide(
-            //         color:
-            //             canSend ? const Color(0xFF069494) : Colors.grey[300]!,
-            //         width: 1.5,
-            //       ),
-            //       shape: RoundedRectangleBorder(
-            //         borderRadius: BorderRadius.circular(28),
-            //       ),
-            //     ),
-            //     child: Text(
-            //       'Schedule Payment',
-            //       style: TextStyle(
-            //         fontSize: AppLayout.fontSize(context, 16),
-            //         fontWeight: FontWeight.w600,
-            //         color: canSend ? const Color(0xFF069494) : Colors.grey,
-            //       ),
-            //     ),
-            //   ),
-            // ),
-
-            // SizedBox(height: AppLayout.scaleHeight(context, 8)),
-
-            // Text(
-            //   'Send later at a specific date & time',
-            //   style: TextStyle(
-            //     fontSize: AppLayout.fontSize(context, 12),
-            //     color: Colors.black54,
-            //   ),
-            //   textAlign: TextAlign.center,
-            // ),
-          ],
+          ),
         ),
       ),
     );
