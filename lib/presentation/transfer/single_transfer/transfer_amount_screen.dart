@@ -108,7 +108,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F9F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       appBar: _buildAppBar(context),
       bottomNavigationBar: _buildBottomButtons(context, state),
       body: _buildBody(context, state, quickAmounts),
@@ -117,7 +117,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
-      backgroundColor: const Color(0xFFF5F9F5),
+      backgroundColor: const Color(0xFFF9F9F9),
       elevation: 0,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
@@ -158,7 +158,8 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
           SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
           // Amount input card
-          _buildAmountCard(context, state, hasInsufficientBalance, quickAmounts),
+          _buildAmountCard(
+              context, state, hasInsufficientBalance, quickAmounts),
 
           SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
@@ -262,7 +263,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
             controller: _amountController,
             focusNode: _amountFocus,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [    
+            inputFormatters: [
               FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
             ],
             style: TextStyle(
@@ -284,29 +285,30 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                   color: hasInsufficientBalance ? Colors.red : Colors.black87,
                 ),
               ),
-              prefixIconConstraints: const BoxConstraints(minWidth: 0),
-              contentPadding: EdgeInsets.symmetric(
+               contentPadding: EdgeInsets.symmetric(
                 horizontal: 12,
-                vertical: 12,
+                vertical: 14,
               ),
+              prefixIconConstraints: const BoxConstraints(minWidth: 0),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
-                  color: hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
+                  color:
+                      hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
                 ),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
-                  color: hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
+                  color:
+                      hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
                 ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(
-                  color: hasInsufficientBalance
-                      ? Colors.red
-                      : const Color(0xFF069494),
+                  color:
+                      hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
                   width: 2,
                 ),
               ),
@@ -395,28 +397,27 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 16),
-                    vertical: AppLayout.scaleHeight(context, 8),
+                    horizontal: AppLayout.scaleWidth(context,25),
+                    vertical: AppLayout.scaleHeight(context, 12),
                   ),
                   decoration: BoxDecoration(
                     color: isSelected
                         ? const Color(0xFFE8F5E9)
                         : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFF069494)
-                          : Colors.grey[300]!,
-                      width: isSelected ? 1.5 : 1,
-                    ),
+                    borderRadius: BorderRadius.circular(8),
+                    // border: Border.all(
+                    //   color: isSelected
+                    //       ? const Color(0xFFE8F5E9)
+                    //       : Colors.grey[300]!,
+                    //   width: isSelected ? 1.5 : 1,
+                    // ),
                   ),
                   child: Text(
                     '₦${amount.toStringAsFixed(0)}',
                     style: TextStyle(
                       fontSize: AppLayout.fontSize(context, 13),
-                      color: isSelected
-                          ? const Color(0xFF069494)
-                          : Colors.black54,
+                      color:
+                          isSelected ? const Color(0xFF069494) : Colors.black54,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
                     ),

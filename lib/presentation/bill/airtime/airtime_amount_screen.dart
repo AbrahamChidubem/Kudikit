@@ -28,9 +28,6 @@ import 'package:kudipay/provider/kyc/kyc_provider.dart';
 import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 
-
-import 'package:kudipay/provider/wallet/wallet_provider.dart';
-
 class AirtimeAmountScreen extends ConsumerStatefulWidget {
   const AirtimeAmountScreen({Key? key}) : super(key: key);
 
@@ -478,7 +475,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFFA8D5BF),
+                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -515,7 +512,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
 // ============================================================================
 // ConfirmAirtimeBottomSheet
 // Review screen shown before the transaction is sent.
-// ============================================================================
+// ===========================================================================
 
 class ConfirmAirtimeBottomSheet extends ConsumerWidget {
   final String phoneNumber;

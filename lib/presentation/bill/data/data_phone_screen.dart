@@ -417,7 +417,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
                       state.canProceedFromPhone ? () => _proceed() : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFFA8D5BF),
+                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

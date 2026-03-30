@@ -20,12 +20,7 @@ import 'package:kudipay/formatting/widget/network_logo.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/presentation/bill/bill_transaction_detail.dart';
-import 'package:kudipay/provider/bill/bill_provider.dart';
-import 'package:kudipay/provider/kyc/kyc_provider.dart';
-
 import 'package:kudipay/provider/provider.dart';
-import 'package:kudipay/provider/provider_pack.dart';
-import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 class DataPlansScreen extends ConsumerStatefulWidget {
   const DataPlansScreen({Key? key}) : super(key: key);
@@ -469,7 +464,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFFA8D5BF),
+                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

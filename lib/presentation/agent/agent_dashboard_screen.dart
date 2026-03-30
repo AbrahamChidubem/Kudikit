@@ -399,7 +399,7 @@ class _RequestCard extends StatelessWidget {
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
-            height: 44,
+            height: 52,
             child: ElevatedButton(
               onPressed: onAccept,
               style: ElevatedButton.styleFrom(

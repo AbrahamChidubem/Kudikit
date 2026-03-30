@@ -46,27 +46,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   static const _svgBetting = 'assets/icons/betting.svg';
   static const _svgSavings = 'assets/icons/saving.svg';
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _setupConnectivityListener();
-    });
-  }
-
-  void _setupConnectivityListener() {
-    ref.listen(connectivityProvider, (previous, next) {
-      next.whenData((isConnected) {
-        if (previous?.value != null && previous!.value! && !isConnected) {
-          ConnectivitySnackBar.showNoInternet(context);
-        } else if (previous?.value != null &&
-            !previous!.value! &&
-            isConnected) {
-          ConnectivitySnackBar.showConnectionRestored(context);
-        }
-      });
-    });
-  }
+  // NOTE: initState + _setupConnectivityListener removed.
+  // ref.listen() MUST live inside build() — Riverpod enforces this at runtime.
+  // Calling it from initState/addPostFrameCallback throws:
+  //   "ref.listen can only be used within the build method of a ConsumerWidget"
 
   void _copyAccountNumber() {
     final wallet = ref.read(walletProvider);
@@ -89,6 +72,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // ── FIX 1: ref.listen() must be called inside build(), never in initState ──
+    ref.listen<AsyncValue<bool>>(connectivityProvider, (previous, next) {
+      next.whenData((isConnected) {
+        final wasConnected = previous?.value;
+        if (wasConnected != null && wasConnected && !isConnected) {
+          ConnectivitySnackBar.showNoInternet(context);
+        } else if (wasConnected != null && !wasConnected && isConnected) {
+          ConnectivitySnackBar.showConnectionRestored(context);
+        }
+      });
+    });
+
     final userInfo = ref.watch(userInfoProvider);
     final connectivityState = ref.watch(connectivityStateProvider);
     final tierState = ref.watch(tierProvider);
@@ -359,9 +354,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   SizedBox(
                                       height:
                                           AppLayout.scaleHeight(context, 8)),
+                                  // ── FIX 2b: Expanded is safe here — it's inside a Row
+                                  // (width-bounded), not a Column inside a scroll view.
                                   Row(
                                     children: [
-                                      Flexible(
+                                      Expanded(
                                         child: Text(
                                           _isBalanceVisible
                                               ? '₦${wallet.formattedBalance}'
@@ -396,19 +393,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   SizedBox(
                                       height:
                                           AppLayout.scaleHeight(context, 16)),
-                                  Flexible(
-                                    child: Text(
-                                      !isOnline
-                                          ? 'Offline — showing cached balance'
-                                          : wallet.lastUpdated != null
-                                              ? 'Updated ${_timeAgo(wallet.lastUpdated!)}'
-                                              : 'Last updated recently',
-                                      style: TextStyle(
-                                          fontSize:
-                                              AppLayout.fontSize(context, 11),
-                                          color: Colors.white.withOpacity(0.7)),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
+                                  // ── FIX 2: Flexible inside a Column whose parent is
+                                  // SingleChildScrollView has unbounded height → crash.
+                                  // Plain Text with overflow handles truncation safely.
+                                  Text(
+                                    !isOnline
+                                        ? 'Offline — showing cached balance'
+                                        : wallet.lastUpdated != null
+                                            ? 'Updated ${_timeAgo(wallet.lastUpdated!)}'
+                                            : 'Last updated recently',
+                                    style: TextStyle(
+                                        fontSize:
+                                            AppLayout.fontSize(context, 11),
+                                        color: Colors.white.withOpacity(0.7)),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                   SizedBox(
                                       height:
@@ -472,8 +470,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       // ── Quick Actions row (Transfer / Request / Cash out) ─────
                       Padding(
                         padding: EdgeInsets.symmetric(
-                            horizontal: AppLayout.scaleWidth(context, 16),
-                            vertical: AppLayout.scaleWidth(context, 12),),
+                          horizontal: AppLayout.scaleWidth(context, 16),
+                          vertical: AppLayout.scaleWidth(context, 12),
+                        ),
                         child: Row(
                           children: [
                             _buildActionCard(
@@ -498,7 +497,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               svgAsset: _svgCashOut,
                               label: 'Cash out',
                               onTap: () => _handleQuickAction(
-                                  context, 'Request',
+                                  context, 'Cash out',
                                   navigateTo: const CashoutMenuScreen()),
                               isEnabled: isOnline,
                             ),
@@ -735,7 +734,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }) {
     // Icon colour: full-opacity slate when enabled, lighter when not.
     final iconColor = isEnabled
-        ? AppColors.textGrey // slate-600
+        ? AppColors.primaryTeal // slate-600
         : const Color(0xFFCBD5E1); // slate-300
 
     return Expanded(

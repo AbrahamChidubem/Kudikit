@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
-import 'package:kudipay/presentation/homescreen/home_screen.dart';
+
 
 class BillTransactionDetail extends StatelessWidget {
   final String title;

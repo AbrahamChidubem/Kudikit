@@ -25,7 +25,7 @@ class IntroviewPage extends StatelessWidget {
               height: screenHeight * 0.55,
               child: Image.asset(
                 'assets/images/introview.png',
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
                 alignment: Alignment.bottomCenter,
               ),
             ),

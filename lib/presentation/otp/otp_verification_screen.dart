@@ -273,7 +273,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
           AppLayout.scaleWidth(context, 16),
           AppLayout.scaleHeight(context, 8),
           AppLayout.scaleWidth(context, 16),
-          AppLayout.scaleHeight(context, 16),
+          AppLayout.scaleHeight(context, 30),
         ),
         child: ElevatedButton(
           onPressed: isOnline
@@ -288,7 +288,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
             ),
             shape: RoundedRectangleBorder(
               borderRadius:
-                  BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                  BorderRadius.circular(AppLayout.scaleWidth(context, 28)),
             ),
             elevation: 0,
           ),

@@ -77,16 +77,28 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Center(
-                    child: Text(
-                      'Kindly confirm',
-                      style: TextStyle(
-                        fontSize: AppLayout.fontSize(context, 16),
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black87,
-                      ),
+                  Container(
+                    width: AppLayout.scaleWidth(context, 8),
+                    height: AppLayout.scaleWidth(context, 8),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 2,
+                      color: Colors.transparent,
                     ),
                   ),
+                  Text(
+                    'Kindly confirm',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                    ),
+                  ),
+                 
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
@@ -125,16 +137,16 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
               // ── Recipient details card ───────────────────────────────
               Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF7F7F7),
-                  borderRadius: BorderRadius.circular(12),
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  borderRadius: BorderRadius.circular(11),
                 ),
                 child: Column(
                   children: [
                     // Row 1: Account details
                     Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.scaleWidth(context, 16),
-                        vertical: AppLayout.scaleHeight(context, 14),
+                        horizontal: AppLayout.scaleWidth(context, 15),
+                        vertical: AppLayout.scaleHeight(context, 13),
                       ),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -142,7 +154,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                           Text(
                             'Account details',
                             style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 13),
+                              fontSize: AppLayout.fontSize(context, 12),
                               color: Colors.black45,
                             ),
                           ),
@@ -150,7 +162,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                             '${recipient?.accountNumber ?? ''}'
                             '${(recipient?.bank != null && recipient!.bank!.isNotEmpty) ? ' | ${recipient.bank}' : ''}',
                             style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 13),
+                              fontSize: AppLayout.fontSize(context, 12),
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
                             ),
@@ -180,7 +192,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                           Text(
                             recipient?.name ?? '',
                             style: TextStyle(
-                              fontSize: AppLayout.fontSize(context, 13),
+                              fontSize: AppLayout.fontSize(context, 12),
                               fontWeight: FontWeight.w500,
                               color: Colors.black87,
                             ),

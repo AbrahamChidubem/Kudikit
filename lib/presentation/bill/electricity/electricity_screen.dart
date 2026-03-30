@@ -440,7 +440,7 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                           // Balance label
                           SizedBox(height: AppLayout.scaleHeight(context, 6)),
                           Text(
-                            'Balance: ₦ 5000.00',
+                            'Balance: ₦ 50000.00',
                             style: TextStyle(
                               fontSize: AppLayout.fontSize(context, 12),
                               color: const Color(0xFF9E9E9E),

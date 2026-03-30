@@ -73,19 +73,31 @@ class TransactionReviewBottomSheet extends ConsumerWidget {
               ),
 
               // ── Header ──────────────────────────────────────────────
-              Row(
+               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Center(
-                    child: Text(
-                      'Kindly confirm',
-                      style: TextStyle(
-                        fontSize: AppLayout.fontSize(context, 16),
-                        fontWeight: FontWeight.w400,
-                        color: Colors.black87,
-                      ),
+                  Container(
+                    width: AppLayout.scaleWidth(context, 8),
+                    height: AppLayout.scaleWidth(context, 8),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      size: 2,
+                      color: Colors.transparent,
                     ),
                   ),
+                  Text(
+                    'Kindly confirm',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.w400,
+                      color: Colors.black87,
+                    ),
+                  ),
+                 
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(

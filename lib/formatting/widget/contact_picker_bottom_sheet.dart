@@ -690,7 +690,7 @@ class _ContactPickerBottomSheetState
       if (_searchController.text.isEmpty &&
           contact.indexLetter != currentLetter) {
         currentLetter = contact.indexLetter;
-        items.add(_ListItem.header(currentLetter!));
+        items.add(_ListItem.header(currentLetter));
       }
       items.add(_ListItem.contact(contact));
     }

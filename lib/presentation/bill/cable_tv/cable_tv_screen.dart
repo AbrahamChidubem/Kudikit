@@ -662,7 +662,7 @@ class _CableTvScreenState extends ConsumerState<CableTvScreen> {
                   onPressed: state.canContinue ? _showConfirmSheet : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFFA8D5D5),
+                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

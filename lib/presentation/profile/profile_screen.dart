@@ -63,7 +63,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     return Scaffold(
       backgroundColor: AppColors.backgroundScreen,
       appBar: AppBar(
-        backgroundColor: AppColors.white,
+        backgroundColor: AppColors.backgroundScreen,
         elevation: 0,
         leading: IconButton(
           icon: Icon(
@@ -169,8 +169,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   // ── Header card ─────────────────────────────────────────────────────────────
   Widget _buildHeaderCard(BuildContext context, user, String firstName) {
-    final photoSize    = AppLayout.scaleWidth(context, 64);
-    final photoRadius  = AppLayout.scaleWidth(context, 12);
+    final photoSize    = AppLayout.scaleWidth(context, 40);
+    final photoRadius  = AppLayout.scaleWidth(context, 6);
     final tierNumber   = ref.watch(tierProvider).getTierObject().tierNumber;
 
     return Container(
@@ -224,13 +224,13 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         'Hello, $firstName',
                         style: TextStyle(
                           fontFamily: 'PolySans',
-                          fontSize: AppLayout.fontSize(context, 20),
-                          fontWeight: FontWeight.w700,
+                          fontSize: AppLayout.fontSize(context, 16),
+                          fontWeight: FontWeight.w600,
                           color: AppColors.textDark,
                         ),
                       ),
                     ),
-                    SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                    SizedBox(width: AppLayout.scaleWidth(context, 5)),
                     // Verified badge
                     Container(
                       padding: EdgeInsets.symmetric(
@@ -269,7 +269,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 Text(
                   user.phoneNumber,
                   style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 14),
+                    fontSize: AppLayout.fontSize(context, 12),
                     color: _phoneFg,
                   ),
                 ),
@@ -282,14 +282,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     vertical: AppLayout.scaleHeight(context, 4),
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryTeal,
+                    color: AppColors.primaryTeal.withOpacity(2),
                     borderRadius: BorderRadius.circular(
                         AppLayout.scaleWidth(context, 20)),
                   ),
                   child: Text(
                     'Tier $tierNumber',
                     style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 11),
+                      fontSize: AppLayout.fontSize(context, 10),
                       color: AppColors.white,
                       fontWeight: FontWeight.w600,
                     ),
@@ -350,7 +350,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       TextSpan(
                         text: currentTierObj.name,
                         style: TextStyle(
-                          fontSize: AppLayout.fontSize(context, 14),
+                          fontSize: AppLayout.fontSize(context, 12),
                           fontWeight: FontWeight.w600,
                           color: AppColors.textDark,
                         ),
@@ -403,8 +403,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             child: Text(
               'Upgrade Tier',
               style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 11),
-                color: AppColors.textDark,
+                fontSize: AppLayout.fontSize(context, 10),
+                color: AppColors.primaryTeal,
                 fontWeight: FontWeight.w600,
               ),
             ),
