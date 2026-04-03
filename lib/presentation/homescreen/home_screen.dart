@@ -12,7 +12,6 @@ import 'package:kudipay/presentation/bill/data/data_phone_screen.dart';
 import 'package:kudipay/presentation/bill/electricity/electricity_screen.dart';
 import 'package:kudipay/presentation/cashout/cashout_menu_screen.dart';
 import 'package:kudipay/presentation/request/request_menu_screen.dart';
-import 'package:kudipay/presentation/request/request_money_main_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_menu_screen.dart';
 import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
 import 'package:kudipay/provider/kyc/kyc_provider.dart';
