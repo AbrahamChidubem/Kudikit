@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/presentation/addmoney/cash_deposit.dart';
 import 'package:kudipay/presentation/addmoney/top_up_with_card.dart';
 import 'package:kudipay/presentation/bankdeposit/bank_ussd_screen.dart';
-
 import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
-
 import 'package:kudipay/provider/funding/funding_provider.dart';
 import 'package:kudipay/provider/refresh/refresh_provider.dart';
 
@@ -20,6 +19,19 @@ class AddMoneyScreen extends ConsumerStatefulWidget {
 }
 
 class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
+  // SVG asset paths
+  static const _svgBank         = 'assets/icons/bank.svg';
+  static const _svgCardholder   = 'assets/icons/cardholder.svg';
+  static const _svgMoney        = 'assets/icons/money.svg';
+  static const _svgShare        = 'assets/icons/share.svg';
+  static const _svgPhone        = 'assets/icons/phone.svg';
+  static const _svgQr           = 'assets/icons/qr.svg';
+  static const _svgArrowBack    = 'assets/icons/arrow_back.svg';
+  static const _svgArrowForward = 'assets/icons/arrow_forward.svg';
+  static const _svgError        = 'assets/icons/error.svg';
+  static const _svgRefresh      = 'assets/icons/refresh.svg';
+  static const _svgCopy         = 'assets/icons/copy.svg';
+
   @override
   void initState() {
     super.initState();
@@ -31,7 +43,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final optionsState = ref.watch(addMoneyOptionsProvider);
+    final optionsState        = ref.watch(addMoneyOptionsProvider);
     final accountDetailsState = ref.watch(accountDetailsProvider);
 
     return Scaffold(
@@ -41,12 +53,19 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
     );
   }
 
+  // ── AppBar ────────────────────────────────────────────────────────────────
+
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+        icon: SvgPicture.asset(
+          _svgArrowBack,
+          width: AppLayout.scaleWidth(context, 20),
+          height: AppLayout.scaleWidth(context, 20),
+          colorFilter: const ColorFilter.mode(Colors.black, BlendMode.srcIn),
+        ),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
@@ -60,6 +79,8 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
       centerTitle: true,
     );
   }
+
+  // ── Body ──────────────────────────────────────────────────────────────────
 
   Widget _buildBody(
     BuildContext context,
@@ -77,7 +98,6 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
     }
 
     return RefreshIndicator(
-      // Refreshes account details + wallet balance in one pull.
       onRefresh: () => ref.read(refreshProvider.notifier).refreshAll(),
       color: const Color(0xFF069494),
       backgroundColor: Colors.white,
@@ -95,18 +115,22 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
             ...optionsState.options
                 .where((option) => option.type != AddMoneyType.bankTransfer)
-                .map((option) => Padding(
-                      padding: EdgeInsets.only(
-                        bottom: AppLayout.scaleHeight(context, 12),
-                      ),
-                      child: _buildAddMoneyOption(context, option),
-                    ))
+                .map(
+                  (option) => Padding(
+                    padding: EdgeInsets.only(
+                      bottom: AppLayout.scaleHeight(context, 12),
+                    ),
+                    child: _buildAddMoneyOption(context, option),
+                  ),
+                )
                 .toList(),
-          ], // end Column children
-        ), // end Column
-      ), // end SingleChildScrollView
-    ); // end RefreshIndicator
+          ],
+        ),
+      ),
+    );
   }
+
+  // ── Bank Transfer Card ────────────────────────────────────────────────────
 
   Widget _buildBankTransferCard(
     BuildContext context,
@@ -137,21 +161,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               ),
               child: Row(
                 children: [
-                  Container(
-                    width: AppLayout.scaleWidth(context, 40),
-                    height: AppLayout.scaleWidth(context, 40),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFE8F5E9),
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.scaleWidth(context, 8),
-                      ),
-                    ),
-                    child: Icon(
-                      Icons.account_balance,
-                      color: const Color(0xFF069494),
-                      size: AppLayout.scaleWidth(context, 20),
-                    ),
-                  ),
+                  _buildIconContainer(context, assetPath: _svgBank),
                   SizedBox(width: AppLayout.scaleWidth(context, 12)),
                   Expanded(
                     child: Column(
@@ -176,10 +186,14 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                       ],
                     ),
                   ),
-                  Icon(
-                    Icons.arrow_forward_ios,
-                    color: Colors.grey[400],
-                    size: AppLayout.scaleWidth(context, 16),
+                  SvgPicture.asset(
+                    _svgArrowForward,
+                    width: AppLayout.scaleWidth(context, 16),
+                    height: AppLayout.scaleWidth(context, 16),
+                    colorFilter: ColorFilter.mode(
+                      Colors.grey[400]!,
+                      BlendMode.srcIn,
+                    ),
                   ),
                 ],
               ),
@@ -223,6 +237,8 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
     );
   }
 
+  // ── Account Details Section ───────────────────────────────────────────────
+
   Widget _buildAccountDetailsSection(
     BuildContext context,
     AccountDetails accountDetails,
@@ -257,10 +273,14 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                   BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
               child: Container(
                 padding: EdgeInsets.all(AppLayout.scaleWidth(context, 8)),
-                child: Icon(
-                  Icons.share,
-                  color: const Color(0xFF069494),
-                  size: AppLayout.scaleWidth(context, 20),
+                child: SvgPicture.asset(
+                  _svgShare,
+                  width: AppLayout.scaleWidth(context, 20),
+                  height: AppLayout.scaleWidth(context, 20),
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF069494),
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ),
@@ -270,15 +290,12 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
     );
   }
 
+  // ── OR Divider ────────────────────────────────────────────────────────────
+
   Widget _buildOrDivider(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: Divider(
-            color: Colors.grey[300],
-            thickness: 1,
-          ),
-        ),
+        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
         Padding(
           padding: EdgeInsets.symmetric(
             horizontal: AppLayout.scaleWidth(context, 16),
@@ -292,33 +309,30 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
             ),
           ),
         ),
-        Expanded(
-          child: Divider(
-            color: Colors.grey[300],
-            thickness: 1,
-          ),
-        ),
+        Expanded(child: Divider(color: Colors.grey[300], thickness: 1)),
       ],
     );
   }
 
+  // ── Option Card ───────────────────────────────────────────────────────────
+
   Widget _buildAddMoneyOption(BuildContext context, AddMoneyOption option) {
-    IconData iconData;
+    final String assetPath;
     switch (option.icon) {
       case 'cash':
-        iconData = Icons.money;
+        assetPath = _svgMoney;
         break;
       case 'card':
-        iconData = Icons.credit_card;
+        assetPath = _svgCardholder;
         break;
       case 'phone':
-        iconData = Icons.phone_android;
+        assetPath = _svgPhone;
         break;
       case 'qr':
-        iconData = Icons.qr_code_2;
+        assetPath = _svgQr;
         break;
       default:
-        iconData = Icons.account_balance;
+        assetPath = _svgBank;
     }
 
     return InkWell(
@@ -340,21 +354,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
         ),
         child: Row(
           children: [
-            Container(
-              width: AppLayout.scaleWidth(context, 40),
-              height: AppLayout.scaleWidth(context, 40),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE8F5E9),
-                borderRadius: BorderRadius.circular(
-                  AppLayout.scaleWidth(context, 8),
-                ),
-              ),
-              child: Icon(
-                iconData,
-                color: const Color(0xFF069494),
-                size: AppLayout.scaleWidth(context, 20),
-              ),
-            ),
+            _buildIconContainer(context, assetPath: assetPath),
             SizedBox(width: AppLayout.scaleWidth(context, 12)),
             Expanded(
               child: Column(
@@ -379,16 +379,50 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              color: Colors.grey[400],
-              size: AppLayout.scaleWidth(context, 16),
+            SvgPicture.asset(
+              _svgArrowForward,
+              width: AppLayout.scaleWidth(context, 16),
+              height: AppLayout.scaleWidth(context, 16),
+              colorFilter: ColorFilter.mode(
+                Colors.grey[400]!,
+                BlendMode.srcIn,
+              ),
             ),
           ],
         ),
       ),
     );
   }
+
+  // ── Shared icon container ─────────────────────────────────────────────────
+
+  /// Teal-tinted rounded square housing an SVG icon — reused across every card.
+  Widget _buildIconContainer(
+    BuildContext context, {
+    required String assetPath,
+  }) {
+    return Container(
+      width: AppLayout.scaleWidth(context, 40),
+      height: AppLayout.scaleWidth(context, 40),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8F5E9),
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+      ),
+      child: Center(
+        child: SvgPicture.asset(
+          assetPath,
+          width: AppLayout.scaleWidth(context, 20),
+          height: AppLayout.scaleWidth(context, 20),
+          colorFilter: const ColorFilter.mode(
+            Color(0xFF069494),
+            BlendMode.srcIn,
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ── Error View ────────────────────────────────────────────────────────────
 
   Widget _buildErrorView(BuildContext context, AddMoneyError error) {
     return Center(
@@ -397,10 +431,14 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: AppLayout.scaleWidth(context, 64),
-              color: Colors.red[300],
+            SvgPicture.asset(
+              _svgError,
+              width: AppLayout.scaleWidth(context, 64),
+              height: AppLayout.scaleWidth(context, 64),
+              colorFilter: ColorFilter.mode(
+                Colors.red[300]!,
+                BlendMode.srcIn,
+              ),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Text(
@@ -420,7 +458,15 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                       .read(accountDetailsProvider.notifier)
                       .loadAccountDetails();
                 },
-                icon: const Icon(Icons.refresh),
+                icon: SvgPicture.asset(
+                  _svgRefresh,
+                  width: 18,
+                  height: 18,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.white,
+                    BlendMode.srcIn,
+                  ),
+                ),
                 label: const Text('Retry'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF069494),
@@ -436,6 +482,8 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
       ),
     );
   }
+
+  // ── Navigation handlers ───────────────────────────────────────────────────
 
   void _handleBankTransferTap(
     BuildContext context,
@@ -454,49 +502,37 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
 
     switch (option.type) {
       case AddMoneyType.cashDeposit:
-        // Navigate to Cash Deposit Instructions Screen
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const CashDepositInstructionsScreen(),
+            builder: (_) => const CashDepositInstructionsScreen(),
           ),
         );
         break;
-
       case AddMoneyType.cardTopUp:
-        // Navigate to Card Top-up Form Screen
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const CardTopUpFormScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const CardTopUpFormScreen()),
         );
         break;
-
       case AddMoneyType.ussdTransfer:
-        // Navigate to Bank USSD Screen (select bank & amount)
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const BankUssdScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const BankUssdScreen()),
         );
         break;
-
       case AddMoneyType.qrCode:
-        // Navigate to QR Code Screen
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => const QrCodeScreen(),
-          ),
+          MaterialPageRoute(builder: (_) => const QrCodeScreen()),
         );
         break;
-
       default:
         break;
     }
   }
+
+  // ── Bottom sheet ──────────────────────────────────────────────────────────
 
   void _showAccountDetailsBottomSheet(
     BuildContext context,
@@ -562,9 +598,10 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               child: Text(
                 'Got it',
                 style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 16),
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white),
+                  fontSize: AppLayout.fontSize(context, 16),
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
               ),
             ),
           ],
@@ -602,10 +639,14 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               SizedBox(width: AppLayout.scaleWidth(context, 8)),
               InkWell(
                 onTap: () => _copyToClipboard(context, value),
-                child: Icon(
-                  Icons.copy,
-                  size: AppLayout.scaleWidth(context, 16),
-                  color: const Color(0xFF069494),
+                child: SvgPicture.asset(
+                  _svgCopy,
+                  width: AppLayout.scaleWidth(context, 16),
+                  height: AppLayout.scaleWidth(context, 16),
+                  colorFilter: const ColorFilter.mode(
+                    Color(0xFF069494),
+                    BlendMode.srcIn,
+                  ),
                 ),
               ),
             ],
@@ -614,6 +655,8 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
       ],
     );
   }
+
+  // ── Clipboard helper ──────────────────────────────────────────────────────
 
   void _copyToClipboard(BuildContext context, String text) {
     Clipboard.setData(ClipboardData(text: text));

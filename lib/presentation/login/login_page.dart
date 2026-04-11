@@ -561,7 +561,7 @@ class _IdentifierField extends StatelessWidget {
                   ? Icons.person_outline_rounded
                   : Icons.email_outlined,
               color: Colors.grey[400],
-              size: AppLayout.scaleWidth(context, 20),
+              size: AppLayout.scaleWidth(context, 15),
             ),
             SizedBox(width: AppLayout.scaleWidth(context, 10)),
             Expanded(
@@ -644,7 +644,7 @@ class _PasswordField extends StatelessWidget {
             child: Icon(
               Icons.lock_outline_rounded,
               color: Colors.grey[400],
-              size: AppLayout.scaleWidth(context, 18),
+              size: AppLayout.scaleWidth(context, 15),
             ),
           ),
           prefixIconConstraints: const BoxConstraints(),

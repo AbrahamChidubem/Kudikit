@@ -234,10 +234,7 @@ class _BankUssdScreenState extends ConsumerState<BankUssdScreen> {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(AppLayout.scaleWidth(context, 10)),
-          topRight: Radius.circular(AppLayout.scaleWidth(context, 10)),
-        ),
+        borderRadius: BorderRadius.circular(12),
         border: const Border(
           top: BorderSide(color: Color(0xFFE8E8E8)),
           left: BorderSide(color: Color(0xFFE8E8E8)),

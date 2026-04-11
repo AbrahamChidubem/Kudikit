@@ -21,7 +21,7 @@ class IntroviewPage extends StatelessWidget {
            
            
             SizedBox(
-              width: double.infinity,
+              width: screenWidth,
               height: screenHeight * 0.55,
               child: Image.asset(
                 'assets/images/introview.png',

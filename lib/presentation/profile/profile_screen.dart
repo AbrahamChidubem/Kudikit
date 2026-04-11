@@ -282,7 +282,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                     vertical: AppLayout.scaleHeight(context, 4),
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primaryTeal.withOpacity(2),
+                    color: AppColors.primaryTeal,
                     borderRadius: BorderRadius.circular(
                         AppLayout.scaleWidth(context, 20)),
                   ),

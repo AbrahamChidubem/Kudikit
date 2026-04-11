@@ -1,53 +1,34 @@
 import 'package:flutter/material.dart';
 
 class OnboardingContent {
+  final String imagePath;
   final String title;
-  final String description;
-  final String imagePath; 
-  final String subtext;
-  final Color color;
+  final String subtitle;
 
   const OnboardingContent({
+    required this.imagePath,
     required this.title,
-    required this.description,
-    required this.imagePath, 
-    required this.subtext,
-    required this.color,
+    required this.subtitle,
   });
 }
 
-// App features for onboarding
 final List<OnboardingContent> onboardingContents = [
   const OnboardingContent(
-    title: 'Welcome to KudiKit',
-    description:
-        'Trusted by users across Nigeria',
-    imagePath: 'assets/images/frame1.png', 
-    subtext: 'Secure. Licensed. Built for everyday payments',
-    color:  Colors.transparent
-  ),
-  const OnboardingContent(
+    imagePath: 'assets/images/benefit_3.png',
     title: 'Pay bills, send money, and manage your finances',
-    description:
-        'Anytime, anywhere!',
-    imagePath: 'assets/images/frame2.png', 
-    subtext: 'Clear steps, instant confirmation and full transaction history',
-   color:  Colors.transparent
+    subtitle:
+        'Send money in seconds. No stress, no delays, no hidden charges.',
   ),
   const OnboardingContent(
+    imagePath: 'assets/images/benefit_2.png',
     title: 'Send and receive cash from a Kudikit Tribe member closest to you',
-    color:  Colors.transparent,
-    description:
-        'No bank/POS needed',
-    imagePath: 'assets/images/frame3.png', 
-    subtext: 'Only verified KudiKit members can exchange cash',
+    subtitle:
+        'Every Tribe member is verified. Send and receive with people you can actually trust.',
   ),
   const OnboardingContent(
+    imagePath: 'assets/images/benefit_1.png',
     title: 'Earn rewards with every transaction you make!',
-    description:
-        '',
-    imagePath: 'assets/images/frame4.png', 
-    subtext: '',
-    color:  Color(0xFF069494)
+    subtitle:
+        'Every payment puts money back in your pocket. No points, no waiting — real cashback, instantly.',
   ),
 ];

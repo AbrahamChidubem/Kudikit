@@ -231,17 +231,24 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
     List<double> quickAmounts,
   ) {
     return Container(
-      padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
+      padding: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 20),
+      vertical: AppLayout.scaleHeight(context, 2),
+      ),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+          border: const Border(
+          top: BorderSide(color: Color(0xFFE8E8E8)),
+          left: BorderSide(color: Color(0xFFE8E8E8)),
+          right: BorderSide(color: Color(0xFFE8E8E8)),
+        ),
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.05),
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 2),
+        //   ),
+        // ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,61 +266,63 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
           SizedBox(height: AppLayout.scaleHeight(context, 8)),
 
           // Amount input
-          TextField(
-            controller: _amountController,
-            focusNode: _amountFocus,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-            ],
-            style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 24),
-              fontWeight: FontWeight.w600,
-              color: hasInsufficientBalance ? Colors.red : Colors.black87,
-            ),
-            decoration: InputDecoration(
-              hintText: '0.00',
-              hintStyle: TextStyle(
-                color: Colors.black26,
+          Expanded(
+            child: TextField(
+              controller: _amountController,
+              focusNode: _amountFocus,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
+              ],
+              style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 24),
+                fontWeight: FontWeight.w600,
+                color: hasInsufficientBalance ? Colors.red : Colors.black87,
               ),
-              prefixIcon: Text(
-                '₦',
-                style: TextStyle(
+              decoration: InputDecoration(
+                hintText: '0.00',
+                hintStyle: TextStyle(
+                  color: Colors.black26,
                   fontSize: AppLayout.fontSize(context, 24),
-                  fontWeight: FontWeight.w600,
-                  color: hasInsufficientBalance ? Colors.red : Colors.black87,
+                ),
+                prefixIcon: Text(
+                  '₦',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 24),
+                    fontWeight: FontWeight.w600,
+                    color: hasInsufficientBalance ? Colors.red : Colors.black87,
+                  ),
+                ),
+                //  contentPadding: EdgeInsets.symmetric(
+                //   horizontal: 12,
+                //   vertical: 14,
+                // ),
+                prefixIconConstraints: const BoxConstraints(minWidth: 0),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color:
+                        hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color:
+                        hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(
+                    color:
+                        hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
+                    width: 2,
+                  ),
                 ),
               ),
-               contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 14,
-              ),
-              prefixIconConstraints: const BoxConstraints(minWidth: 0),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color:
-                      hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
-                ),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color:
-                      hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
-                ),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(8),
-                borderSide: BorderSide(
-                  color:
-                      hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
-                  width: 2,
-                ),
-              ),
+              onChanged: (_) => _updateAmount(),
             ),
-            onChanged: (_) => _updateAmount(),
           ),
 
           // Balance and fee info

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/formatting/widget/page_transition.dart';
 import 'package:kudipay/model/auth/auth_state.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
@@ -97,10 +98,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final logoSize = size.width * 0.6;
-    final fontSize = size.width * 0.1;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF069494),
+      backgroundColor: const Color(0xFFF9F9F9),
       body: Center(
         child: AnimatedOpacity(
           opacity: _opacity,
@@ -111,11 +111,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               width: logoSize,
               child: FittedBox(
                 fit: BoxFit.scaleDown,
-                child: Image.asset(
-                  'assets/images/kudikit_white_logo.png',
+                child: SvgPicture.asset(
+                  'assets/icons/Kudikit Iconmark teal.svg',
                   width: 100,
                   height: 100,
-                  fit: BoxFit.contain,
                 ),
               ),
             ),

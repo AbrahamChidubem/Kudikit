@@ -29,26 +29,26 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  bool _isBalanceVisible = true;
+  bool _isBalanceVisible = false;
 
   // ---------------------------------------------------------------------------
   // SVG asset paths — all icons live in assets/icons/
   // ---------------------------------------------------------------------------
-  static const _svgTransfer = 'assets/icons/transfer.svg';
-  static const _svgRequest = 'assets/icons/request.svg';
-  static const _svgCashOut = 'assets/icons/cashout.svg';
-  static const _svgAirtime = 'assets/icons/airtime.svg';
-  static const _svgData = 'assets/icons/data.svg';
-  static const _svgTv = 'assets/icons/tv.svg';
+  static const _svgTransfer    = 'assets/icons/transfer.svg';
+  static const _svgRequest     = 'assets/icons/request.svg';
+  static const _svgCashOut     = 'assets/icons/cashout.svg';
+  static const _svgAirtime     = 'assets/icons/airtime.svg';
+  static const _svgData        = 'assets/icons/data.svg';
+  static const _svgTv          = 'assets/icons/tv.svg';
   static const _svgElectricity = 'assets/icons/electricity.svg';
-  static const _svgEducation = 'assets/icons/education.svg';
-  static const _svgBetting = 'assets/icons/betting.svg';
-  static const _svgSavings = 'assets/icons/saving.svg';
+  static const _svgEducation   = 'assets/icons/education.svg';
+  static const _svgBetting     = 'assets/icons/betting.svg';
+  static const _svgSavings     = 'assets/icons/saving.svg';
 
-  // NOTE: initState + _setupConnectivityListener removed.
-  // ref.listen() MUST live inside build() — Riverpod enforces this at runtime.
-  // Calling it from initState/addPostFrameCallback throws:
-  //   "ref.listen can only be used within the build method of a ConsumerWidget"
+  // Header SVG icons
+  static const _svgPerson  = 'assets/icons/person.svg';
+  static const _svgHeadset = 'assets/icons/headset.svg';
+  static const _svgBell    = 'assets/icons/bell.svg';
 
   void _copyAccountNumber() {
     final wallet = ref.read(walletProvider);
@@ -71,7 +71,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ── FIX 1: ref.listen() must be called inside build(), never in initState ──
     ref.listen<AsyncValue<bool>>(connectivityProvider, (previous, next) {
       next.whenData((isConnected) {
         final wasConnected = previous?.value;
@@ -83,12 +82,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       });
     });
 
-    final userInfo = ref.watch(userInfoProvider);
+    final userInfo         = ref.watch(userInfoProvider);
     final connectivityState = ref.watch(connectivityStateProvider);
-    final tierState = ref.watch(tierProvider);
+    final tierState        = ref.watch(tierProvider);
     final currentTierObject = tierState.getTierObject();
-    final wallet = ref.watch(walletProvider);
-    final isOnline = connectivityState.isConnected;
+    final wallet           = ref.watch(walletProvider);
+    final isOnline         = connectivityState.isConnected;
 
     final firstName = userInfo?.firstName ??
         (wallet.accountName.isNotEmpty
@@ -138,10 +137,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
             Expanded(
               child: RefreshIndicator(
-                // ── Pull-to-refresh callback ─────────────────────────────
-                // Calls the central orchestrator which refreshes wallet +
-                // transactions in parallel. Riverpod propagates updates
-                // to every watching widget automatically.
                 onRefresh: () =>
                     ref.read(refreshProvider.notifier).refreshAll(),
                 color: const Color(0xFF069494),
@@ -149,75 +144,72 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 strokeWidth: 0.5,
                 displacement: 60,
                 child: SingleChildScrollView(
-                  // AlwaysScrollableScrollPhysics ensures the indicator
-                  // triggers even when content is shorter than the screen.
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // ── Header ───────────────────────────────────────────────
+
+                      // ── Header ─────────────────────────────────────────────
                       Padding(
                         padding: AppLayout.pagePadding(context),
                         child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
-                            // Profile avatar
+
+                            // ── Avatar: SVG person icon in rounded mint box ──
                             Container(
-                              width: AppLayout.scaleWidth(context, 45),
-                              height: AppLayout.scaleWidth(context, 45),
+                              width: AppLayout.scaleWidth(context, 44),
+                              height: AppLayout.scaleWidth(context, 44),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: const Color(0xFFE8F5F3),
                                 borderRadius: BorderRadius.circular(
-                                    AppLayout.scaleWidth(context, 12)),
+                                    AppLayout.scaleWidth(context, 10)),
                               ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                    AppLayout.scaleWidth(context, 12)),
+                              child: Center(
                                 child: Image.asset(
                                   'assets/images/img_placeholder.png',
-                                  fit: BoxFit.cover,
-                                  errorBuilder: (_, __, ___) => Container(
-                                    color: const Color(0xFF069494),
-                                    child: Icon(Icons.person,
-                                        color: Colors.white,
-                                        size:
-                                            AppLayout.scaleWidth(context, 24)),
-                                  ),
+                                  width: AppLayout.scaleWidth(context, 22),
+                                  height: AppLayout.scaleWidth(context, 22),
+                                  // colorFilter: const ColorFilter.mode(
+                                  //   Color(0xFF069494),
+                                  //   BlendMode.srcIn,
+                                  // ),
                                 ),
                               ),
                             ),
-                            SizedBox(width: AppLayout.scaleWidth(context, 12)),
 
-                            // Greeting + tier badge
+                            SizedBox(width: AppLayout.scaleWidth(context, 10)),
+
+                            // ── Greeting + tier badge inline ─────────────────
                             Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
                                     'Hi, $firstName',
                                     style: TextStyle(
+                                      fontFamily: 'PolySans',
                                       fontSize: AppLayout.fontSize(context, 16),
-                                      fontWeight: FontWeight.w600,
-                                      color: Colors.black87,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF151717),
                                     ),
                                   ),
+                                  SizedBox(width: AppLayout.scaleWidth(context, 6)),
+                                  // Tier pill — inline, right of name
                                   Container(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal:
-                                          AppLayout.scaleWidth(context, 8),
-                                      vertical:
-                                          AppLayout.scaleHeight(context, 2),
+                                      horizontal: AppLayout.scaleWidth(context, 8),
+                                      vertical: AppLayout.scaleHeight(context, 3),
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF069494)
-                                          .withOpacity(0.1),
+                                      color: const Color(0xFF069494).withOpacity(0.12),
                                       borderRadius: BorderRadius.circular(
-                                          AppLayout.scaleWidth(context, 8)),
+                                          AppLayout.scaleWidth(context, 20)),
                                     ),
                                     child: Text(
                                       'Tier ${currentTierObject.tierNumber}',
                                       style: TextStyle(
-                                        fontSize:
-                                            AppLayout.fontSize(context, 11),
+                                        fontSize: AppLayout.fontSize(context, 11),
                                         color: const Color(0xFF069494),
                                         fontWeight: FontWeight.w600,
                                       ),
@@ -227,20 +219,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                             ),
 
-                            // Support icon
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.headphones_outlined),
-                              color: Colors.grey[700],
-                              iconSize: AppLayout.scaleWidth(context, 24),
+                            SizedBox(width: AppLayout.scaleWidth(context, 4)),
+
+                            // ── Headset SVG icon button ──────────────────────
+                            _buildHeaderIconButton(
+                              context: context,
+                              svgPath: _svgHeadset,
+                              onTap: () {},
                             ),
 
-                            // Notification icon + connectivity dot
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(Icons.notifications_outlined),
-                              color: Colors.grey[700],
-                              iconSize: AppLayout.scaleWidth(context, 24),
+                            SizedBox(width: AppLayout.scaleWidth(context, 8)),
+
+                            // ── Bell SVG icon button ─────────────────────────
+                            _buildHeaderIconButton(
+                              context: context,
+                              svgPath: _svgBell,
+                              onTap: () {},
                             ),
                           ],
                         ),
@@ -252,14 +246,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       wallet.isLoading
                           ? Padding(
                               padding: EdgeInsets.symmetric(
-                                  horizontal:
-                                      AppLayout.scaleWidth(context, 16)),
+                                  horizontal: AppLayout.scaleWidth(context, 16)),
                               child: const HomeBalanceCardShimmer(),
                             )
                           : Container(
                               margin: EdgeInsets.symmetric(
-                                  horizontal:
-                                      AppLayout.scaleWidth(context, 16)),
+                                  horizontal: AppLayout.scaleWidth(context, 16)),
                               padding: EdgeInsets.all(
                                   AppLayout.scaleWidth(context, 20)),
                               decoration: BoxDecoration(
@@ -268,21 +260,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   end: Alignment.bottomRight,
                                   colors: [
                                     Color(0xFF069494),
-                                    Color(0xFF339992)
+                                    Color(0xFF339992),
                                   ],
                                 ),
                                 borderRadius: BorderRadius.circular(
                                     AppLayout.scaleWidth(context, 20)),
-                                // boxShadow: [
-                                //   BoxShadow(
-                                //     color: const Color(0xFF069494)
-                                //         .withOpacity(0.5),
-                                //     blurRadius:
-                                //         AppLayout.scaleWidth(context, 20),
-                                //     offset: Offset(
-                                //         0, AppLayout.scaleHeight(context, 8)),
-                                //   ),
-                                // ],
                               ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -328,8 +310,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Icon(Icons.add,
-                                                  color:
-                                                      const Color(0xFF069494),
+                                                  color: const Color(0xFF069494),
                                                   size: AppLayout.scaleWidth(
                                                       context, 14)),
                                               SizedBox(
@@ -337,9 +318,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                       context, 4)),
                                               Text('Add money',
                                                   style: TextStyle(
-                                                    fontSize:
-                                                        AppLayout.fontSize(
-                                                            context, 12),
+                                                    fontSize: AppLayout.fontSize(
+                                                        context, 12),
                                                     color:
                                                         const Color(0xFF069494),
                                                     fontWeight: FontWeight.w500,
@@ -353,8 +333,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   SizedBox(
                                       height:
                                           AppLayout.scaleHeight(context, 8)),
-                                  // ── FIX 2b: Expanded is safe here — it's inside a Row
-                                  // (width-bounded), not a Column inside a scroll view.
                                   Row(
                                     children: [
                                       Expanded(
@@ -383,8 +361,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               ? Icons.visibility_outlined
                                               : Icons.visibility_off_outlined,
                                           color: Colors.white70,
-                                          size:
-                                              AppLayout.scaleWidth(context, 20),
+                                          size: AppLayout.scaleWidth(
+                                              context, 20),
                                         ),
                                       ),
                                     ],
@@ -392,9 +370,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                   SizedBox(
                                       height:
                                           AppLayout.scaleHeight(context, 16)),
-                                  // ── FIX 2: Flexible inside a Column whose parent is
-                                  // SingleChildScrollView has unbounded height → crash.
-                                  // Plain Text with overflow handles truncation safely.
                                   Text(
                                     !isOnline
                                         ? 'Offline — showing cached balance'
@@ -404,7 +379,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     style: TextStyle(
                                         fontSize:
                                             AppLayout.fontSize(context, 11),
-                                        color: Colors.white.withOpacity(0.7)),
+                                        color:
+                                            Colors.white.withOpacity(0.7)),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   SizedBox(
@@ -419,8 +395,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                           style: TextStyle(
                                               fontSize: AppLayout.fontSize(
                                                   context, 12),
-                                              color:
-                                                  Colors.white.withOpacity(0.9),
+                                              color: Colors.white
+                                                  .withOpacity(0.9),
                                               fontWeight: FontWeight.w500),
                                         ),
                                         SizedBox(
@@ -455,8 +431,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         Icon(Icons.copy,
                                             size: AppLayout.scaleWidth(
                                                 context, 12),
-                                            color:
-                                                Colors.white.withOpacity(0.7)),
+                                            color: Colors.white
+                                                .withOpacity(0.7)),
                                       ],
                                     ),
                                   ),
@@ -527,7 +503,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             horizontal: AppLayout.scaleWidth(context, 16)),
                         child: Column(
                           children: [
-                            // Row 1: Airtime | Data | Cable TV | Electricity
                             Row(
                               children: [
                                 _buildActionCard(
@@ -550,7 +525,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                                 SizedBox(
                                     width: AppLayout.scaleWidth(context, 12)),
-                                // FIX: was labelled 'Transfer' — corrected to 'Cable TV'
                                 _buildActionCard(
                                   svgAsset: _svgTv,
                                   label: 'TV',
@@ -572,7 +546,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             SizedBox(
                                 height: AppLayout.scaleHeight(context, 12)),
-                            // Row 2: Education | Betting | Savings | (spacer)
                             Row(
                               children: [
                                 _buildActionCard(
@@ -602,7 +575,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                                 SizedBox(
                                     width: AppLayout.scaleWidth(context, 12)),
-                                // Spacer so the 3 cards match the 4-column width above
                                 const Expanded(child: SizedBox()),
                               ],
                             ),
@@ -628,8 +600,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             TextButton(
                               onPressed: isOnline
                                   ? () {}
-                                  : () => ConnectivitySnackBar.showNoInternet(
-                                      context),
+                                  : () =>
+                                      ConnectivitySnackBar.showNoInternet(
+                                          context),
                               child: Text('View All',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 14),
@@ -650,8 +623,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             horizontal: AppLayout.scaleWidth(context, 16),
                             vertical: AppLayout.scaleHeight(context, 8),
                           ),
-                          padding:
-                              EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
+                          padding: EdgeInsets.all(
+                              AppLayout.scaleWidth(context, 12)),
                           decoration: BoxDecoration(
                             color: Colors.orange.shade50,
                             borderRadius: BorderRadius.circular(12),
@@ -669,7 +642,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 child: Text(
                                   'You\'re viewing cached transactions. Connect to internet for latest updates.',
                                   style: TextStyle(
-                                      fontSize: AppLayout.fontSize(context, 12),
+                                      fontSize:
+                                          AppLayout.fontSize(context, 12),
                                       color: Colors.orange.shade900),
                                 ),
                               ),
@@ -702,28 +676,50 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
 
                       SizedBox(height: AppLayout.scaleHeight(context, 100)),
-                    ], // end Column children
-                  ), // end Column
-                ), // end SingleChildScrollView
+                    ],
+                  ),
+                ),
               ),
-            ), // end RefreshIndicator
-          ], // end outer Column children
-        ), // end SafeArea
-      ), // end Scaffold body
-    ); // end Scaffold
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Small icon button used in the header ──────────────────────────────────
+  Widget _buildHeaderIconButton({
+    required BuildContext context,
+    required String svgPath,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: AppLayout.scaleWidth(context, 36),
+        height: AppLayout.scaleWidth(context, 36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+        ),
+        child: Center(
+          child: SvgPicture.asset(
+            svgPath,
+            width: AppLayout.scaleWidth(context, 18),
+            height: AppLayout.scaleWidth(context, 18),
+            colorFilter: const ColorFilter.mode(
+              Color(0xFF6B7280),
+              BlendMode.srcIn,
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   // ===========================================================================
   // _buildActionCard
-  // ===========================================================================
-  // SINGLE unified card used for BOTH the top Quick-Actions row AND
-  // the Bill & Utilities grid. Replaces the old duplicate _buildQuickAction
-  // (IconData overload) and the missing _buildServiceCard.
-  //
-  // svgAsset   — path to the SVG file in assets/icons/
-  // label      — text shown below the icon
-  // onTap      — callback when the card is tapped
-  // isEnabled  — dims the card and still fires onTap (handler checks connectivity)
   // ===========================================================================
   Widget _buildActionCard({
     required String svgAsset,
@@ -731,10 +727,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required VoidCallback onTap,
     bool isEnabled = true,
   }) {
-    // Icon colour: full-opacity slate when enabled, lighter when not.
     final iconColor = isEnabled
-        ? AppColors.primaryTeal // slate-600
-        : const Color(0xFFCBD5E1); // slate-300
+        ? AppColors.primaryTeal
+        : const Color(0xFFCBD5E1);
 
     return Expanded(
       child: Opacity(
@@ -754,13 +749,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius: BorderRadius.circular(
                 AppLayout.scaleWidth(context, 12),
               ),
-              // boxShadow: [
-              //   BoxShadow(
-              //     color: Colors.black.withOpacity(0.05),
-              //     blurRadius: AppLayout.scaleWidth(context, 10),
-              //     offset: Offset(0, AppLayout.scaleHeight(context, 2)),
-              //   ),
-              // ],
             ),
             child: Center(
               child: Column(
@@ -770,7 +758,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     svgAsset,
                     width: AppLayout.scaleWidth(context, 17),
                     height: AppLayout.scaleWidth(context, 17),
-                    colorFilter: ColorFilter.mode(iconColor, BlendMode.srcIn),
+                    colorFilter:
+                        ColorFilter.mode(iconColor, BlendMode.srcIn),
                   ),
                   SizedBox(height: AppLayout.scaleHeight(context, 8)),
                   Text(
@@ -833,7 +822,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     if (navigateTo != null) {
-      Navigator.push(context, MaterialPageRoute(builder: (_) => navigateTo));
+      Navigator.push(
+          context, MaterialPageRoute(builder: (_) => navigateTo));
     } else {
       _showComingSoon(context, actionName);
     }
@@ -931,14 +921,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
       decoration: BoxDecoration(
         color: AppColors.backgroundScreen,
-        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
-        //     blurRadius: AppLayout.scaleWidth(context, 10),
-        //     offset: Offset(0, AppLayout.scaleHeight(context, 2)),
-        //   ),
-        // ],
+        borderRadius:
+            BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
       ),
       child: Row(
         children: [
@@ -949,9 +933,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
             ),
-            child: Icon(isSuccess ? Icons.arrow_upward : Icons.arrow_downward,
-                color:
-                    isSuccess ? const Color(0xFF069494) : Colors.red.shade700,
+            child: Icon(
+                isSuccess ? Icons.arrow_upward : Icons.arrow_downward,
+                color: isSuccess
+                    ? const Color(0xFF069494)
+                    : Colors.red.shade700,
                 size: AppLayout.scaleWidth(context, 16)),
           ),
           SizedBox(width: AppLayout.scaleWidth(context, 12)),
@@ -994,8 +980,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   color: isSuccess
                       ? const Color(0xFF069494).withOpacity(0.1)
                       : Colors.red.shade50,
-                  borderRadius:
-                      BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+                  borderRadius: BorderRadius.circular(
+                      AppLayout.scaleWidth(context, 8)),
                 ),
                 child: Text(
                   isSuccess ? 'Successful' : 'Failed',
