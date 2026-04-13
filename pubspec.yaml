@@ -98,7 +98,7 @@ publish_to: "none"
 version: 1.0.0+1
 
 environment:
-  sdk: ">=3.2.5 <4.0.0"
+  sdk: ">=3.4.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -112,7 +112,7 @@ dependencies:
 
   # State Management
   flutter_riverpod:
-
+  riverpod_annotation:
   # Forms & Validation
   form_field_validator:
   pinput:
@@ -166,6 +166,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints:
+  build_runner: 
+  riverpod_generator: 
 
 flutter_launcher_icons:
   android: true

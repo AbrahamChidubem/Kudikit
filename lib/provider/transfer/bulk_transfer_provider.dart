@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/transfer/bulk_transfer_model.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 class BulkTransferNotifier extends StateNotifier<BulkTransferState> {
   BulkTransferNotifier() : super(BulkTransferState());

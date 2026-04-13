@@ -5,6 +5,7 @@ import 'package:kudipay/services/auth_services.dart';
 import 'package:kudipay/services/storage_services.dart';
 import 'package:kudipay/model/user/user.dart';
 import 'package:kudipay/model/user/user_info.dart';
+import 'package:flutter_riverpod/legacy.dart';
 // =============================================================================
 // auth_provider.dart
 // -----------------------------------------------------------------------------

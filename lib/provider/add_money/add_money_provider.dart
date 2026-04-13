@@ -7,7 +7,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/services/add_money_services.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ── Service provider ──────────────────────────────────────────────────────────
 final addMoneyServiceProvider = Provider<AddMoneyService>((ref) {
   return MockAddMoneyService();

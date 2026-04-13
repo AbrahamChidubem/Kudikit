@@ -16,7 +16,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_contacts/flutter_contacts.dart' hide PermissionStatus;
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -332,15 +332,15 @@ class ContactService {
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   static String _buildDisplayName(Contact contact) {
-    final name = contact.displayName.trim();
+    final name = contact.displayName!.trim();
     if (name.isNotEmpty) return name;
 
     // Fallback: construct from name components
     final parts = [
-      contact.name.first,
-      contact.name.middle,
-      contact.name.last,
-    ].where((s) => s.isNotEmpty).toList();
+      contact.name?.first,
+      contact.name?.middle,
+      contact.name?.last
+    ].where((s) => s!.isNotEmpty).toList();
 
     return parts.join(' ').trim();
   }
@@ -362,10 +362,8 @@ class ContactService {
         return 'Work';
       case PhoneLabel.main:
         return 'Main';
-      case PhoneLabel.faxHome:
+      case PhoneLabel.fax:
         return 'Fax';
-      case PhoneLabel.faxWork:
-        return 'Work Fax';
       case PhoneLabel.other:
         return 'Other';
       default:

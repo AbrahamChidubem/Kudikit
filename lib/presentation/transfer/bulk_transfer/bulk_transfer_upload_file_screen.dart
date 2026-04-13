@@ -273,7 +273,7 @@ class _BulkTransferUploadFileScreenState
         _isUploading = true;
       });
 
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv', 'xlsx', 'xls'],
       );

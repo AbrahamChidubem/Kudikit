@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/tier/tier_model.dart';
 import 'package:kudipay/services/storage_services.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 /// State class for Tier management
 class TierState {
   final TierLevel currentTier;

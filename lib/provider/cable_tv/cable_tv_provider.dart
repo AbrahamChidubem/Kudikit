@@ -6,7 +6,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/cable_tv/cable_tv_model.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ============================================================================
 // CABLE TV STATE
 // ============================================================================

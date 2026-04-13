@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/services/notification_preference_services.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ==================== NOTIFICATION PROVIDERS ====================
 
 final notificationPreferencesServiceProvider = Provider<NotificationPreferencesService>((ref) {

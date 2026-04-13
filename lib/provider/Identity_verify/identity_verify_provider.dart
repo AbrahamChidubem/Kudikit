@@ -573,7 +573,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ── Enum ──────────────────────────────────────────────────────────────────────
 // Single canonical enum for the entire app.
 // Use .name to get "BVN" or "NIN" when serialising for API calls.

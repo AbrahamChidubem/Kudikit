@@ -6,7 +6,7 @@ import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/passcode/numeric_keypad.dart';
 import 'package:kudipay/presentation/passcode/passcode_dots.dart';
 import 'package:kudipay/presentation/passcode/passcode_notifier.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 final passcodeProvider = StateNotifierProvider<PasscodeNotifier, PasscodeState>((ref) {
   return PasscodeNotifier();
 });

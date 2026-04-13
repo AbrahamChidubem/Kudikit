@@ -1,155 +1,77 @@
 import 'package:flutter/material.dart';
-import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
+import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/tier/tier_model.dart';
 import 'package:kudipay/presentation/Identity/chooseID.dart';
+import 'package:kudipay/presentation/Identity/upload_ID.dart';
 import 'package:kudipay/presentation/address/verify_address.dart';
-import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/selfie/selfie_instruction.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
 
+// =============================================================================
+// KycFlowManager
+// -----------------------------------------------------------------------------
+// Smart router that drops the user into the correct NEXT incomplete KYC step
+// based on their selected tier AND the KYC flags already set on their
+// UserModel. Returning users are never sent back to a completed step.
+//
+// PRD-COMPLIANT ROUTING TABLE (v2 — fixed from original):
+// ─────────────────────────────────────────────────────────────────────────────
+// Tier 1 (Basic)
+//   1. Selfie verification        [isSelfieVerified]
+//   2. BVN OR NIN verification    [isBvnVerified]
+//   → Confirm Info → PIN → Account Ready → Dashboard
+//
+// Tier 2 (Pro)
+//   1. Selfie verification        [isSelfieVerified]
+//   2. BVN AND NIN verification   [isBvnVerified]
+//   3. ID document upload         [isDocumentVerified]
+//   → Confirm Info → PIN → Account Ready → Dashboard
+//
+// Tier 3 (Mega)
+//   1. Selfie verification        [isSelfieVerified]
+//   2. BVN AND NIN verification   [isBvnVerified]
+//   3. ID document upload         [isDocumentVerified]
+//   4. Address + utility bill     [isAddressVerified]
+//   → Confirm Info → PIN → Account Ready → Dashboard
+//
+// NOTE: ConfirmInfoScreen, CreateTransactionPinScreen, and AccountReadyScreen
+// are NOT routed from here. They are pushed sequentially from within each
+// preceding screen — this manager only routes to the first incomplete step.
+// =============================================================================
 
-
-/// Smart KYC Flow Manager - Routes to the correct next KYC step based on
-/// both the user's SELECTED TIER and their current KYC completion status.
-///
-/// TIER ROUTING RULES
-/// ──────────────────
-/// Tier 1 (Basic)  → ID verification only → Dashboard
-/// Tier 2 (Pro)    → Selfie → ID → Dashboard
-/// Tier 3 (Mega)   → Selfie → ID → Address verification → Dashboard
-///
-/// The manager checks which steps are already complete so returning users
-/// are always dropped into their next *incomplete* step, not the first one.
 class KycFlowManager extends ConsumerWidget {
   const KycFlowManager({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user        = ref.watch(currentUserProvider);
-    final tierState   = ref.watch(tierProvider);
+    final user              = ref.watch(currentUserProvider);
+    final tierState         = ref.watch(tierProvider);
     final connectivityState = ref.watch(connectivityStateProvider);
 
     // ── Offline guard ────────────────────────────────────────────────────────
     if (!connectivityState.isConnected) {
-      return Scaffold(
-        backgroundColor: const Color(0xFFF9F9F9),
-        body: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.wifi_off, size: 64, color: Colors.red.shade700),
-                ),
-                const SizedBox(height: 32),
-                const Text(
-                  'No Internet Connection',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'KYC verification requires an active internet connection to proceed. Please check your connection and try again.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600], height: 1.5),
-                ),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton.icon(
-                    onPressed: () =>
-                        ref.read(connectivityStateProvider.notifier).refresh(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF069494),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(28)),
-                      elevation: 0,
-                    ),
-                    icon: const Icon(Icons.refresh, color: Colors.white),
-                    label: const Text(
-                      'Check Connection',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: Text('Go Back', style: TextStyle(fontSize: 16, color: Colors.grey[600])),
-                ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.shade100),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, size: 20, color: Colors.blue.shade700),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Connection Tips',
-                            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.blue.shade900),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      _buildTip('Turn on WiFi or mobile data'),
-                      _buildTip('Check airplane mode is off'),
-                      _buildTip('Try moving to a different location'),
-                      _buildTip('Restart your device if needed'),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
+      return _OfflineScreen(
+        onRetry: () =>
+            ref.read(connectivityStateProvider.notifier).refresh(),
+        onBack: () => Navigator.pop(context),
       );
     }
 
     // ── Loading guard ────────────────────────────────────────────────────────
     if (user == null || tierState.isLoading) {
-      return const Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AppLoadingIndicator(),
-              SizedBox(height: 16),
-              Text(
-                'Loading your information...',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
-              ),
-            ],
-          ),
-        ),
-      );
+      return const _LoadingScreen(message: 'Loading your information...');
     }
 
-    // ── Determine the correct next screen based on TIER + KYC status ────────
-    final tier = tierState.currentTier;
-    Widget nextScreen = _resolveNextScreen(tier, user);
+    // ── Resolve the next incomplete step and navigate ────────────────────────
+    final tier       = tierState.currentTier;
+    final nextScreen = _resolveNextScreen(tier, user);
 
-    // Navigate after the current frame finishes building.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.mounted) {
         Navigator.pushReplacement(
@@ -159,35 +81,115 @@ class KycFlowManager extends ConsumerWidget {
       }
     });
 
-    // ── Loading placeholder while navigation is pending ──────────────────────
+    // Transitional placeholder shown for one frame while navigation is queued
+    return _LoadingScreen(message: _loadingMessage(tier, user));
+  }
+
+  // ---------------------------------------------------------------------------
+  // ROUTING LOGIC
+  // Walk each tier's funnel top-to-bottom. Return the first screen whose
+  // prerequisite flag is NOT yet set on the user model.
+  // ---------------------------------------------------------------------------
+  Widget _resolveNextScreen(TierLevel tier, dynamic user) {
+    switch (tier) {
+
+      // ── Tier 1 (Basic) ─────────────────────────────────────────────────────
+      // Steps: Selfie → BVN or NIN
+      case TierLevel.basic:
+        if (!user.isSelfieVerified)   return const SelfieInstructionsScreen();
+        if (!user.isBvnVerified)      return const IdVerificationScreen();
+        return const BottomNavBar();
+
+      // ── Tier 2 (Pro) ───────────────────────────────────────────────────────
+      // Steps: Selfie → BVN AND NIN → ID document upload
+      case TierLevel.pro:
+        if (!user.isSelfieVerified)   return const SelfieInstructionsScreen();
+        if (!user.isBvnVerified)      return const IdVerificationScreen();
+        if (!user.isDocumentVerified) return const UploadIdCardScreen();
+        return const BottomNavBar();
+
+      // ── Tier 3 (Mega) ──────────────────────────────────────────────────────
+      // Steps: Selfie → BVN AND NIN → ID document upload → Address
+      case TierLevel.mega:
+        if (!user.isSelfieVerified)   return const SelfieInstructionsScreen();
+        if (!user.isBvnVerified)      return const IdVerificationScreen();
+        if (!user.isDocumentVerified) return const UploadIdCardScreen();
+        if (!user.isAddressVerified)  return const AddressVerificationScreen();
+        return const BottomNavBar();
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Human-readable loading message shown during the one-frame transition
+  // ---------------------------------------------------------------------------
+  String _loadingMessage(TierLevel tier, dynamic user) {
+    switch (tier) {
+      case TierLevel.basic:
+        if (!user.isSelfieVerified) return 'Preparing selfie verification...';
+        if (!user.isBvnVerified)    return 'Preparing identity verification...';
+        return 'Preparing your dashboard...';
+
+      case TierLevel.pro:
+        if (!user.isSelfieVerified)   return 'Preparing selfie verification...';
+        if (!user.isBvnVerified)      return 'Preparing identity verification...';
+        if (!user.isDocumentVerified) return 'Preparing document upload...';
+        return 'Preparing your dashboard...';
+
+      case TierLevel.mega:
+        if (!user.isSelfieVerified)   return 'Preparing selfie verification...';
+        if (!user.isBvnVerified)      return 'Preparing identity verification...';
+        if (!user.isDocumentVerified) return 'Preparing document upload...';
+        if (!user.isAddressVerified)  return 'Preparing address verification...';
+        return 'Preparing your dashboard...';
+    }
+  }
+}
+
+// =============================================================================
+// _LoadingScreen — shown for one frame while navigation is pending, and also
+// during the initial data fetch (user == null || tierState.isLoading).
+// =============================================================================
+class _LoadingScreen extends StatelessWidget {
+  final String message;
+  const _LoadingScreen({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const AppLoadingIndicator(),
-            const SizedBox(height: 16),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Text(
-              _getLoadingMessage(tier, user),
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
+              message,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 15),
+                color: AppColors.textGrey,
+              ),
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: AppLayout.scaleHeight(context, 32)),
+            // Subtle online indicator
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 8,
-                  height: 8,
+                  width: AppLayout.scaleWidth(context, 8),
+                  height: AppLayout.scaleWidth(context, 8),
                   decoration: const BoxDecoration(
                     color: Colors.green,
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: 8),
-                const Text(
+                SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                Text(
                   'Connected',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF069494)),
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 12),
+                    color: AppColors.primaryTeal,
+                  ),
                 ),
               ],
             ),
@@ -196,66 +198,179 @@ class KycFlowManager extends ConsumerWidget {
       ),
     );
   }
+}
 
-  // ---------------------------------------------------------------------------
-  // ROUTING LOGIC
-  // ---------------------------------------------------------------------------
-  // Each tier has a defined KYC funnel. We walk the funnel top-to-bottom and
-  // return the first step that is NOT yet complete.
-  //
-  //  Tier 1 (Basic):  [ID]
-  //  Tier 2 (Pro):    [Selfie → ID]
-  //  Tier 3 (Mega):   [Selfie → ID → Address]
-  // ---------------------------------------------------------------------------
+// =============================================================================
+// _OfflineScreen — shown when there is no internet connection.
+// Extracted to a separate widget to keep KycFlowManager's build() readable.
+// =============================================================================
+class _OfflineScreen extends StatelessWidget {
+  final VoidCallback onRetry;
+  final VoidCallback onBack;
 
-  Widget _resolveNextScreen(TierLevel tier, dynamic user) {
-    switch (tier) {
-      case TierLevel.basic:
-        // Tier 1 — only ID verification required.
-        if (!user.isBvnVerified) return const IdVerificationScreen();
-        return const BottomNavBar();
+  const _OfflineScreen({required this.onRetry, required this.onBack});
 
-      case TierLevel.pro:
-        // Tier 2 — Selfie first, then ID.
-        if (!user.isSelfieVerified) return const SelfieInstructionsScreen();
-        if (!user.isBvnVerified)    return const IdVerificationScreen();
-        return const BottomNavBar();
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: AppColors.backgroundScreen,
+      body: Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppLayout.scaleWidth(context, 32)),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              // ── Icon ────────────────────────────────────────────────────
+              Container(
+                width: AppLayout.scaleWidth(context, 120),
+                height: AppLayout.scaleWidth(context, 120),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  Icons.wifi_off,
+                  size: AppLayout.scaleWidth(context, 60),
+                  color: Colors.red.shade700,
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-      case TierLevel.mega:
-        // Tier 3 — Selfie, ID, then Address.
-        if (!user.isSelfieVerified)   return const SelfieInstructionsScreen();
-        if (!user.isBvnVerified)      return const IdVerificationScreen();
-        if (!user.isAddressVerified)  return const AddressVerificationScreen();
-        return const BottomNavBar();
-    }
+              // ── Title ────────────────────────────────────────────────────
+              Text(
+                'No Internet Connection',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 22),
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textDark,
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 12)),
+              Text(
+                'KYC verification requires an active internet connection. '
+                'Please check your connection and try again.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 14),
+                  color: AppColors.textGrey,
+                  height: 1.5,
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 32)),
+
+              // ── Check Connection button ──────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                height: AppLayout.scaleHeight(context, 54),
+                child: ElevatedButton.icon(
+                  onPressed: onRetry,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryTeal,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(
+                          AppLayout.scaleWidth(context, 28)),
+                    ),
+                  ),
+                  icon: const Icon(Icons.refresh, color: Colors.white),
+                  label: Text(
+                    'Check Connection',
+                    style: TextStyle(
+                      fontSize: AppLayout.fontSize(context, 16),
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.white,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 12)),
+
+              // ── Go Back ──────────────────────────────────────────────────
+              TextButton(
+                onPressed: onBack,
+                child: Text(
+                  'Go Back',
+                  style: TextStyle(
+                    fontSize: AppLayout.fontSize(context, 15),
+                    color: AppColors.textGrey,
+                  ),
+                ),
+              ),
+              SizedBox(height: AppLayout.scaleHeight(context, 32)),
+
+              // ── Tips card ────────────────────────────────────────────────
+              Container(
+                padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
+                decoration: BoxDecoration(
+                  color: Colors.blue.shade50,
+                  borderRadius: BorderRadius.circular(
+                      AppLayout.scaleWidth(context, 12)),
+                  border: Border.all(color: Colors.blue.shade100),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: AppLayout.scaleWidth(context, 18),
+                            color: Colors.blue.shade700),
+                        SizedBox(width: AppLayout.scaleWidth(context, 8)),
+                        Text(
+                          'Connection Tips',
+                          style: TextStyle(
+                            fontSize: AppLayout.fontSize(context, 13),
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade900,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppLayout.scaleHeight(context, 12)),
+                    ...[
+                      'Turn on WiFi or mobile data',
+                      'Check airplane mode is off',
+                      'Try moving to a different location',
+                      'Restart your device if needed',
+                    ].map((tip) => _Tip(tip: tip)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
+}
 
-  String _getLoadingMessage(TierLevel tier, dynamic user) {
-    switch (tier) {
-      case TierLevel.basic:
-        if (!user.isBvnVerified) return 'Preparing identity verification...';
-        return 'Preparing your dashboard...';
-      case TierLevel.pro:
-        if (!user.isSelfieVerified) return 'Preparing selfie verification...';
-        if (!user.isBvnVerified)    return 'Preparing identity verification...';
-        return 'Preparing your dashboard...';
-      case TierLevel.mega:
-        if (!user.isSelfieVerified)  return 'Preparing selfie verification...';
-        if (!user.isBvnVerified)     return 'Preparing identity verification...';
-        if (!user.isAddressVerified) return 'Preparing address verification...';
-        return 'Preparing your dashboard...';
-    }
-  }
+class _Tip extends StatelessWidget {
+  final String tip;
+  const _Tip({required this.tip});
 
-  Widget _buildTip(String tip) {
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: EdgeInsets.only(bottom: AppLayout.scaleHeight(context, 8)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('•  ', style: TextStyle(fontSize: 14, color: Colors.blue)),
+          Text(
+            '•  ',
+            style: TextStyle(
+              fontSize: AppLayout.fontSize(context, 13),
+              color: Colors.blue,
+            ),
+          ),
           Expanded(
-            child: Text(tip, style: TextStyle(fontSize: 13, color: Colors.grey[700])),
+            child: Text(
+              tip,
+              style: TextStyle(
+                fontSize: AppLayout.fontSize(context, 13),
+                color: AppColors.textGrey,
+              ),
+            ),
           ),
         ],
       ),

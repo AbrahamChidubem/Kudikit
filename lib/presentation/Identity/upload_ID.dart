@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/IDdocument/document_data.dart';
+import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/presentation/Identity/confirm_info.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/kyc/kyc_provider.dart';
@@ -15,7 +16,7 @@ class UploadIdCardScreen extends ConsumerWidget {
 
   Future<void> _pickDocument(WidgetRef ref) async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      FilePickerResult? result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['pdf', 'jpg', 'jpeg', 'png'],
       );
@@ -210,17 +211,40 @@ class UploadIdCardScreen extends ConsumerWidget {
                             );
 
                             try {
-                              // Update KYC status for document verification
+                              // Persist document verification flag so
+                              // KycFlowManager skips this step on re-entry.
                               await ref
                                   .read(authProvider.notifier)
                                   .updateKycStatus(
                                     isDocumentVerified: true,
                                   );
 
-                              // Get user info from storage
+                              // Prefer UserInfo from storage (set during ID
+                              // verification step). Fall back to building it
+                              // from the current UserModel if storage returns
+                              // null — this covers the case where the user
+                              // resumed the flow after a fresh app launch.
                               final storageService =
                                   ref.read(storageServiceProvider);
-                              final userInfo = await storageService.getUserInfo();
+                              UserInfo? userInfo =
+                                  await storageService.getUserInfo();
+
+                              if (userInfo == null) {
+                                final currentUser =
+                                    ref.read(currentUserProvider);
+                                if (currentUser != null) {
+                                  userInfo = UserInfo(
+                                    firstName: currentUser.name
+                                            ?.split(' ')
+                                            .first ?? '',
+                                    lastName: currentUser.name
+                                            ?.split(' ')
+                                            .last ?? '',
+                                    bvn: currentUser.bvn ?? '',
+                                    dateOfBirth: DateTime(1990, 1, 1),
+                                  );
+                                }
+                              }
 
                               // Close loading dialog
                               if (context.mounted) {
@@ -228,12 +252,14 @@ class UploadIdCardScreen extends ConsumerWidget {
                               }
 
                               if (context.mounted && userInfo != null) {
-                                // Navigate to ConfirmInfoScreen
-                                Navigator.push(
+                                // pushReplacement removes UploadIdCardScreen
+                                // from the stack — user cannot go back to
+                                // document upload after submitting.
+                                Navigator.pushReplacement(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => ConfirmInfoScreen(
-                                      userInfo: userInfo,
+                                    builder: (_) => ConfirmInfoScreen(
+                                      userInfo: userInfo!,
                                     ),
                                   ),
                                 );

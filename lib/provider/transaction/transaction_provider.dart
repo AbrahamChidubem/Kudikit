@@ -336,7 +336,7 @@ import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/transaction_service.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ==================== TRANSACTION PROVIDERS ====================
 
 final transactionServiceProvider = Provider<TransactionService>((ref) {

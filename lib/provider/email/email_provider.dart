@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/services/email_change_services.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ==================== EMAIL CHANGE PROVIDER ====================
 
 // Service provider

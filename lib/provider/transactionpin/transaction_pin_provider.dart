@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/services/transaction_pin_service.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 
 final transactionPinServiceProvider = Provider<TransactionPinService>((ref) {
   return TransactionPinService.instance;

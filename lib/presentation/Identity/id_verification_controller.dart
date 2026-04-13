@@ -3,7 +3,7 @@ import 'package:kudipay/core/constant/id_type.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/IDdocument/id_verification_state.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 final idVerificationProvider =
     StateNotifierProvider<IdVerificationController, IdVerificationState>(
   (ref) => IdVerificationController(),

@@ -5,7 +5,7 @@ import 'package:kudipay/presentation/address/address_notifier.dart';
 import 'package:kudipay/presentation/selfie/selfie_notifier.dart';
 import 'package:kudipay/usecases/selfie_state.dart';
 import 'dart:io';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ==================== SELFIE PROVIDER ====================
 
 final selfieStateProvider =

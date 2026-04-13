@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/formatting/widget/bottom_nav.dart';
+import 'package:kudipay/presentation/account_ready/account_ready.dart';
 import 'package:kudipay/provider/transactionpin/transaction_pin_provider.dart';
-
-
-
 
 class CreateTransactionPinScreen extends ConsumerStatefulWidget {
   /// Set to true when called from Settings (change PIN) to use different nav.
   final bool isChangingPin;
 
-  const CreateTransactionPinScreen({Key? key, this.isChangingPin = false}) : super(key: key);
+  const CreateTransactionPinScreen({Key? key, this.isChangingPin = false})
+      : super(key: key);
 
   @override
-  ConsumerState<CreateTransactionPinScreen> createState() => _CreateTransactionPinScreenState();
+  ConsumerState<CreateTransactionPinScreen> createState() =>
+      _CreateTransactionPinScreenState();
 }
 
-class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPinScreen>
+class _CreateTransactionPinScreenState
+    extends ConsumerState<CreateTransactionPinScreen>
     with SingleTickerProviderStateMixin {
   bool _successDialogShown = false;
 
@@ -29,7 +29,8 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
     // Trigger success dialog once
     if (state.isComplete && !_successDialogShown) {
       _successDialogShown = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) => _showSuccessOverlay(context, notifier));
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _showSuccessOverlay(context, notifier));
     }
     if (!state.isComplete && _successDialogShown) _successDialogShown = false;
 
@@ -65,24 +66,31 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
                           // ── Title (animated cross-fade) ──────────────────
                           AnimatedSwitcher(
                             duration: const Duration(milliseconds: 300),
-                            transitionBuilder: (child, animation) => FadeTransition(
-                              opacity: animation, child: SlideTransition(
-                                position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
-                                    .animate(animation),
-                                child: child)),
+                            transitionBuilder: (child, animation) =>
+                                FadeTransition(
+                                    opacity: animation,
+                                    child: SlideTransition(
+                                        position: Tween<Offset>(
+                                                begin: const Offset(0, 0.1),
+                                                end: Offset.zero)
+                                            .animate(animation),
+                                        child: child)),
                             child: Column(
                               key: ValueKey<bool>(state.isConfirmStep),
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  state.isConfirmStep ? 'Confirm your passcode' : 'Create a passcode',
+                                  state.isConfirmStep
+                                      ? 'Confirm your passcode'
+                                      : 'Create a passcode',
                                   style: TextStyle(
                                     fontSize: AppLayout.fontSize(context, 26),
                                     fontWeight: FontWeight.bold,
                                     color: Colors.black87,
                                   ),
                                 ),
-                                SizedBox(height: AppLayout.scaleHeight(context, 10)),
+                                SizedBox(
+                                    height: AppLayout.scaleHeight(context, 10)),
                                 Text(
                                   state.isConfirmStep
                                       ? 'Re-enter your PIN to confirm. Don\'t share it with anyone.'
@@ -146,7 +154,8 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
                 color: Colors.black.withOpacity(0.3),
                 child: const Center(
                   child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Color(0xFF069494)),
                     strokeWidth: 3,
                   ),
                 ),
@@ -160,7 +169,8 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
   // ---------------------------------------------------------------------------
   // App bar
   // ---------------------------------------------------------------------------
-  Widget _buildAppBar(BuildContext context, TxPinSetupState state, TxPinSetupNotifier notifier) {
+  Widget _buildAppBar(BuildContext context, TxPinSetupState state,
+      TxPinSetupNotifier notifier) {
     return Padding(
       padding: EdgeInsets.symmetric(
         horizontal: AppLayout.scaleWidth(context, 8),
@@ -170,7 +180,8 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
         children: [
           if (state.isConfirmStep || widget.isChangingPin)
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios, color: Colors.black87, size: 20),
+              icon: const Icon(Icons.arrow_back_ios,
+                  color: Colors.black87, size: 20),
               onPressed: () {
                 if (state.isConfirmStep) {
                   notifier.reset();
@@ -201,7 +212,8 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
   Widget _stepDot({required bool filled}) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      width: 8, height: 8,
+      width: 8,
+      height: 8,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: filled ? const Color(0xFF069494) : Colors.grey[300],
@@ -229,10 +241,12 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
         children: List.generate(4, (i) {
           final filled = i < state.enteredPin.length;
           return Padding(
-            padding: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 8)),
+            padding: EdgeInsets.symmetric(
+                horizontal: AppLayout.scaleWidth(context, 8)),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              width: 14, height: 14,
+              width: 14,
+              height: 14,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: filled
@@ -261,31 +275,44 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
     ]);
   }
 
-  Widget _keypadRow(BuildContext context, List<String> keys, TxPinSetupNotifier notifier) {
+  Widget _keypadRow(
+      BuildContext context, List<String> keys, TxPinSetupNotifier notifier) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: keys.map((key) {
         if (key == 'biometric') {
-          return _keypadButton(context,
-            child: Icon(Icons.face_outlined, size: AppLayout.scaleWidth(context, 28), color: Colors.grey[600]),
+          return _keypadButton(
+            context,
+            child: Icon(Icons.face_outlined,
+                size: AppLayout.scaleWidth(context, 28),
+                color: Colors.grey[600]),
             onTap: () {},
           );
         }
         if (key == 'delete') {
-          return _keypadButton(context,
-            child: Icon(Icons.backspace_outlined, size: AppLayout.scaleWidth(context, 26), color: Colors.red[400]),
+          return _keypadButton(
+            context,
+            child: Icon(Icons.backspace_outlined,
+                size: AppLayout.scaleWidth(context, 26),
+                color: Colors.red[400]),
             onTap: () => notifier.removeDigit(),
           );
         }
-        return _keypadButton(context,
-          child: Text(key, style: TextStyle(fontSize: AppLayout.fontSize(context, 30), fontWeight: FontWeight.w400, color: Colors.black87)),
+        return _keypadButton(
+          context,
+          child: Text(key,
+              style: TextStyle(
+                  fontSize: AppLayout.fontSize(context, 30),
+                  fontWeight: FontWeight.w400,
+                  color: Colors.black87)),
           onTap: () => notifier.addDigit(key),
         );
       }).toList(),
     );
   }
 
-  Widget _keypadButton(BuildContext context, {required Widget child, required VoidCallback onTap}) {
+  Widget _keypadButton(BuildContext context,
+      {required Widget child, required VoidCallback onTap}) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(40),
@@ -315,42 +342,63 @@ class _CreateTransactionPinScreenState extends ConsumerState<CreateTransactionPi
               tween: Tween(begin: 0.0, end: 1.0),
               duration: const Duration(milliseconds: 500),
               curve: Curves.elasticOut,
-              builder: (_, value, child) => Transform.scale(scale: value, child: child),
+              builder: (_, value, child) =>
+                  Transform.scale(scale: value, child: child),
               child: Container(
-                width: 80, height: 80,
-                decoration: BoxDecoration(color: const Color(0xFF069494).withOpacity(0.12), shape: BoxShape.circle),
-                child: const Icon(Icons.check_circle_rounded, color: Color(0xFF069494), size: 52),
+                width: 80,
+                height: 80,
+                decoration: BoxDecoration(
+                    color: const Color(0xFF069494).withOpacity(0.12),
+                    shape: BoxShape.circle),
+                child: const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF069494), size: 52),
               ),
             ),
             const SizedBox(height: 20),
-            const Text('Transaction PIN Set!', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.black87)),
+            const Text('Transaction PIN Set!',
+                style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87)),
             const SizedBox(height: 10),
-            Text('Your 4-digit transaction PIN has been saved securely. You\'ll use it to authorise all payments.',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 14, color: Colors.grey[600], height: 1.5)),
+            Text(
+                'Your 4-digit transaction PIN has been saved securely. You\'ll use it to authorise all payments.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 14, color: Colors.grey[600], height: 1.5)),
             const SizedBox(height: 28),
             SizedBox(
-              width: double.infinity, height: 52,
+              width: double.infinity,
+              height: 52,
               child: ElevatedButton(
                 onPressed: () {
                   Navigator.pop(dialogContext);
                   notifier.reset();
                   if (widget.isChangingPin) {
+                    // Settings flow — just pop back to the settings screen.
                     Navigator.pop(context);
                   } else {
-                    Navigator.pushAndRemoveUntil(
+                    // Onboarding / KYC flow — push the congratulations screen.
+                    // AccountReadyScreen will then clear the entire stack and
+                    // push BottomNavBar when the user taps "Proceed to Dashboard".
+                    Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => const BottomNavBar()),
-                      (_) => false,
+                      MaterialPageRoute(
+                        builder: (_) => const AccountReadyScreen(),
+                      ),
                     );
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF069494),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-                  elevation: 0),
-                child: Text(widget.isChangingPin ? 'Done' : 'Continue to Home',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+                    backgroundColor: const Color(0xFF069494),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(28)),
+                    elevation: 0),
+                child: Text(widget.isChangingPin ? 'Done' : 'Continue',
+                    style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white)),
               ),
             ),
           ]),

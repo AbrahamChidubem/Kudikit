@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ==================== P2P TRANSFER MODELS ====================
 
 enum TransferType {

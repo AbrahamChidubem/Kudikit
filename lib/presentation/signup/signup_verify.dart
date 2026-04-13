@@ -173,7 +173,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification code sent to ${widget.email}'),
-            backgroundColor: const Color(0xFF069494),
+            backgroundColor: const Color.fromARGB(255, 6, 148, 42),
           ),
         );
       }

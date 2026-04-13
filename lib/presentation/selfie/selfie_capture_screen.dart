@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:camera/camera.dart';
 import 'package:image_picker/image_picker.dart';
@@ -355,22 +356,24 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: ()
-                    // async
-                    {
-                  // ✅ Update auth state
-                  // await ref.read(authProvider.notifier).updateKycStatus(
-                  //       isSelfieVerified: true,
-                  //     );
+                onPressed: () async {
+                  // Persist selfie verification so KycFlowManager never
+                  // re-routes the user back to this step on re-entry.
+                  await ref.read(authProvider.notifier).updateKycStatus(
+                        isSelfieVerified: true,
+                      );
 
-                  // if (context.mounted) {
-
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const IdVerificationScreen()),
-                  );
-                  // }
+                  if (context.mounted) {
+                    // Pop the dialog first, then pushReplacement so the
+                    // capture screen is removed — user cannot go back to
+                    // the camera after photo is validated and uploaded.
+                    Navigator.pop(context); // close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => const IdVerificationScreen()),
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF069494),

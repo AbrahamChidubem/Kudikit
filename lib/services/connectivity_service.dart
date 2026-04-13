@@ -127,6 +127,8 @@ extension ConnectivityExtension on ConnectivityResult {
         return 'Other';
       case ConnectivityResult.none:
         return 'No Connection';
+        default:
+           return "unknown";
     }
   }
 }

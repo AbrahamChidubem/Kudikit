@@ -36,7 +36,7 @@ import 'package:kudipay/provider/wallet/wallet_provider.dart';
 import 'package:kudipay/provider/transaction/transaction_provider.dart';
 import 'package:kudipay/provider/request/request_provider.dart';
 import 'package:kudipay/provider/funding/funding_provider.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ─────────────────────────────────────────────────────────────────────────────
 // RefreshState
 // ─────────────────────────────────────────────────────────────────────────────

@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/presentation/ticket/features/tickets/presentation/screens/tickets_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Data models
@@ -11,7 +12,7 @@ import 'package:kudipay/mock/mock_api_data.dart';
 
 class _Category {
   final String title;
-  final String svgAsset;    // path in assets/icons/
+  final String svgAsset; // path in assets/icons/
   final int articleCount;
   const _Category({
     required this.title,
@@ -48,12 +49,12 @@ class _SupportScreenState extends State<SupportScreen> {
 
   // ── Static data ────────────────────────────────────────────────────────────
   static const _categories = [
-    _Category(title: 'Get started',     svgAsset: 'assets/icons/rocket.svg'),
-    _Category(title: 'Payment',         svgAsset: 'assets/icons/cashout.svg'),
-    _Category(title: 'Security',        svgAsset: 'assets/icons/shield.svg'),
-    _Category(title: 'Account',         svgAsset: 'assets/icons/person.svg'),
+    _Category(title: 'Get started', svgAsset: 'assets/icons/rocket.svg'),
+    _Category(title: 'Payment', svgAsset: 'assets/icons/cashout.svg'),
+    _Category(title: 'Security', svgAsset: 'assets/icons/shield.svg'),
+    _Category(title: 'Account', svgAsset: 'assets/icons/person.svg'),
     _Category(title: 'Troubleshooting', svgAsset: 'assets/icons/fix.svg'),
-    _Category(title: 'Refund',          svgAsset: 'assets/icons/clock.svg'),
+    _Category(title: 'Refund', svgAsset: 'assets/icons/clock.svg'),
   ];
 
   static const _articles = [
@@ -72,9 +73,9 @@ class _SupportScreenState extends State<SupportScreen> {
   ];
 
   static const _videos = [
-    _HelpVideo(title: 'Making first payment',      duration: '1:20'),
+    _HelpVideo(title: 'Making first payment', duration: '1:20'),
     _HelpVideo(title: 'Resolving failed transfers', duration: '1:20'),
-    _HelpVideo(title: 'Making first payment',      duration: '1:20'),
+    _HelpVideo(title: 'Making first payment', duration: '1:20'),
   ];
 
   @override
@@ -152,7 +153,11 @@ class _SupportScreenState extends State<SupportScreen> {
       centerTitle: true,
       actions: [
         TextButton(
-          onPressed: () => _showReportSheet(context),
+          onPressed: () {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => TicketsScreen()));
+          },
+          // onPressed: () => _showReportSheet(context),
           child: Text(
             'Tickets',
             style: TextStyle(
@@ -206,7 +211,7 @@ class _SupportScreenState extends State<SupportScreen> {
     // 2-column grid — we build it manually for full responsive control
     final List<Widget> rows = [];
     for (int i = 0; i < _categories.length; i += 2) {
-      final left  = _categories[i];
+      final left = _categories[i];
       final right = i + 1 < _categories.length ? _categories[i + 1] : null;
       rows.add(
         Row(
@@ -230,7 +235,7 @@ class _SupportScreenState extends State<SupportScreen> {
 
   Widget _buildCategoryCard(BuildContext context, _Category cat) {
     final iconBoxSize = AppLayout.scaleWidth(context, 40);
-    final iconSize    = AppLayout.scaleWidth(context, 20);
+    final iconSize = AppLayout.scaleWidth(context, 20);
 
     return GestureDetector(
       onTap: () {},
@@ -238,7 +243,8 @@ class _SupportScreenState extends State<SupportScreen> {
         padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
         decoration: BoxDecoration(
           color: AppColors.white,
-          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+          borderRadius:
+              BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           border: Border.all(color: const Color(0xFFEEEEEE)),
         ),
         child: Column(
@@ -250,7 +256,8 @@ class _SupportScreenState extends State<SupportScreen> {
               height: iconBoxSize,
               decoration: BoxDecoration(
                 color: AppColors.lightGreen,
-                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
               ),
               child: Center(
                 child: SvgPicture.asset(
@@ -302,7 +309,8 @@ class _SupportScreenState extends State<SupportScreen> {
           final isLast = i == _articles.length - 1;
           return Column(
             children: [
-              _buildArticleRow(context, _articles[i], isFirst: i == 0, isLast: isLast),
+              _buildArticleRow(context, _articles[i],
+                  isFirst: i == 0, isLast: isLast),
               if (!isLast)
                 Divider(
                   height: 1,
@@ -326,8 +334,12 @@ class _SupportScreenState extends State<SupportScreen> {
     return InkWell(
       onTap: () {},
       borderRadius: BorderRadius.vertical(
-        top: isFirst ? Radius.circular(AppLayout.scaleWidth(context, 12)) : Radius.zero,
-        bottom: isLast ? Radius.circular(AppLayout.scaleWidth(context, 12)) : Radius.zero,
+        top: isFirst
+            ? Radius.circular(AppLayout.scaleWidth(context, 12))
+            : Radius.zero,
+        bottom: isLast
+            ? Radius.circular(AppLayout.scaleWidth(context, 12))
+            : Radius.zero,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -372,9 +384,9 @@ class _SupportScreenState extends State<SupportScreen> {
 
   // ── Help videos ────────────────────────────────────────────────────────────
   Widget _buildVideoRow(BuildContext context) {
-    final cardWidth     = AppLayout.scaleWidth(context, 130);
-    final thumbHeight   = AppLayout.scaleHeight(context, 90);
-    final playIconSize  = AppLayout.scaleWidth(context, 28);
+    final cardWidth = AppLayout.scaleWidth(context, 130);
+    final thumbHeight = AppLayout.scaleHeight(context, 90);
+    final playIconSize = AppLayout.scaleWidth(context, 28);
 
     return SizedBox(
       height: AppLayout.scaleHeight(context, 150),
@@ -640,7 +652,6 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
               ),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
             Text(
               'Report an Issue',
               style: TextStyle(
@@ -651,7 +662,6 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
               ),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
             Wrap(
               spacing: AppLayout.scaleWidth(context, 8),
               runSpacing: AppLayout.scaleHeight(context, 8),
@@ -689,24 +699,22 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
               }).toList(),
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
-
             _buildField(context, _subjectController, 'Subject', maxLines: 1),
             SizedBox(height: AppLayout.scaleHeight(context, 12)),
-            _buildField(context, _messageController,
-                'Describe the issue in detail…', maxLines: 4),
+            _buildField(
+                context, _messageController, 'Describe the issue in detail…',
+                maxLines: 4),
             SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
             ElevatedButton(
               onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryTeal,
-                disabledBackgroundColor:
-                    AppColors.primaryTeal.withOpacity(0.4),
-                minimumSize: Size(
-                    double.infinity, AppLayout.scaleHeight(context, 52)),
+                disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.4),
+                minimumSize:
+                    Size(double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(
-                      AppLayout.scaleWidth(context, 30)),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 30)),
                 ),
                 elevation: 0,
               ),

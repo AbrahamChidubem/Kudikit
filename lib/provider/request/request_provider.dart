@@ -3,7 +3,7 @@ import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
 import '../../model/request/request_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 class RequestProvider extends ChangeNotifier {
   // Current request being created
   double? _amount;

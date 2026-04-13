@@ -6,7 +6,7 @@ import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/usecases/selfie_state.dart';
 import 'package:kudipay/presentation/address/address_notifier.dart';
 import 'package:kudipay/presentation/selfie/selfie_notifier.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 /// ==================== KYC VERIFICATION PROVIDERS ====================
 /// 
 /// This file contains all KYC (Know Your Customer) related state providers:

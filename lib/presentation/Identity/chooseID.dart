@@ -1,14 +1,13 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/constant/id_type.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/IDdocument/id_verification_state.dart';
+import 'package:kudipay/model/user/user_info.dart';
+import 'package:kudipay/presentation/Identity/confirm_info.dart';
 import 'package:kudipay/presentation/Identity/id_verification_controller.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
-import 'package:kudipay/presentation/address/verify_address.dart';
 
 class IdVerificationScreen extends ConsumerStatefulWidget {
   const IdVerificationScreen({Key? key}) : super(key: key);
@@ -453,13 +452,27 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
 
   void _handleNext() {
     final state = ref.read(idVerificationProvider);
-    if (state.status == VerificationStatus.success) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const AddressVerificationScreen(),
-        ),
-      );
-    }
+    if (state.status != VerificationStatus.success || state.data == null) return;
+
+    // Build a UserInfo from the data returned by the ID verification step.
+    // The mock (and real) API returns first_name, last_name, date_of_birth,
+    // and the raw BVN/NIN number that the user entered.
+    final data = state.data!;
+    final userInfo = UserInfo(
+      firstName:   (data['first_name']  as String? ?? '').trim(),
+      lastName:    (data['last_name']   as String? ?? '').trim(),
+      bvn:         _idNumberController.text.trim(),
+      dateOfBirth: DateTime.tryParse(
+                     data['date_of_birth'] as String? ?? '',
+                   ) ??
+                   DateTime(1990, 1, 1),
+    );
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ConfirmInfoScreen(userInfo: userInfo),
+      ),
+    );
   }
 }

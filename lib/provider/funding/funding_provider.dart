@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
 import 'package:kudipay/services/add_money_services.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 /// ==================== FUNDING / ADD MONEY PROVIDERS ====================
 /// 
 /// This file contains all wallet funding related state providers:
