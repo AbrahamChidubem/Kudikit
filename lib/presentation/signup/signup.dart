@@ -11,7 +11,7 @@ import 'package:kudipay/services/api_services.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/signup/signup_verify.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // =============================================================================
 // SignUpScreen
 // -----------------------------------------------------------------------------

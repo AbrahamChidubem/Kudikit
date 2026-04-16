@@ -1,20 +1,21 @@
 import 'package:kudipay/usecases/passcode_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 
 class PasscodeNotifier extends StateNotifier<PasscodeState> {
-  PasscodeNotifier()
-      : super(
-            PasscodeState(originalPasscode: '1234')); // Mock original passcode
+  PasscodeNotifier() : super(PasscodeState(originalPasscode: '1234'));
+
+  int _requestId = 0;
 
   void addDigit(String digit) {
     if (state.enteredPasscode.length < 4) {
       final newPasscode = state.enteredPasscode + digit;
+
       state = state.copyWith(
         enteredPasscode: newPasscode,
         showError: false,
       );
 
-      // Auto-validate when 4 digits are entered
       if (newPasscode.length == 4) {
         _validatePasscode(newPasscode);
       }
@@ -32,36 +33,39 @@ class PasscodeNotifier extends StateNotifier<PasscodeState> {
   }
 
   void _validatePasscode(String passcode) {
-    // Show loading state
+    final currentRequest = ++_requestId;
+
     state = state.copyWith(isLoading: true);
 
-    // Simulate API call or secure validation
     Future.delayed(const Duration(milliseconds: 800), () {
+      if (currentRequest != _requestId) return;
+
       if (passcode == state.originalPasscode) {
         state = state.copyWith(
           isConfirmed: true,
           showError: false,
           isLoading: false,
         );
-        // Navigate to next screen or show success
       } else {
         state = state.copyWith(
           showError: true,
           isLoading: false,
         );
-        // Reset after showing error
+
         Future.delayed(const Duration(milliseconds: 1500), () {
-          if (mounted) {
-            state = state.copyWith(enteredPasscode: '', showError: false);
-          }
+          if (currentRequest != _requestId) return;
+
+          state = state.copyWith(
+            enteredPasscode: '',
+            showError: false,
+          );
         });
       }
     });
   }
 
   void reset() {
+    _requestId++; // cancel pending validations
     state = PasscodeState(originalPasscode: state.originalPasscode);
   }
-
-  bool get mounted => true; // Helper for cleanup
 }

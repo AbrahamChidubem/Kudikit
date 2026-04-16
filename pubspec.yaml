@@ -145,7 +145,7 @@ dependencies:
   file_picker:
   csv:
   permission_handler:
-  flutter_contacts:
+  flutter_contacts: ^1.1.7  # or latest
 
   # Utilities
   intl:

@@ -21,7 +21,7 @@ import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/provider/transaction/transaction_provider.dart';
-
+import 'package:flutter_riverpod/legacy.dart';
 // ---------------------------------------------------------------------------
 // Local enums & draft model
 // ---------------------------------------------------------------------------

@@ -230,205 +230,153 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
     bool hasInsufficientBalance,
     List<double> quickAmounts,
   ) {
+    final isDisabled = state.transferData.amount == null;
+
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 20),
-      vertical: AppLayout.scaleHeight(context, 2),
-      ),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-          border: const Border(
-          top: BorderSide(color: Color(0xFFE8E8E8)),
-          left: BorderSide(color: Color(0xFFE8E8E8)),
-          right: BorderSide(color: Color(0xFFE8E8E8)),
-        ),
-        // boxShadow: [
-        //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
-        //     blurRadius: 10,
-        //     offset: const Offset(0, 2),
-        //   ),
-        // ],
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFEDEDED)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Amount label
-          Text(
-            'Amount',
+          /// LABEL
+          const Text(
+            "Amount",
             style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 13),
+              fontSize: 13,
               color: Colors.black54,
               fontWeight: FontWeight.w500,
             ),
           ),
 
-          SizedBox(height: AppLayout.scaleHeight(context, 8)),
+          const SizedBox(height: 10),
 
-          // Amount input
-          Expanded(
-            child: TextField(
-              controller: _amountController,
-              focusNode: _amountFocus,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'^\d+\.?\d{0,2}')),
-              ],
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 24),
-                fontWeight: FontWeight.w600,
-                color: hasInsufficientBalance ? Colors.red : Colors.black87,
-              ),
-              decoration: InputDecoration(
-                hintText: '0.00',
-                hintStyle: TextStyle(
-                  color: Colors.black26,
-                  fontSize: AppLayout.fontSize(context, 24),
-                ),
-                prefixIcon: Text(
-                  '₦',
+          /// INPUT FIELD (MATCHES DESIGN)
+          Container(
+            height: 56,
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF7F7F7),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                Text(
+                  "₦",
                   style: TextStyle(
-                    fontSize: AppLayout.fontSize(context, 24),
+                    fontSize: 22,
                     fontWeight: FontWeight.w600,
                     color: hasInsufficientBalance ? Colors.red : Colors.black87,
                   ),
                 ),
-                //  contentPadding: EdgeInsets.symmetric(
-                //   horizontal: 12,
-                //   vertical: 14,
-                // ),
-                prefixIconConstraints: const BoxConstraints(minWidth: 0),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color:
-                        hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
+                const SizedBox(width: 6),
+                Expanded(
+                  child: TextField(
+                    controller: _amountController,
+                    focusNode: _amountFocus,
+                    keyboardType:
+                        const TextInputType.numberWithOptions(decimal: true),
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                          RegExp(r'^\d+\.?\d{0,2}')),
+                    ],
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          hasInsufficientBalance ? Colors.red : Colors.black87,
+                    ),
+                    decoration: const InputDecoration(
+                      border: InputBorder.none,
+                      hintText: "50.00 - 50,000.00",
+                      hintStyle: TextStyle(
+                        color: Colors.black26,
+                        fontSize: 18,
+                      ),
+                    ),
+                    onChanged: (_) => _updateAmount(),
                   ),
                 ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color:
-                        hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(
-                    color:
-                        hasInsufficientBalance ? Colors.red : Colors.grey[300]!,
-                    width: 2,
-                  ),
-                ),
-              ),
-              onChanged: (_) => _updateAmount(),
+              ],
             ),
           ),
 
-          // Balance and fee info
-          SizedBox(height: AppLayout.scaleHeight(context, 12)),
+          const SizedBox(height: 10),
+
+          /// BALANCE + FEE
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Balance: ${_currencyFormat.format(state.transferData.balance)}',
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 12),
-                  color: Colors.black54,
-                ),
+                "Balance: ${_currencyFormat.format(state.transferData.balance)}",
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
               Text(
-                'Fee: ${_currencyFormat.format(state.transferData.fee)}',
-                style: TextStyle(
-                  fontSize: AppLayout.fontSize(context, 12),
-                  color: Colors.black54,
-                ),
+                "Fee: ${_currencyFormat.format(state.transferData.fee)}",
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
               ),
             ],
           ),
 
-          // Insufficient balance error
+          /// ERROR
           if (hasInsufficientBalance) ...[
-            SizedBox(height: AppLayout.scaleHeight(context, 12)),
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: AppLayout.scaleWidth(context, 12),
-                vertical: AppLayout.scaleHeight(context, 8),
-              ),
-              decoration: BoxDecoration(
-                color: Colors.red[50],
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(color: Colors.red[200]!),
-              ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    color: Colors.red[700],
-                    size: AppLayout.scaleWidth(context, 16),
-                  ),
-                  SizedBox(width: AppLayout.scaleWidth(context, 8)),
-                  Text(
-                    'Insufficient balance',
-                    style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 12),
-                      color: Colors.red[700],
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
+            const SizedBox(height: 10),
+            Row(
+              children: const [
+                Icon(Icons.error_outline, color: Colors.red, size: 16),
+                SizedBox(width: 6),
+                Text(
+                  "Insufficient balance",
+                  style: TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              ],
             ),
           ],
 
-          SizedBox(height: AppLayout.scaleHeight(context, 16)),
+          const SizedBox(height: 16),
 
-          // Quick amounts label
-          Text(
-            'Quick amounts',
+          /// QUICK AMOUNTS
+          const Text(
+            "Quick amounts",
             style: TextStyle(
-              fontSize: AppLayout.fontSize(context, 13),
+              fontSize: 13,
               color: Colors.black54,
               fontWeight: FontWeight.w500,
             ),
           ),
 
-          SizedBox(height: AppLayout.scaleHeight(context, 8)),
+          const SizedBox(height: 10),
 
-          // Quick amounts chips
           Wrap(
-            spacing: AppLayout.scaleWidth(context, 8),
-            runSpacing: AppLayout.scaleHeight(context, 8),
+            spacing: 10,
+            runSpacing: 10,
             children: quickAmounts.map((amount) {
               final isSelected = state.transferData.amount == amount;
-              return InkWell(
+
+              return GestureDetector(
                 onTap: () => _setQuickAmount(amount),
-                borderRadius: BorderRadius.circular(20),
                 child: Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context,25),
-                    vertical: AppLayout.scaleHeight(context, 12),
-                  ),
+                  width: 85,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFFE8F5E9)
+                        ? const Color(0xFFE0F2F1)
                         : const Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.circular(8),
-                    // border: Border.all(
-                    //   color: isSelected
-                    //       ? const Color(0xFFE8F5E9)
-                    //       : Colors.grey[300]!,
-                    //   width: isSelected ? 1.5 : 1,
-                    // ),
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: Text(
-                    '₦${amount.toStringAsFixed(0)}',
+                    "₦${amount.toStringAsFixed(0)}",
                     style: TextStyle(
-                      fontSize: AppLayout.fontSize(context, 13),
-                      color:
-                          isSelected ? const Color(0xFF069494) : Colors.black54,
+                      fontSize: 14,
                       fontWeight:
                           isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color:
+                          isSelected ? const Color(0xFF069494) : Colors.black54,
                     ),
                   ),
                 ),
@@ -600,12 +548,12 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
                   }
                 : null,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF069494),
+              backgroundColor:
+                  canSend ? const Color(0xFF069494) : const Color(0xFFB2DFDB),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(30),
               ),
               elevation: 0,
-              disabledBackgroundColor: const Color(0xFFB2DFDB),
             ),
             child: Text(
               'Send',

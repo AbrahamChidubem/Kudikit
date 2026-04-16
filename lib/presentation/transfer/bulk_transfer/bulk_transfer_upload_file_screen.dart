@@ -309,7 +309,6 @@ class _BulkTransferUploadFileScreenState
     String fileName,
   ) async {
     try {
-      // Show loading
       if (mounted) {
         showDialog(
           context: context,
@@ -322,24 +321,20 @@ class _BulkTransferUploadFileScreenState
         );
       }
 
-      // Read file
       final fileContent = await file.readAsString();
 
-      // Parse CSV
-      List<List<dynamic>> csvData = const CsvToListConverter().convert(
-        fileContent,
-        eol: '\n',
+      // ✅ NEW CSV PARSER (v8)
+      final csv = Csv(
+        dynamicTyping: true, // converts numbers automatically
       );
 
-      // Validate and parse recipients
-      final result = _parseRecipients(csvData, fileName);
+      // ✅ Use headers (VERY IMPORTANT)
+      final rows = csv.decodeWithHeaders(fileContent);
 
-      // Close loading dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      final result = _parseRecipientsWithHeaders(rows, fileName);
 
-      // Navigate to validation screen
+      if (mounted) Navigator.pop(context);
+
       if (mounted) {
         Navigator.push(
           context,
@@ -348,16 +343,13 @@ class _BulkTransferUploadFileScreenState
               fileName: fileName,
               recipients: result.validRecipients,
               errors: result.errors,
-              totalRecipients: csvData.length - 1, // Exclude header
+              totalRecipients: rows.length,
             ),
           ),
         );
       }
     } catch (e) {
-      // Close loading dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
+      if (mounted) Navigator.pop(context);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -370,11 +362,14 @@ class _BulkTransferUploadFileScreenState
     }
   }
 
-  ParseResult _parseRecipients(List<List<dynamic>> csvData, String fileName) {
+  ParseResult _parseRecipientsWithHeaders(
+    List<dynamic> rows,
+    String fileName,
+  ) {
     List<BulkTransferRecipient> validRecipients = [];
     List<FileError> errors = [];
 
-    if (csvData.isEmpty) {
+    if (rows.isEmpty) {
       errors.add(FileError(
         row: 0,
         field: 'File',
@@ -383,66 +378,63 @@ class _BulkTransferUploadFileScreenState
       return ParseResult(validRecipients, errors);
     }
 
-    // Skip header row (assuming first row is header)
-    for (int i = 1; i < csvData.length; i++) {
-      final row = csvData[i];
+    for (int i = 0; i < rows.length; i++) {
+      final row = rows[i];
 
       try {
-        // Validate row has minimum columns
-        if (row.length < 5) {
-          errors.add(FileError(
-            row: i + 1,
-            field: 'Row',
-            message: 'Incomplete data',
-          ));
-          continue;
-        }
+        final name = (row['Name'] ?? '').toString().trim();
+        final accountType =
+            (row['Account Type'] ?? '').toString().trim().toLowerCase();
+        final accountNumber = (row['Phone/Account'] ?? '').toString().trim();
+        final bankName = (row['Bank Name'] ?? '').toString().trim();
+        final amount = row['Amount'] is num
+            ? (row['Amount'] as num).toDouble()
+            : double.tryParse(row['Amount']?.toString() ?? '');
 
-        final name = row[0].toString().trim();
-        final accountType = row[1].toString().trim().toLowerCase();
-        final accountNumber = row[2].toString().trim();
-        final bankName = row.length > 3 ? row[3].toString().trim() : '';
-        final amount =
-            row.length > 4 ? double.tryParse(row[4].toString()) : null;
+        // ✅ VALIDATIONS
 
-        // Validate name
         if (name.isEmpty) {
           errors.add(FileError(
-            row: i + 1,
+            row: i + 2, // +2 because header is row 1
             field: 'Name',
             message: 'Name is required',
           ));
         }
 
-        // Validate account type
         if (accountType != 'kudikit' && accountType != 'bank') {
           errors.add(FileError(
-            row: i + 1,
+            row: i + 2,
             field: 'Account Type',
             message: 'Must be "Kudikit" or "Bank"',
           ));
         }
 
-        // Validate bank name for bank transfers
+        if (accountNumber.isEmpty) {
+          errors.add(FileError(
+            row: i + 2,
+            field: 'Phone/Account',
+            message: 'Account/Phone is required',
+          ));
+        }
+
         if (accountType == 'bank' && bankName.isEmpty) {
           errors.add(FileError(
-            row: i + 1,
+            row: i + 2,
             field: 'Bank Name',
             message: 'Bank name is required for bank transfers',
           ));
         }
 
-        // Validate amount
         if (amount == null || amount <= 0) {
           errors.add(FileError(
-            row: i + 1,
+            row: i + 2,
             field: 'Amount',
             message: 'Valid amount is required',
           ));
         }
 
-        // If no errors for this row, add to valid recipients
-        if (!errors.any((e) => e.row == i + 1)) {
+        // ✅ ONLY ADD VALID ROWS
+        if (!errors.any((e) => e.row == i + 2)) {
           validRecipients.add(
             BulkTransferRecipient(
               id: DateTime.now().millisecondsSinceEpoch.toString() +
@@ -461,7 +453,7 @@ class _BulkTransferUploadFileScreenState
         }
       } catch (e) {
         errors.add(FileError(
-          row: i + 1,
+          row: i + 2,
           field: 'Row',
           message: 'Error parsing row: $e',
         ));
@@ -472,22 +464,18 @@ class _BulkTransferUploadFileScreenState
   }
 
   void _downloadTemplate(BuildContext context) {
-    // Copy a ready-to-use CSV template to the clipboard.
-    // Users can paste this into any spreadsheet app, fill in their data,
-    // save as .csv, and upload it here.
-    const template = 'account_number,account_name,bank_name,amount,narration\n'
-        '0123456789,John Doe,GTBank,5000,Salary payment\n'
-        '9876543210,Jane Smith,Access Bank,10000,Invoice settlement\n';
+    const template = 'Name,Account Type,Phone/Account,Bank Name,Amount\n'
+        'John Doe,Kudikit,08012345678,,5000\n'
+        'Jane Smith,Bank,0123456789,GTBank,10000\n';
+
     Clipboard.setData(const ClipboardData(text: template));
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: const Text(
-          'CSV template copied to clipboard — paste into a spreadsheet to fill in',
+          'CSV template copied to clipboard — paste into Excel or Sheets',
         ),
         backgroundColor: const Color(0xFF069494),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        duration: const Duration(seconds: 4),
       ),
     );
   }
