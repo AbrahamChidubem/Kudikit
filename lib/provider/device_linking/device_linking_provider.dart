@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kudipay/model/device/device_metadata.dart';
+import 'package:kudipay/services/device_info_services.dart';
 // ==================== DEVICE LINKING MODELS ====================
 
 enum VerificationMethod {
@@ -149,8 +151,16 @@ class DeviceLinkingService {
     return _mockGetUserDeviceInfo();
   }
 
-  Future<bool> sendVerificationCode(String email, VerificationMethod method) async {
-    return _mockSendVerificationCode(email, method);
+  // UPDATED: Now accepts DeviceMetadata so the backend can render the
+  // security email template (Image 1) with device/IP/location context.
+  // This is the most important trigger for Image 1 — the user is explicitly
+  // authorizing a new device, so showing location/IP in the email is critical.
+  Future<bool> sendVerificationCode(
+    String email,
+    VerificationMethod method,
+    DeviceMetadata deviceMetadata,  // NEW
+  ) async {
+    return _mockSendVerificationCode(email, method, deviceMetadata);
   }
 
   Future<bool> verifyCode(String code) async {
@@ -171,8 +181,15 @@ class DeviceLinkingService {
     );
   }
 
-  Future<bool> _mockSendVerificationCode(String email, VerificationMethod method) async {
+  Future<bool> _mockSendVerificationCode(
+    String email,
+    VerificationMethod method,
+    DeviceMetadata deviceMetadata,  // NEW — passed through to real endpoint later
+  ) async {
     await Future.delayed(const Duration(seconds: 1));
+    // TODO (real call): POST $baseUrl/device/send-verification-code with:
+    //   { 'email': email, 'method': method.name, ...deviceMetadata.toJson() }
+    // The backend uses device_metadata to populate the security email template.
     return true;
   }
 
@@ -229,9 +246,16 @@ class DeviceLinkingNotifier extends StateNotifier<DeviceLinkingState> {
     state = state.copyWith(isSendingCode: true, clearError: true);
 
     try {
+      // Collect device metadata concurrently with the loading state update.
+      // This is the primary trigger for the security OTP email (Image 1) —
+      // the user is authorising a brand-new device, so device/IP/location
+      // context is essential.
+      final deviceMetadata = await DeviceInfoService.collect();
+
       await _service.sendVerificationCode(
         state.data!.email!,
         state.selectedMethod,
+        deviceMetadata,   // NEW — forwarded to the service / API call
       );
 
       state = state.copyWith(

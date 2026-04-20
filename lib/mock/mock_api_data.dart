@@ -39,6 +39,8 @@
 //                           bankCode, phoneNumber, narration, amount, isVerified
 // =============================================================================
 
+import 'package:kudipay/model/device/device_metadata.dart';
+
 const String kBaseUrl = 'https://api.Kudikit.com/api/v1';
 
 String _txId() => 'TXN${DateTime.now().millisecondsSinceEpoch}';
@@ -53,11 +55,13 @@ class MockAuthData {
   static Map<String, dynamic> registerSuccess({
     required String email,
     required String phoneNumber,
+    DeviceMetadata? deviceMetadata,   
   }) =>
       {
         'success': true,
         'userId': 'usr_${DateTime.now().millisecondsSinceEpoch}',
         'message': 'Verification code sent to $email',
+        if (deviceMetadata != null) ...deviceMetadata.toJson(),
       };
 
   static const Map<String, dynamic> registerEmailTaken = {
@@ -67,7 +71,7 @@ class MockAuthData {
 
   // 'user' map → UserModel.fromJson
   static Map<String, dynamic> loginSuccess({
-    String email = 'user@example.com',
+    String email = 'user@example.com', required DeviceMetadata deviceMetadata,
   }) =>
       {
         'success': true,
@@ -762,7 +766,7 @@ class MockNotificationData {
 // =============================================================================
 class MockEmailChangeData {
   static Map<String, dynamic> requestOtpSuccess({
-    String email = 'm****@example.com',
+    String email = 'm****@example.com', required DeviceMetadata deviceMetadata,
   }) =>
       {
         'success': true,

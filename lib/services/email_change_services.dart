@@ -1,25 +1,38 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/model/device/device_metadata.dart';
+import 'package:kudipay/services/device_info_services.dart';
 import 'package:kudipay/services/storage_services.dart';
 
 class EmailChangeService {
   final String baseUrl = 'https://api.yourapp.com';
   final StorageService _storageService = StorageService();
 
-  /// Request OTP for email change
+  /// Request OTP for email change.
+  /// UPDATED: Collects DeviceMetadata so the backend can populate the
+  /// security email template (Image 1) — changing your email is a
+  /// sensitive account action that warrants device/IP/location context.
   Future<Map<String, dynamic>> requestOTP(String currentEmail) async {
-    // ── Mock implementation ───────────────────────────────────────────────────
+    // Collect device metadata concurrently with the simulated delay.
+    final metaFuture = DeviceInfoService.collect();
     await Future.delayed(const Duration(seconds: 1));
-    return MockEmailChangeData.requestOtpSuccess(email: maskEmail(currentEmail));
+    final DeviceMetadata meta = await metaFuture;
+
+    // ── Mock implementation ───────────────────────────────────────────────────
+    return MockEmailChangeData.requestOtpSuccess(
+      email: maskEmail(currentEmail),
+      deviceMetadata: meta,   // NEW — mock now receives metadata
+    );
 
     // ── Real implementation ───────────────────────────────────────────────────
     // try {
     //   final token = await _storageService.getAuthToken();
+    //   final body = meta.mergeInto({'email': currentEmail});
     //   final response = await http.post(
     //     Uri.parse('$baseUrl/api/user/email/request-otp'),
     //     headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
-    //     body: json.encode({'email': currentEmail}),
+    //     body: json.encode(body),
     //   );
     //   final data = json.decode(response.body);
     //   if (response.statusCode == 200) {
@@ -85,18 +98,24 @@ class EmailChangeService {
     // }
   }
 
-  /// Resend OTP
+  /// Resend OTP — also attaches device metadata so the backend re-sends
+  /// the full security email template on resend.
   Future<Map<String, dynamic>> resendOTP() async {
-    // ── Mock implementation ───────────────────────────────────────────────────
+    final metaFuture = DeviceInfoService.collect();
     await Future.delayed(const Duration(seconds: 1));
-    return MockEmailChangeData.requestOtpSuccess();
+    final DeviceMetadata meta = await metaFuture;
+
+    // ── Mock implementation ───────────────────────────────────────────────────
+    return MockEmailChangeData.requestOtpSuccess(deviceMetadata: meta);
 
     // ── Real implementation ───────────────────────────────────────────────────
     // try {
     //   final token = await _storageService.getAuthToken();
+    //   final body = meta.mergeInto({});
     //   final response = await http.post(
     //     Uri.parse('$baseUrl/api/user/email/resend-otp'),
     //     headers: {'Authorization': 'Bearer $token', 'Content-Type': 'application/json'},
+    //     body: json.encode(body),
     //   );
     //   final data = json.decode(response.body);
     //   if (response.statusCode == 200) {

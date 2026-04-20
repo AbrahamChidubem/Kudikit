@@ -7,8 +7,10 @@
 //   - All print() removed
 
 import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/model/device/device_metadata.dart';
 import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/model/user/user_model.dart';
+import 'package:kudipay/services/device_info_services.dart';
 import 'package:kudipay/services/storage_services.dart';
 
 class AuthService {
@@ -17,22 +19,31 @@ class AuthService {
 
   // ── Login ──────────────────────────────────────────────────────────────────
   // TODO: Replace mock body below with real HTTP call:
-  //   POST $baseUrl/auth/login  { email, password }
+  //   POST $baseUrl/auth/login  { email, password, device_metadata }
   //
   // FIXED: Guard updated from password.length >= 6 to password.length >= 8.
   // The passcode minimum is now 8 characters (alphanumeric with complexity).
   // Using 6 here was a leftover from the old 6-digit numeric PIN era and
   // would allow passwords that the StorageService._validatePasscode() would
   // reject, creating a silent inconsistency between the login mock and signup.
+  //
+  // UPDATED: Collects DeviceMetadata before sending so the backend can
+  // populate the security email template (Image 1) with device/IP/location.
   Future<Map<String, dynamic>> login({
     required String email,
     required String password,
   }) async {
+    // Collect device metadata concurrently with the simulated network delay.
+    // In production this runs alongside the real HTTP call setup.
+    final metaFuture = DeviceInfoService.collect();
     await Future.delayed(const Duration(seconds: 2));
+    final DeviceMetadata meta = await metaFuture;
 
     // Guard: must match the minimum passcode length enforced at signup (8 chars).
     if (email.isNotEmpty && password.length >= 8) {
-      return MockAuthData.loginSuccess(email: email);
+      // TODO (real call): merge meta.toJson() into the POST body:
+      //   body: jsonEncode({ 'email': email, 'password': password, ...meta.toJson() })
+      return MockAuthData.loginSuccess(email: email, deviceMetadata: meta);
     } else {
       throw Exception('Invalid credentials');
     }
@@ -40,16 +51,25 @@ class AuthService {
 
   // ── Signup ─────────────────────────────────────────────────────────────────
   // TODO: Replace mock body below with real HTTP call:
-  //   POST $baseUrl/auth/register  { email, phone_number, passcode }
+  //   POST $baseUrl/auth/register  { email, phone_number, passcode, device_metadata }
+  //
+  // UPDATED: Collects DeviceMetadata so the backend can attach device context
+  // to the signup OTP email.
   Future<Map<String, dynamic>> signup({
     required String email,
     required String phoneNumber,
     required String pin,
   }) async {
+    final metaFuture = DeviceInfoService.collect();
     await Future.delayed(const Duration(seconds: 2));
+    final DeviceMetadata meta = await metaFuture;
 
+    // TODO (real call): merge meta.toJson() into the POST body.
     return MockAuthData.registerSuccess(
-        email: email, phoneNumber: phoneNumber);
+      email: email,
+      phoneNumber: phoneNumber,
+      deviceMetadata: meta,
+    );
   }
 
   // ── Email Verification ─────────────────────────────────────────────────────
