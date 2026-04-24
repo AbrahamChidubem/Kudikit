@@ -293,7 +293,7 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
                       borderRadius: BorderRadius.circular(
                           AppLayout.scaleWidth(context, 6)),
                       border: Border.all(
-                        color: const Color(0xFFDDE8E2),
+                        color: const Color(0xFFDDE8E2),width: 0.5,
                       ),
                     ),
                     child: Icon(

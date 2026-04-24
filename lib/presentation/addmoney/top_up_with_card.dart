@@ -95,7 +95,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
             Container(
               color: Colors.black26,
               child: const Center(
-                child: CircularProgressIndicator(color: _primaryColor),
+                child: CircularProgressIndicator(color: _primaryColor,strokeWidth: 1,),
               ),
             ),
         ],
@@ -108,7 +108,7 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
       backgroundColor: Colors.white,
       elevation: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 20),
+        icon: const Icon(Icons.arrow_back_ios, color: Colors.black, size: 18),
         onPressed: () => Navigator.pop(context),
       ),
       title: Text(
@@ -198,9 +198,9 @@ class _CardTopUpFormScreenState extends ConsumerState<CardTopUpFormScreen> {
         color: error
             ? Colors.red
             : focused
-                ? _primaryColor
+                ? Colors.grey
                 : Colors.grey[300]!,
-        width: focused ? 2 : 1,
+        width: focused ? 1 : 0.5,
       ),
     );
   }

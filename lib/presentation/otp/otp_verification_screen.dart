@@ -93,15 +93,15 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(width: 8),
-          Container(
-            width: 8,
-            height: 8,
-            decoration: BoxDecoration(
-              color: isOnline ? const Color(0xFF069494) : Colors.red,
-              shape: BoxShape.circle,
-            ),
-          ),
+          // const SizedBox(width: 8),
+          // Container(
+          //   width: 8,
+          //   height: 8,
+          //   decoration: BoxDecoration(
+          //     color: isOnline ? const Color(0xFF069494) : Colors.red,
+          //     shape: BoxShape.circle,
+          //   ),
+          // ),
         ],
       ),
     );
@@ -233,7 +233,7 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               borderSide:
-                  const BorderSide(color: Color(0xFF069494), width: 2),
+                  const BorderSide(color: Color(0xFFf9f9f9), width: 1),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius:

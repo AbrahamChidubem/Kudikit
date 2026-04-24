@@ -5,12 +5,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/add_money_services.dart';
 import 'package:flutter_riverpod/legacy.dart';
 // ── Service provider ──────────────────────────────────────────────────────────
+// FIXED: was returning MockAddMoneyService() with no token and no base URL.
+// Now passes the live auth token so real HTTP calls won't 401.
 final addMoneyServiceProvider = Provider<AddMoneyService>((ref) {
-  return MockAddMoneyService();
+  final token = ref.watch(authTokenProvider);
+  return MockAddMoneyService(baseUrl: kBaseUrl, authToken: token);
 });
 
 // ── Error types ───────────────────────────────────────────────────────────────

@@ -284,8 +284,15 @@ class _TransferRecipientScreenState
                 ),
               ),
               suffixIcon: hasRecipient
-                  ? const Icon(Icons.check_circle_outline_rounded,
-                      color: Color(0xFF069494))
+                  ? SvgPicture.asset(
+                      'assets/icons/check.svg',
+                      width: AppLayout.scaleWidth(context, 10),
+                      height: AppLayout.scaleWidth(context, 10),
+                      colorFilter: const ColorFilter.mode(
+                        Color(0xFF069494),
+                        BlendMode.srcIn,
+                      ),
+                    )
                   : null,
               counterText: '',
             ),
@@ -323,6 +330,7 @@ class _TransferRecipientScreenState
                   color: _selectedBank != null
                       ? const Color(0xFF069494)
                       : Colors.grey[300]!,
+                      width: 0.5
                 ),
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -430,7 +438,7 @@ class _TransferRecipientScreenState
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF069494),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(30),
                 ),
                 elevation: 0,
                 disabledBackgroundColor: const Color(0xFFB2DFDB),

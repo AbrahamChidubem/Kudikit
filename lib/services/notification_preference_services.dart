@@ -7,8 +7,15 @@ import 'package:kudipay/services/storage_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class NotificationPreferencesService {
-  final String baseUrl = 'https://api.yourapp.com';
-  final StorageService _storageService = StorageService();
+   final String baseUrl;
+  final String? authToken;
+  final StorageService _storageService;
+
+  NotificationPreferencesService({
+    required this.baseUrl,
+    required this.authToken,
+    StorageService? storageService,
+  }) : _storageService = storageService ?? StorageService();
 
   /// Fetch notification preferences.
   /// Returns data from [MockNotificationData] during development.

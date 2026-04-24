@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/presentation/linkdevice/verify_id.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class GetVerificationCodeScreen extends ConsumerStatefulWidget {
@@ -138,7 +139,7 @@ class _GetVerificationCodeScreenState
           border: Border.all(
             color:
                 isSelected ? const Color(0xFF069494) : Colors.transparent,
-            width: 2,
+            width: 0.3,
           ),
           boxShadow: [
             BoxShadow(
@@ -152,10 +153,10 @@ class _GetVerificationCodeScreenState
           children: [
             Container(
               width: AppLayout.scaleWidth(context, 48),
-              height: AppLayout.scaleWidth(context, 48),
+              height: AppLayout.scaleWidth(context, 43),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF069494).withOpacity(0.1)
+                    ? const Color(0xFF069494).withOpacity(0.35)
                     : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -163,7 +164,7 @@ class _GetVerificationCodeScreenState
                 icon,
                 color:
                     isSelected ? const Color(0xFF069494) : Colors.black54,
-                size: AppLayout.scaleWidth(context, 24),
+                size: AppLayout.scaleWidth(context, 218),
               ),
             ),
 
@@ -194,11 +195,11 @@ class _GetVerificationCodeScreenState
             ),
 
             Icon(
-              isSelected ? Icons.check_circle : Icons.arrow_forward_ios,
+              isSelected ? Icons.arrow_forward_ios : Icons.arrow_forward_ios,
               color: isSelected
                   ? const Color(0xFF069494)
                   : Colors.black26,
-              size: AppLayout.scaleWidth(context, 20),
+              size: AppLayout.scaleWidth(context, 18),
             ),
           ],
         ),
@@ -223,21 +224,21 @@ class _GetVerificationCodeScreenState
           onPressed: state.isSendingCode
               ? null
               : () async {
-                  // await ref
-                  //     .read(deviceLinkingProvider.notifier)
-                  //     .sendVerificationCode();
+                  await ref
+                      .read(deviceLinkingProvider.notifier)
+                      .sendVerificationCode();
 
-                  // // FIX: read fresh state after await instead of using
-                  // // stale captured state.
-                  // final fresh = ref.read(deviceLinkingProvider);
-                  // if (mounted && fresh.data?.isCodeSent == true) {
-                  //   Navigator.push(
-                  //     context,
-                  //     MaterialPageRoute(
-                  //       builder: (context) => const VerifyIdentityScreen(),
-                  //     ),
-                  //   );
-                  // }
+                  // FIX: read fresh state after await instead of using
+                  // stale captured state.
+                  final fresh = ref.read(deviceLinkingProvider);
+                  if (mounted && fresh.data?.isCodeSent == true) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const VerifyIdentityScreen(),
+                      ),
+                    );
+                  }
                 },
           style: ElevatedButton.styleFrom(
             backgroundColor: const Color(0xFF069494),

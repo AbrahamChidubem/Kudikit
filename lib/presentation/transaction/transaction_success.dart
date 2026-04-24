@@ -5,8 +5,6 @@ import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 
-
-
 class TransactionReceiptScreen extends ConsumerWidget {
   const TransactionReceiptScreen({Key? key}) : super(key: key);
 
@@ -41,7 +39,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
         onPressed: () => Navigator.popUntil(context, (route) => route.isFirst),
       ),
       title: Text(
-        'Top-up with card or account',
+        'Transaction Details',
         style: TextStyle(
           color: Colors.black,
           fontSize: AppLayout.fontSize(context, 18),
@@ -95,13 +93,13 @@ class TransactionReceiptScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        // boxShadow: [
+        //   BoxShadow(
+        //     color: Colors.black.withOpacity(0.05),
+        //     blurRadius: 10,
+        //     offset: const Offset(0, 4),
+        //   ),
+        // ],
       ),
       child: Column(
         children: [
@@ -110,13 +108,13 @@ class TransactionReceiptScreen extends ConsumerWidget {
             width: AppLayout.scaleWidth(context, 60),
             height: AppLayout.scaleWidth(context, 60),
             decoration: const BoxDecoration(
-              color: Color(0xFFE8F5E9),
+              color: Color(0xFFdbf0e2),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.account_balance,
-              color: const Color(0xFF069494),
-              size: AppLayout.scaleWidth(context, 28),
+              color: const Color(0xFF069494).withOpacity(0.35),
+              size: AppLayout.scaleWidth(context, 15),
             ),
           ),
 
@@ -152,16 +150,12 @@ class TransactionReceiptScreen extends ConsumerWidget {
               horizontal: AppLayout.scaleWidth(context, 12),
               vertical: AppLayout.scaleHeight(context, 6),
             ),
-            decoration: BoxDecoration(
-              color: const Color(0xFFE8F5E9),
-              borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
-            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.check_circle,
-                  color: const Color(0xFF069494),
+                  color: const Color(0xFF15b47b),
                   size: AppLayout.scaleWidth(context, 16),
                 ),
                 SizedBox(width: AppLayout.scaleWidth(context, 6)),
@@ -170,7 +164,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: AppLayout.fontSize(context, 13),
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF069494),
+                    color: const Color(0xFF15B47B),
                   ),
                 ),
               ],
@@ -184,17 +178,6 @@ class TransactionReceiptScreen extends ConsumerWidget {
   Widget _buildTransactionDetails(BuildContext context, receipt) {
     return Container(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -209,20 +192,8 @@ class TransactionReceiptScreen extends ConsumerWidget {
           SizedBox(height: AppLayout.scaleHeight(context, 20)),
           _buildDetailRow(
             context,
-            'Transaction Type',
-            receipt.transactionType,
-          ),
-          _buildDivider(context),
-          _buildDetailRow(
-            context,
-            'Paying Bank',
+            'Recipient Details',
             receipt.payingBank,
-          ),
-          _buildDivider(context),
-          _buildDetailRow(
-            context,
-            'Credited to',
-            receipt.creditedTo,
           ),
           _buildDivider(context),
           _buildDetailRow(
@@ -230,6 +201,12 @@ class TransactionReceiptScreen extends ConsumerWidget {
             'Transaction No.',
             receipt.transactionNumber,
             isLongText: true,
+          ),
+          _buildDivider(context),
+          _buildDetailRow(
+            context,
+            'Payment Type',
+            receipt.creditedTo,
           ),
           _buildDivider(context),
           _buildDetailRow(
@@ -249,7 +226,8 @@ class TransactionReceiptScreen extends ConsumerWidget {
     bool isLongText = false,
   }) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 12)),
+      padding:
+          EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 12)),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -306,16 +284,16 @@ class TransactionReceiptScreen extends ConsumerWidget {
               ),
             ),
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF069494),
-              side: const BorderSide(color: Color(0xFFE8F5E9), width: 2),
-              backgroundColor: const Color(0xFFE8F5E9),
+              foregroundColor: const Color(0xFFF9F9F9),
+              side: const BorderSide(color: Color(0xFF069494), width: 1),
+              backgroundColor: const Color(0xFFf9f9f9),
               minimumSize: Size(
                 0,
                 AppLayout.scaleHeight(context, 50),
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
-              ),
+                  borderRadius:
+                      BorderRadius.circular(AppLayout.scaleWidth(context, 12))),
             ),
           ),
         ),
@@ -325,11 +303,11 @@ class TransactionReceiptScreen extends ConsumerWidget {
             onPressed: () {
               // Download receipt
               Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const AddMoneyScreen(),
-          ),
-        );
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const AddMoneyScreen(),
+                ),
+              );
             },
             icon: Icon(
               Icons.download_outlined,
@@ -350,7 +328,8 @@ class TransactionReceiptScreen extends ConsumerWidget {
                 AppLayout.scaleHeight(context, 50),
               ),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
               ),
               elevation: 0,
             ),

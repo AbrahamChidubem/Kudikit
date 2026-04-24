@@ -1,15 +1,13 @@
 // lib/provider/wallet/wallet_provider.dart
-// FIXED:
-//   - Balance, account number and account name are no longer hardcoded.
-//   - _load() and refresh() call the mock API helpers from MockWalletData.
-//     When the backend is ready, replace the two mock calls with:
-//       GET $kBaseUrl/wallet/balance
-//       GET $kBaseUrl/wallet/account-details
+// INTEGRATED: _load() and refresh() now call real API endpoints via DioClient.
+//
+// Endpoints:
+//   GET /wallet/balance          → { balance: number }
+//   GET /wallet/account-details  → { account_number, account_name, bank_name }
 
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kudipay/config/dio_client.dart';
 
 class WalletState {
   final double balance;
@@ -54,69 +52,65 @@ class WalletState {
       error: clearError ? null : (error ?? this.error),
     );
   }
-
-  String get formattedBalance {
-    final parts = balance.toStringAsFixed(2).split('.');
-    final whole = parts[0];
-    final decimal = parts[1];
-    final buf = StringBuffer();
-    int count = 0;
-    for (int i = whole.length - 1; i >= 0; i--) {
-      if (count > 0 && count % 3 == 0) buf.write(',');
-      buf.write(whole[i]);
-      count++;
-    }
-    return '${buf.toString().split('').reversed.join('')}.$decimal';
-  }
-
-  String get initials {
-    final parts = accountName.trim().split(' ');
-    if (parts.length >= 2) return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    if (parts.isNotEmpty && parts[0].isNotEmpty) {
-      return parts[0].substring(0, parts[0].length >= 2 ? 2 : 1).toUpperCase();
-    }
-    return 'KP';
-  }
 }
 
 class WalletNotifier extends StateNotifier<WalletState> {
-  WalletNotifier() : super(const WalletState(isLoading: true)) {
+  final DioClient _client;
+
+  WalletNotifier(this._client) : super(const WalletState()) {
     _load();
   }
 
   Future<void> _load() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      // ── TODO: Replace with real HTTP calls when backend is ready ──────────
-      // final balanceResp = await ApiService.instance.get('/wallet/balance', token: authToken);
-      // final acctResp    = await ApiService.instance.get('/wallet/account-details', token: authToken);
-      await Future.delayed(const Duration(milliseconds: 900));
+      // Fetch balance and account details in parallel
+      final results = await Future.wait([
+        _client.get<Map<String, dynamic>>('/wallet/balance'),
+        _client.get<Map<String, dynamic>>('/wallet/account-details'),
+      ]);
 
-      final balanceData = MockWalletData.balanceResponse;
-      final acctData    = MockWalletData.accountDetailsResponse;
+      final balanceData = results[0].data!;
+      final acctData = results[1].data!;
 
       state = state.copyWith(
         isLoading: false,
         balance: (balanceData['balance'] as num).toDouble(),
         accountNumber: acctData['account_number'] as String,
         accountName: acctData['account_name'] as String,
-        bankName: acctData['bank_name'] as String,
+        bankName: (acctData['bank_name'] as String?) ?? 'KudiPay MFB',
         lastUpdated: DateTime.now(),
       );
+    } on KudiNetworkException {
+      state = state.copyWith(
+          isLoading: false, error: 'No internet. Pull to refresh.');
     } catch (e) {
-      state = state.copyWith(isLoading: false, error: 'Could not load wallet. Pull to refresh.');
+      state = state.copyWith(
+          isLoading: false, error: 'Could not load wallet. Pull to refresh.');
     }
+
+    // ── Mock fallback ─────────────────────────────────────────────────────────
+    // await Future.delayed(const Duration(milliseconds: 900));
+    // state = state.copyWith(
+    //   isLoading: false,
+    //   balance: (MockWalletData.balanceResponse['balance'] as num).toDouble(),
+    //   accountNumber: MockWalletData.accountDetailsResponse['account_number'] as String,
+    //   accountName: MockWalletData.accountDetailsResponse['account_name'] as String,
+    //   lastUpdated: DateTime.now(),
+    // );
   }
 
   Future<void> refresh() async {
     if (state.isRefreshing) return;
     state = state.copyWith(isRefreshing: true, clearError: true);
     try {
-      // ── TODO: Replace with real HTTP call ─────────────────────────────────
-      await Future.delayed(const Duration(milliseconds: 700));
+      final results = await Future.wait([
+        _client.get<Map<String, dynamic>>('/wallet/balance'),
+        _client.get<Map<String, dynamic>>('/wallet/account-details'),
+      ]);
 
-      final balanceData = MockWalletData.balanceResponse;
-      final acctData    = MockWalletData.accountDetailsResponse;
+      final balanceData = results[0].data!;
+      final acctData = results[1].data!;
 
       state = state.copyWith(
         isRefreshing: false,
@@ -125,19 +119,29 @@ class WalletNotifier extends StateNotifier<WalletState> {
         accountName: acctData['account_name'] as String,
         lastUpdated: DateTime.now(),
       );
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isRefreshing: false, error: 'No internet connection.');
     } catch (e) {
       state = state.copyWith(isRefreshing: false, error: 'Refresh failed. Try again.');
     }
   }
 
-  /// Optimistically deduct after a successful payment.
+  /// Optimistically deduct from local balance after a confirmed payment.
+  /// The next refresh() call will reconcile with the server.
   void deduct(double amount) {
     if (state.balance >= amount) {
       state = state.copyWith(balance: state.balance - amount);
     }
   }
+
+  /// Optimistically add to local balance after a confirmed top-up.
+  void credit(double amount) {
+    state = state.copyWith(balance: state.balance + amount);
+  }
 }
 
-final walletProvider = StateNotifierProvider<WalletNotifier, WalletState>((ref) {
-  return WalletNotifier();
+final walletProvider =
+    StateNotifierProvider<WalletNotifier, WalletState>((ref) {
+  return WalletNotifier(ref.read(dioClientProvider));
 });

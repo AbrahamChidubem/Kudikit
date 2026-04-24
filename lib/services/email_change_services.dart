@@ -6,8 +6,17 @@ import 'package:kudipay/services/device_info_services.dart';
 import 'package:kudipay/services/storage_services.dart';
 
 class EmailChangeService {
-  final String baseUrl = 'https://api.yourapp.com';
-  final StorageService _storageService = StorageService();
+  final String baseUrl;
+  final String? authToken;
+  final StorageService _storageService;
+
+  EmailChangeService({
+    required this.baseUrl,
+    required this.authToken,
+    StorageService? storageService,
+  }) : _storageService = storageService ?? StorageService();
+
+  
 
   /// Request OTP for email change.
   /// UPDATED: Collects DeviceMetadata so the backend can populate the
@@ -74,6 +83,7 @@ class EmailChangeService {
   Future<Map<String, dynamic>> changeEmail({
     required String newEmail,
     required String verificationToken,
+  
   }) async {
     // ── Mock implementation ───────────────────────────────────────────────────
     await Future.delayed(const Duration(seconds: 1));

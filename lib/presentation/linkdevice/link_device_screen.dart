@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/linkdevice/get_verification_code_screen.dart';
 import 'package:kudipay/presentation/linkdevice/verify_id.dart';
@@ -63,11 +64,11 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: AppLayout.scaleHeight(context, 60)),
+          SizedBox(height: AppLayout.scaleHeight(context, 120)),
 
-          _buildIcon(context),
+          // _buildIcon(context),
 
-          SizedBox(height: AppLayout.scaleHeight(context, 40)),
+          // SizedBox(height: AppLayout.scaleHeight(context, 40)),
 
           Text(
             'Link your account to this device',
@@ -127,16 +128,9 @@ class _LinkDeviceScreenState extends ConsumerState<LinkDeviceScreen> {
         vertical: AppLayout.scaleHeight(context, 14),
       ),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(30),
+          border: BoxBorder.all(color: AppColors.textGrey, width: 0.2)),
       child: Row(
         children: [
           Icon(

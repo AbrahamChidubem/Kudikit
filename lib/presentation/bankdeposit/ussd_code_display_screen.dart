@@ -18,7 +18,7 @@ class UssdCodeDisplayScreen extends ConsumerStatefulWidget {
 class _UssdCodeDisplayScreenState
     extends ConsumerState<UssdCodeDisplayScreen> {
   Timer? _countdownTimer;
-  Duration _timeRemaining = const Duration(minutes: 4, seconds: 24);
+  Duration _timeRemaining = const Duration(minutes: 5, seconds: 00);
 
   @override
   void initState() {
@@ -183,12 +183,13 @@ class _UssdCodeDisplayScreenState
           ),
           children: [
             const TextSpan(
-                text: 'Dial the code below to fund your Kudikit Account with '),
+                text: 'Dial the code below to fund your Kudikit Account with ',style: TextStyle(fontSize: 10)),
             TextSpan(
               text: '₦${_formatAmount(ussdData.amount)}',
               style: TextStyle(
                 color: AppColors.primaryTeal ,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w400,
+                fontSize: 10
               ),
             ),
           ],
@@ -274,7 +275,7 @@ class _UssdCodeDisplayScreenState
     return Text(
       digit,
       style: TextStyle(
-        fontSize: AppLayout.fontSize(context, 26),
+        fontSize: AppLayout.fontSize(context, 18),
         fontWeight: FontWeight.w600,
         color: AppColors.textDark,
       ),
@@ -315,7 +316,7 @@ class _UssdCodeDisplayScreenState
       style: OutlinedButton.styleFrom(
         minimumSize:
             Size(double.infinity, AppLayout.scaleHeight(context, 52)),
-        side: const BorderSide(color: AppColors.primaryTeal , width: 1.5),
+        side: const BorderSide(color: AppColors.primaryTeal , width: 0.5),
         shape: RoundedRectangleBorder(
           borderRadius:
               BorderRadius.circular(AppLayout.scaleWidth(context, 30)),

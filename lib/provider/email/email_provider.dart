@@ -1,11 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/email_change_services.dart';
 import 'package:flutter_riverpod/legacy.dart';
 // ==================== EMAIL CHANGE PROVIDER ====================
 
-// Service provider
+// FIXED: was constructing EmailChangeService() with no args —
+// hardcoded wrong base URL and no auth token injected.
 final emailChangeServiceProvider = Provider<EmailChangeService>((ref) {
-  return EmailChangeService();
+  final token = ref.watch(authTokenProvider);
+  return EmailChangeService(
+    baseUrl: kBaseUrl,
+    authToken: token,
+  );
 });
 
 // Email change flow state
@@ -83,10 +90,10 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
     try {
       final result = await _service.requestOTP(state.currentEmail ?? '');
 
-      if (result['success']) {
+      if (result['success'] == true) {
         state = state.copyWith(
           step: EmailChangeStep.verifyingOtp,
-          maskedEmail: result['maskedEmail'] ?? state.maskedEmail,
+          maskedEmail: result['maskedEmail'] as String? ?? state.maskedEmail,
           isLoading: false,
         );
         return true;
@@ -113,10 +120,10 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
     try {
       final result = await _service.verifyOTP(otp);
 
-      if (result['success']) {
+      if (result['success'] == true) {
         state = state.copyWith(
           step: EmailChangeStep.changingEmail,
-          verificationToken: result['verificationToken'],
+          verificationToken: result['verificationToken'] as String?,
           isLoading: false,
         );
         return true;
@@ -146,10 +153,10 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
         verificationToken: state.verificationToken ?? '',
       );
 
-      if (result['success']) {
+      if (result['success'] == true) {
         state = state.copyWith(
           step: EmailChangeStep.success,
-          newEmail: result['newEmail'],
+          newEmail: result['newEmail'] as String?,
           isLoading: false,
         );
         return true;
@@ -178,7 +185,7 @@ class EmailChangeNotifier extends StateNotifier<EmailChangeState> {
 
       state = state.copyWith(isLoading: false);
 
-      if (result['success']) {
+      if (result['success'] == true) {
         return true;
       } else {
         state = state.copyWith(errorMessage: result['message']);

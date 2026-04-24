@@ -101,7 +101,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
       onRefresh: () => ref.read(refreshProvider.notifier).refreshAll(),
       color: const Color(0xFF069494),
       backgroundColor: Colors.white,
-      strokeWidth: 2.5,
+      strokeWidth: 1.5,
       displacement: 60,
       child: SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
@@ -179,7 +179,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                         Text(
                           'Add money via mobile or internet banking',
                           style: TextStyle(
-                            fontSize: AppLayout.fontSize(context, 13),
+                            fontSize: AppLayout.fontSize(context, 10),
                             color: Colors.grey[600],
                           ),
                         ),
@@ -216,7 +216,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               ),
               child: const CircularProgressIndicator(
                 color: Color(0xFF069494),
-                strokeWidth: 2,
+                strokeWidth: 1,
               ),
             ),
           if (accountDetailsState.error != null)
@@ -411,8 +411,8 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
       child: Center(
         child: SvgPicture.asset(
           assetPath,
-          width: AppLayout.scaleWidth(context, 20),
-          height: AppLayout.scaleWidth(context, 20),
+          width: AppLayout.scaleWidth(context, 15),
+          height: AppLayout.scaleWidth(context, 15),
           colorFilter: const ColorFilter.mode(
             Color(0xFF069494),
             BlendMode.srcIn,

@@ -287,7 +287,8 @@ class AddMoneyService {
 // ==================== MOCK SERVICE ====================
 
 class MockAddMoneyService extends AddMoneyService {
-  MockAddMoneyService() : super(baseUrl: '');
+  MockAddMoneyService({String baseUrl = '', String? authToken})
+      : super(baseUrl: baseUrl, authToken: authToken);
 
   @override
   Future<List<AddMoneyOption>> getAddMoneyOptions() async {

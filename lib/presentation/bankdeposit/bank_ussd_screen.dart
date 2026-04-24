@@ -173,7 +173,7 @@ class _BankUssdScreenState extends ConsumerState<BankUssdScreen> {
       style: TextStyle(
         fontSize: AppLayout.fontSize(context, 13),
         fontWeight: FontWeight.w400,
-        color: AppColors.textGrey,
+        color: AppColors.textDark,
       ),
     );
   }
@@ -343,10 +343,10 @@ class _BankUssdScreenState extends ConsumerState<BankUssdScreen> {
   // ── Transfer note ─────────────────────────────────────────────────────────
   Widget _buildTransferNote(BuildContext context) {
     return RichText(
-      textAlign: TextAlign.left,
+      textAlign: TextAlign.center,
       text: TextSpan(
         style: TextStyle(
-          fontSize: AppLayout.fontSize(context, 13),
+          fontSize: AppLayout.fontSize(context, 10),
           color: AppColors.textGrey,
         ),
         children: [

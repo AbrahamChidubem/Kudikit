@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/bill_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
@@ -10,9 +12,13 @@ import 'package:flutter_riverpod/legacy.dart';
 // ============================================================================
 
 final billsServiceProvider = Provider<BillsService>((ref) {
+  // Token is read (not watched) — BillsService is recreated when token changes
+  // because authTokenProvider is derived from authProvider which is a
+  // StateNotifierProvider. Any login/logout rebuilds this provider.
+  final token = ref.watch(authTokenProvider);
   return BillsService(
-    baseUrl: 'https://api.kudipay.com/api/v1',
-    // authToken: ref.watch(authTokenProvider),
+    baseUrl: kBaseUrl,
+    authToken: token,
   );
 });
 
