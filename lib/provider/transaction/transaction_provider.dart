@@ -1,4 +1,3 @@
-// import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:kudipay/model/transaction/transaction_model.dart';
 // import 'package:kudipay/services/transaction_service.dart';
 
@@ -331,19 +330,15 @@
 // });
 
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
-import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/transaction_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
 // ==================== TRANSACTION PROVIDERS ====================
 
 final transactionServiceProvider = Provider<TransactionService>((ref) {
-  return TransactionService(
-    baseUrl: kBaseUrl,
-    authToken: ref.read(authTokenProvider),
-  );
+  return TransactionService(ref.read(dioClientProvider));
 });
 
 class TransactionState {

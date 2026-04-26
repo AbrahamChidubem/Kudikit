@@ -75,7 +75,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.loading();
     try {
       final response = await _authService
-          .login(email: email, password: password, identifier: '', passcode: '')
+          .login(identifier: email, passcode: password)
           .timeout(
             const Duration(seconds: 30),
             onTimeout: () => throw Exception('Request timed out. Please try again.'),
@@ -106,7 +106,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.loading();
     try {
       final response = await _authService
-          .signup(email: email, phoneNumber: phoneNumber, pin: password)
+          .signup(email: email, phoneNumber: phoneNumber, passcode: password)
           .timeout(
             const Duration(seconds: 30),
             onTimeout: () => throw Exception('Request timed out. Please try again.'),

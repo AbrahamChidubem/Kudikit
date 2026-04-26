@@ -63,6 +63,35 @@ class AuthService {
     // return {'success': true, 'otpId': 'mock-otp-id-123', 'message': 'OTP sent'};
   }
 
+  // ── Verify Email OTP ───────────────────────────────────────────────────────
+  // Convenience wrapper around verifyOtp for the email-verification flow.
+  // `code` is the 6-digit OTP the user received.
+  // `otpId` is returned by sendOtp — pass it if available, otherwise the
+  // server will match by email + code.
+  // Response: { success, token, user: {...} }
+  Future<Map<String, dynamic>> verifyEmail({
+    required String email,
+    required String code,
+    String otpId = '',
+  }) async {
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/api/v1/auth/verify-otp',
+        data: {
+          'email': email,
+          'otp': code,
+          if (otpId.isNotEmpty) 'otpId': otpId,
+          'action': 'registration',
+        },
+      );
+      return response.data!;
+    } on KudiApiException {
+      rethrow;
+    } catch (e) {
+      throw KudiApiException('Email verification failed: ${e.toString()}');
+    }
+  }
+
   // ── Step 2: Verify OTP ─────────────────────────────────────────────────────
   // POST /api/v1/auth/verify-otp
   // Body: { otpId, otp, action: "registration"|"login"|"reset" }

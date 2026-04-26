@@ -30,6 +30,32 @@ class WalletState {
     this.error,
   });
 
+  /// Formatted balance string e.g. "50,000.00"
+  String get formattedBalance {
+    final parts = balance.toStringAsFixed(2).split('.');
+    final whole = parts[0];
+    final decimal = parts[1];
+    final result = StringBuffer();
+    int count = 0;
+    for (int i = whole.length - 1; i >= 0; i--) {
+      if (count > 0 && count % 3 == 0) result.write(',');
+      result.write(whole[i]);
+      count++;
+    }
+    return '${result.toString().split('').reversed.join('')}.$decimal';
+  }
+
+  /// Two-letter initials derived from accountName.
+  String get initials {
+    final parts = accountName.trim().split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'KK';
+  }
+
   WalletState copyWith({
     double? balance,
     String? accountNumber,
