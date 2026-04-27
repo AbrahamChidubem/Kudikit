@@ -5,20 +5,14 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:kudipay/mock/mock_api_data.dart';
-
 import 'package:kudipay/model/user/user.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 
-/// Thrown when the device has no internet connection.
 class NoInternetException implements Exception {
   final String message;
   NoInternetException([this.message = 'No internet connection available']);
   @override String toString() => message;
 }
-
-/// Thrown when a network request times out.
-/// FIXED: was named TimeoutException — now KudiPayTimeoutException to avoid
-/// shadowing dart:async TimeoutException.
 class KudiPayTimeoutException implements Exception {
   final String message;
   KudiPayTimeoutException([this.message = 'Request timed out. Please check your internet connection.']);

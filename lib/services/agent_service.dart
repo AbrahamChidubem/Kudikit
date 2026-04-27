@@ -12,22 +12,19 @@ class AgentService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GeoService _geoService = GeoService();
 
-  /// Fetch agents near the user's current location
-  /// Uses Firestore with geohash bounding box query (Uber-style)
-  /// Radius in km
   Future<List<AgentModel>> getNearbyAgents({
     required Position userPosition,
     double radiusKm = 5.0,
   }) async {
     try {
-      // Calculate lat/lng bounds for the search radius
+     
       final bounds = _calculateBounds(
         userPosition.latitude,
         userPosition.longitude,
         radiusKm,
       );
 
-      // Query Firestore agents within bounding box
+    
       final query = await _firestore
           .collection('agents')
           .where('isAvailable', isEqualTo: true)
@@ -45,7 +42,7 @@ class AgentService {
           .map((doc) => AgentModel.fromFirestore(doc))
           .toList();
 
-      // Calculate precise distances and filter by radius
+     
       for (var agent in agents) {
         agent.distanceKm = _geoService.calculateDistance(
           userPosition.latitude,
@@ -55,20 +52,20 @@ class AgentService {
         );
       }
 
-      // Filter to actual radius (bounding box is approximate)
+     
       agents = agents.where((a) => a.distanceKm! <= radiusKm).toList();
 
-      // Sort by distance (nearest first)
+    
       agents.sort((a, b) => a.distanceKm!.compareTo(b.distanceKm!));
 
       return agents;
     } catch (e) {
-      // Return mock data for development/testing
+     
       return _getMockNearbyAgents(userPosition);
     }
   }
 
-  /// Get mock agents for development — sorted by distance
+
   List<AgentModel> _getMockNearbyAgents(Position userPosition) {
     final agents = AgentModel.mockAgents();
     for (var agent in agents) {
@@ -83,13 +80,13 @@ class AgentService {
     return agents;
   }
 
-  /// Fetch a single agent by ID
+
   Future<AgentModel?> getAgentById(String agentId) async {
     try {
       final doc = await _firestore.collection('agents').doc(agentId).get();
       if (doc.exists) return AgentModel.fromFirestore(doc);
     } catch (e) {
-      // Return mock for dev
+   
       return AgentModel.mockAgents().firstWhere(
         (a) => a.id == agentId,
         orElse: () => AgentModel.mockAgents().first,
@@ -98,14 +95,13 @@ class AgentService {
     return null;
   }
 
-  /// Search agents by address or landmark (text search)
+
   Future<List<AgentModel>> searchAgentsByAddress({
     required String query,
     required Position userPosition,
   }) async {
     try {
-      // Firestore text search (requires Algolia or Firebase Search Extension in prod)
-      // For now, query by address field contains
+  
       final snapshot = await _firestore
           .collection('agents')
           .where('isAvailable', isEqualTo: true)
@@ -131,7 +127,7 @@ class AgentService {
       agents.sort((a, b) => a.distanceKm!.compareTo(b.distanceKm!));
       return agents;
     } catch (e) {
-      // Mock filtered search
+     
       final all = AgentModel.mockAgents();
       final queryLower = query.toLowerCase();
       return all.where((a) =>
@@ -141,7 +137,7 @@ class AgentService {
     }
   }
 
-  /// Calculate bounding box for lat/lng radius search
+
   Map<String, double> _calculateBounds(
     double lat,
     double lng,
@@ -162,7 +158,6 @@ class AgentService {
   }
 
   double _cos(double angle) {
-    // Simple cos approximation
     return 1 - (angle * angle) / 2 + (angle * angle * angle * angle) / 24;
   }
 }

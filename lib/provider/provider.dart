@@ -1,11 +1,5 @@
-// lib/provider/provider.dart
-// Central barrel — import this to get access to all providers.
-// FIXED: Updated to use renamed snake_case file for P2P transfer.
-
 export 'auth/auth_provider.dart';
-
 export 'transaction/transaction_provider.dart';
-
 export 'Identity_verify/identity_verify_provider.dart';
 export 'connectivity/connectivity_provider.dart';
 export 'device_linking/device_linking_provider.dart';

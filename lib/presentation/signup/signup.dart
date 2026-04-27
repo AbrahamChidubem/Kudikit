@@ -12,24 +12,7 @@ import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/presentation/signup/signup_verify.dart';
 import 'package:flutter_riverpod/legacy.dart';
-// =============================================================================
-// SignUpScreen
-// -----------------------------------------------------------------------------
-// This is the first step of account creation. The user enters:
-//   - Email
-//   - Phone number
-//   - Passcode (8-12 chars with complexity rules)
-//   - Confirm passcode
-//   - Agree to Terms & Conditions
-//
-// On submit → calls AuthNotifier.signup() → navigates to email verification.
-//
-// FIX: Error messages now appear BELOW each field, not inside them.
-// The approach: validator is removed from TextFormField so Flutter doesn't
-// inject error text into the InputDecoration (which appears inside the
-// Container box). Instead, each field tracks its own error string in state,
-// and a separate Text widget is rendered directly below the field container.
-// =============================================================================
+
 
 class SignUpScreen extends ConsumerStatefulWidget {
   const SignUpScreen({super.key});
@@ -57,10 +40,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
   // ---------------------------------------------------------------------------
   // PER-FIELD ERROR STRINGS
-  // ---------------------------------------------------------------------------
-  // These drive the inline error Text widgets rendered BELOW each field.
-  // They are set on submit (and cleared when the user starts typing again).
-
+  
   String? _emailError;
   String? _phoneError;
   String? _passcodeError;
@@ -86,10 +66,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // ---------------------------------------------------------------------------
   // SUBMIT READINESS
   // ---------------------------------------------------------------------------
-  // True when every field has content, all passcode rules pass, and the
-  // confirm field matches. Terms acceptance is checked separately (it drives
-  // the same gate but is read from a provider, so it's passed in from build).
-  // ---------------------------------------------------------------------------
+ 
 
   bool get _fieldsReady =>
       emailController.text.trim().isNotEmpty &&
@@ -109,8 +86,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   @override
   void initState() {
     super.initState();
-    // Rebuild whenever any field changes so _fieldsReady recomputes and the
-    // button activates/deactivates immediately as the user types.
+    
     emailController.addListener(_onFieldChanged);
     numberController.addListener(_onFieldChanged);
     confirmPasswordController.addListener(_onFieldChanged);
@@ -170,8 +146,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   // ---------------------------------------------------------------------------
   // FIELD-LEVEL VALIDATION
   // ---------------------------------------------------------------------------
-  // Returns true if ALL fields pass. Sets per-field error strings in state
-  // so the widgets below each field can display them.
+
 
   bool _validateFields() {
     bool valid = true;
@@ -250,8 +225,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       return;
     }
 
-    // Use our own validation — not _formKey.validate() — because TextFormField
-    // validators inject error text inside the InputDecoration (inside the box).
     if (!_validateFields()) return;
 
     final termsAccepted = ref.read(_termsAcceptedProvider);
@@ -432,7 +405,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
                         SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
-                        // ── Confirm Passcode ───────────────────────────────
+                        //  Confirm Passcode 
                         _buildLabel(context, 'Confirm Passcode'),
                         SizedBox(height: AppLayout.scaleHeight(context, 5)),
                         _buildPlainField(
@@ -464,22 +437,22 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
 
                         SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-                        // ── Terms & Conditions Checkbox ────────────────────
+                        //  Terms & Conditions Checkbox
                         _buildTermsCheckbox(context, isLoading, isOnline),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 42)),
 
-                        // ── Submit Button ──────────────────────────────────
+                        //  Submit Button 
                         _buildSubmitButton(context, isLoading, isOnline, canSubmit),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 15)),
 
-                        // ── Already have an account? ───────────────────────
+                        // Already have an account? 
                         _buildLoginRow(context, isLoading, isOnline),
 
                         SizedBox(height: AppLayout.scaleHeight(context, 13)),
 
-                        // ── CBN / NDIC Licensing Footer ────────────────────
+                        //  CBN / NDIC Licensing Footer 
                         _buildLicensingFooter(context),
                       ],
                     ),
@@ -651,8 +624,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         ),
       );
     }
-    // Active only when all fields are filled, passcode rules pass, and
-    // terms are accepted. Dimmed but still renders so layout doesn't shift.
     return SizedBox(
       width: double.infinity,
       child: Opacity(
@@ -743,10 +714,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
   }
 
   // ---------------------------------------------------------------------------
-  // ERROR TEXT — rendered below the field container, never inside it
+  // ERROR TEXT 
   // ---------------------------------------------------------------------------
-  // AnimatedSize collapses the slot to zero height when there's no error,
-  // so fields don't jump position when errors appear/disappear.
+
 
   Widget _buildFieldError(String? error) {
     return AnimatedSize(
@@ -852,9 +822,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     );
   }
 
-  // _buildPlainField — a plain TextField (no validator) inside a styled Container.
-  // Errors are NOT injected here; they are rendered by _buildFieldError() below.
-  // hasError turns the border red so the field itself also signals the error visually.
   Widget _buildPlainField(
     BuildContext context, {
     required TextEditingController controller,
@@ -906,8 +873,6 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
           ),
           suffixIcon: suffixIcon,
           border: InputBorder.none,
-          // Explicitly zero out error/helper padding so Flutter's internal
-          // InputDecorator never adds any extra space below the field.
           errorBorder: InputBorder.none,
           focusedErrorBorder: InputBorder.none,
           isDense: false,

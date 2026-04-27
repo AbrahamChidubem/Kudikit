@@ -36,7 +36,7 @@ class AddMoneyService {
         if (authToken != null) 'Authorization': 'Bearer $authToken',
       };
 
-  /// Get available add money options
+  
   Future<List<AddMoneyOption>> getAddMoneyOptions() async {
     try {
       final response = await client.get(
@@ -61,7 +61,6 @@ class AddMoneyService {
     }
   }
 
-  /// Get account details for bank transfer
   Future<AccountDetails> getAccountDetails() async {
     try {
       final response = await client.get(
@@ -84,7 +83,7 @@ class AddMoneyService {
     }
   }
 
-  /// Get USSD code for bank transfer
+
   Future<String> getUssdCode({required String bankCode}) async {
     try {
       final response = await client.post(
@@ -131,7 +130,7 @@ class AddMoneyService {
     }
   }
 
-  /// Initiate card top-up
+  
   Future<AddMoneyResponse> initiateCardTopUp({
     required double amount,
     required String cardToken,
@@ -161,7 +160,7 @@ class AddMoneyService {
     }
   }
 
-  /// Get list of available banks
+
   Future<List<Bank>> getBanks() async {
     try {
       final response = await client.get(
@@ -186,7 +185,6 @@ class AddMoneyService {
     }
   }
 
-  /// Generate USSD code for specific bank and amount
   Future<UssdTransferData> generateUssdCode({
     required String bankCode,
     required double amount,
@@ -249,7 +247,6 @@ class AddMoneyService {
     }
   }
 
-  /// Verify OTP for card top-up
   Future<TransactionReceipt> verifyCardTopUpOtp({
     required String otpReference,
     required String otp,
@@ -349,7 +346,7 @@ class MockAddMoneyService extends AddMoneyService {
   @override
   Future<String> getUssdCode({required String bankCode}) async {
     await Future.delayed(const Duration(milliseconds: 500));
-    // Pull the virtual account number from mock so USSD strings stay in sync.
+    
     final acctNum = MockAddMoneyData.virtualAccountResponse['account_number'] as String;
     final ussdCodes = {
       '058': '*737*0*$acctNum#',  // GTBank
@@ -362,7 +359,7 @@ class MockAddMoneyService extends AddMoneyService {
   @override
   Future<String> generateQrCode() async {
     await Future.delayed(const Duration(milliseconds: 800));
-    // Use the QR URL from MockAddMoneyData so it matches the account number.
+    
     return MockAddMoneyData.qrCodeResponse['qr_code_url'] as String;
   }
 

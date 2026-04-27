@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/presentation/linkdevice/verify_id.dart';
+import 'package:kudipay/presentation/linkdevice/sign_in_verify_email_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class GetVerificationCodeScreen extends ConsumerStatefulWidget {
@@ -235,7 +235,7 @@ class _GetVerificationCodeScreenState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const VerifyIdentityScreen(),
+                        builder: (context) => const SignInVerifyEmailScreen(maskedEmail: '',),
                       ),
                     );
                   }

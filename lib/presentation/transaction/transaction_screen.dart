@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/formatters.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
+import 'package:kudipay/presentation/transaction/transaction_filter_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/provider/refresh/refresh_provider.dart';
-
 
 class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({Key? key}) : super(key: key);
@@ -82,7 +82,6 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           ),
         ],
       ),
-     
     );
   }
 
@@ -109,7 +108,14 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.tune, color: Colors.black),
-          onPressed: () => _showFilterDialog(context),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const TransactionFilterScreen(),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -205,8 +211,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(32),
                   ),
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 28, vertical: 12),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
                 ),
                 icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
                 label: const Text(
@@ -246,8 +252,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     return RefreshIndicator(
       // Use the central orchestrator so wallet + transactions refresh together.
       // The user sees one unified pull gesture that syncs all data at once.
-      onRefresh: () =>
-          ref.read(refreshProvider.notifier).refreshAll(),
+      onRefresh: () => ref.read(refreshProvider.notifier).refreshAll(),
       color: const Color(0xFF069494),
       child: ListView(
         controller: _scrollController,
@@ -458,8 +463,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
           action: SnackBarAction(
             label: 'Retry',
             textColor: Colors.white,
-            onPressed: () =>
-                ref.read(transactionProvider.notifier).loadTransactions(refresh: true),
+            onPressed: () => ref
+                .read(transactionProvider.notifier)
+                .loadTransactions(refresh: true),
           ),
         ),
       );
@@ -476,8 +482,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: const Text(
-                  'Download link copied to clipboard'),
+              content: const Text('Download link copied to clipboard'),
               backgroundColor: const Color(0xFF069494),
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
@@ -575,5 +580,4 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       ),
     );
   }
-
 }

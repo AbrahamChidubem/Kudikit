@@ -22,6 +22,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/mock/mock_api_data.dart';
 import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/services/device_info_services.dart';
@@ -37,6 +38,7 @@ class AuthService {
   // POST /api/v1/auth/send-otp
   // Body: { phoneNumber, email, channel: "sms"|"email"|"whatsapp" }
   // Response: { otpId, message, ... }
+  static const bool _useMock = kDebugMode;
   Future<Map<String, dynamic>> sendOtp({
     required String phoneNumber,
     required String email,
@@ -75,6 +77,13 @@ class AuthService {
     String otpId = '',
   }) async {
     try {
+      ///MOCK DATA: REMOVE WHEN API CALL IS LIVE
+      if (_useMock) {
+        await Future.delayed(const Duration(milliseconds: 600));
+        if (code.length == 6)
+          return MockAuthData.verifyEmailSuccess(email: email);
+        throw KudiApiException('Invalid OTP. Please check and try again.');
+      }
       final response = await _client.post<Map<String, dynamic>>(
         '/api/v1/auth/verify-otp',
         data: {
@@ -133,6 +142,12 @@ class AuthService {
     required String passcode,
     String? deviceFingerprint,
   }) async {
+    ///MOCK DATA; TO BE REMOVED IF API CALL IS LIVE
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 800));
+      return MockAuthData.registerSuccess(
+          email: email, phoneNumber: phoneNumber);
+    }
     final meta = await DeviceInfoService.collect();
     try {
       final response = await _client.post<Map<String, dynamic>>(
@@ -164,6 +179,12 @@ class AuthService {
     required String identifier,
     required String passcode,
   }) async {
+    /// MOCK DATA: TO BE REMOVED IF API CALL IS LIVE
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 800));
+      final meta = await DeviceInfoService.collect();
+      return MockAuthData.loginSuccess(email: identifier, deviceMetadata: meta);
+    }
     final meta = await DeviceInfoService.collect();
     try {
       final response = await _client.post<Map<String, dynamic>>(
@@ -212,13 +233,20 @@ class AuthService {
   // Returns true if server accepts the token; false on 401.
   // On network error: returns true to avoid logging users out offline.
   Future<bool> verifyToken(String token) async {
+    /// MOCK DATA: TO BE REMOVED IS API CALL IS LIVE
+    if (_useMock) {
+      await Future.delayed(const Duration(milliseconds: 200));
+      return token.isNotEmpty;
+    }
     try {
-      final response = await _client.get<Map<String, dynamic>>('/api/v1/profile');
+      final response =
+          await _client.get<Map<String, dynamic>>('/api/v1/profile');
       return response.data != null;
     } on KudiUnauthorizedException {
       return false;
     } catch (e) {
-      debugPrint('[AuthService] verifyToken network error — keeping session: $e');
+      debugPrint(
+          '[AuthService] verifyToken network error — keeping session: $e');
       return true;
     }
 
@@ -316,7 +344,8 @@ class AuthService {
       final sid = sessionId ?? '';
       await _client.post('/api/v1/auth/logout/$uid/$sid', data: {});
     } catch (e) {
-      debugPrint('[AuthService] logout server call failed (session still cleared): $e');
+      debugPrint(
+          '[AuthService] logout server call failed (session still cleared): $e');
     }
     await _storage.clearAuth();
   }

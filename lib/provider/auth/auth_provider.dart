@@ -1,13 +1,9 @@
-// lib/provider/auth/auth_provider.dart
-// UPDATED: AuthService now takes DioClient as a second constructor param.
-// All other logic is unchanged.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/model/auth/auth_state.dart';
 import 'package:kudipay/model/user/user.dart';
-
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/services/auth_services.dart';
 import 'package:kudipay/services/storage_services.dart';
@@ -20,8 +16,6 @@ final storageServiceProvider = Provider<StorageService>((ref) {
   return StorageService.instance;
 });
 
-/// AuthService now receives DioClient via the dioClientProvider so all HTTP
-/// calls go through the unified interceptor chain (auth, logging, error mapping).
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(
     ref.read(storageServiceProvider),
@@ -170,9 +164,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       await _storageService.saveUserModel(updatedUser);
       state = state.copyWith(user: updatedUser);
-    } catch (e) {
-      // Non-fatal — don't change auth state
-    }
+    } catch (e) {}
   }
 
   // ── Update KYC status ─────────────────────────────────────────────────────

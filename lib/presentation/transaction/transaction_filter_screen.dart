@@ -60,7 +60,8 @@ class FilterDraft {
   }) =>
       FilterDraft(
         dateRange: dateRange ?? this.dateRange,
-        customStart: clearCustomStart ? null : (customStart ?? this.customStart),
+        customStart:
+            clearCustomStart ? null : (customStart ?? this.customStart),
         customEnd: clearCustomEnd ? null : (customEnd ?? this.customEnd),
         status: clearStatus ? null : (status ?? this.status),
       );
@@ -97,12 +98,37 @@ class TransactionFilterScreen extends StatelessWidget {
     return ProviderScope(
       // Seed the draft from the currently-applied global filter.
       // We read (not watch) so the draft is only seeded once on creation.
-      overrides: [],
+      overrides: [
+        _filterDraftProvider.overrideWith((ref) {
+          final global = ref.read(transactionFilterProvider);
+
+          return FilterDraft(
+            dateRange: _mapToRange(global),
+            customStart: global.startDate,
+            customEnd: global.endDate,
+            status: global.status,
+          );
+        })
+      ],
       child: const _FilterScreenBody(),
     );
   }
 }
 
+DateRangeOption _mapToRange(TransactionFilter filter) {
+  if (filter.startDate == null || filter.endDate == null) {
+    return DateRangeOption.last7Days;
+  }
+
+  final now = DateTime.now();
+  final diff = now.difference(filter.startDate!).inDays;
+
+  if (diff <= 7) return DateRangeOption.last7Days;
+  if (diff <= 30) return DateRangeOption.last30Days;
+  if (diff <= 90) return DateRangeOption.last3Months;
+
+  return DateRangeOption.custom;
+}
 // ---------------------------------------------------------------------------
 // Body
 // ---------------------------------------------------------------------------
@@ -124,8 +150,7 @@ class _FilterScreenBody extends ConsumerWidget {
         children: [
           Expanded(
             child: SingleChildScrollView(
-              padding:
-                  EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
+              padding: EdgeInsets.symmetric(horizontal: hPad, vertical: vPad),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -200,8 +225,7 @@ class _DateRangeCard extends ConsumerWidget {
     final cardPadV = AppLayout.scaleHeight(context, 16);
 
     return Container(
-      padding:
-          EdgeInsets.symmetric(horizontal: cardPadH, vertical: cardPadV),
+      padding: EdgeInsets.symmetric(horizontal: cardPadH, vertical: cardPadV),
       decoration: _cardDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,8 +241,7 @@ class _DateRangeCard extends ConsumerWidget {
             valueFontSize: valueSz,
             onChanged: (picked) {
               if (picked == null) return;
-              ref.read(_filterDraftProvider.notifier).state =
-                  draft.copyWith(
+              ref.read(_filterDraftProvider.notifier).state = draft.copyWith(
                 dateRange: picked,
                 clearCustomStart: picked != DateRangeOption.custom,
                 clearCustomEnd: picked != DateRangeOption.custom,
@@ -242,8 +265,11 @@ class _DateRangeCard extends ConsumerWidget {
                         hint: 'dd/mm/yy',
                         valueFontSize: valueSz,
                         onPicked: (d) {
+                          if (draft.customStart != null &&
+                              d.isBefore(draft.customStart!)) return;
+
                           ref.read(_filterDraftProvider.notifier).state =
-                              draft.copyWith(customStart: d);
+                              draft.copyWith(customEnd: d);
                         },
                       ),
                       SizedBox(height: AppLayout.scaleHeight(context, 14)),
@@ -255,6 +281,9 @@ class _DateRangeCard extends ConsumerWidget {
                         valueFontSize: valueSz,
                         firstDate: draft.customStart,
                         onPicked: (d) {
+                          if (draft.customStart != null &&
+                              d.isBefore(draft.customStart!)) return;
+
                           ref.read(_filterDraftProvider.notifier).state =
                               draft.copyWith(customEnd: d);
                         },
@@ -335,9 +364,8 @@ class _StatusCard extends ConsumerWidget {
                         : AppColors.backgroundScreen,
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: selected
-                          ? AppColors.primaryTeal
-                          : AppColors.divider,
+                      color:
+                          selected ? AppColors.primaryTeal : AppColors.divider,
                       width: 1,
                     ),
                   ),
@@ -345,12 +373,8 @@ class _StatusCard extends ConsumerWidget {
                     labels[status]!,
                     style: TextStyle(
                       fontSize: chipSz,
-                      color: selected
-                          ? AppColors.white
-                          : AppColors.textGrey,
-                      fontWeight: selected
-                          ? FontWeight.w600
-                          : FontWeight.w400,
+                      color: selected ? AppColors.white : AppColors.textGrey,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
                       fontFamily: 'PolySans',
                     ),
                   ),
@@ -395,10 +419,13 @@ class _BottomBar extends ConsumerWidget {
                 onPressed: () {
                   ref.read(_filterDraftProvider.notifier).state =
                       FilterDraft.cleared;
+
+                  ref.read(transactionFilterProvider.notifier).state =
+                      TransactionFilter(); 
                 },
                 style: OutlinedButton.styleFrom(
-                  side: const BorderSide(
-                      color: AppColors.primaryTeal, width: 1),
+                  side:
+                      const BorderSide(color: AppColors.primaryTeal, width: 1),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28)),
                 ),
@@ -421,11 +448,10 @@ class _BottomBar extends ConsumerWidget {
             child: SizedBox(
               height: btnH,
               child: ElevatedButton(
-                onPressed: draft.applyEnabled
-                    ? () => _apply(context, ref)
-                    : null,
+                onPressed:
+                    draft.applyEnabled ? () => _apply(context, ref) : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryTeal,
+                  foregroundColor: AppColors.white,
                   disabledBackgroundColor:
                       AppColors.primaryTeal.withOpacity(0.45),
                   elevation: 0,
@@ -493,8 +519,7 @@ class _BottomBar extends ConsumerWidget {
 
 BoxDecoration _cardDecoration(BuildContext context) => BoxDecoration(
       color: AppColors.white,
-      borderRadius:
-          BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
+      borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
       boxShadow: [
         BoxShadow(
           color: Colors.black.withOpacity(0.04),
@@ -544,8 +569,7 @@ class _AppDropdown<T> extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.backgroundScreen,
-        borderRadius:
-            BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
         border: Border.all(color: AppColors.divider, width: 0.8),
       ),
       padding: EdgeInsets.symmetric(
@@ -621,8 +645,8 @@ class _DateField extends StatelessWidget {
         final picked = await showDatePicker(
           context: context,
           initialDate: value ?? DateTime.now(),
-          firstDate: firstDate ?? DateTime(2020),
           lastDate: DateTime.now(),
+          firstDate: firstDate ?? DateTime(2020),
           builder: (ctx, child) => Theme(
             data: Theme.of(ctx).copyWith(
               colorScheme: const ColorScheme.light(
@@ -643,8 +667,7 @@ class _DateField extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: AppColors.backgroundScreen,
-          borderRadius:
-              BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
           border: Border.all(color: AppColors.divider, width: 0.8),
         ),
         child: Row(
