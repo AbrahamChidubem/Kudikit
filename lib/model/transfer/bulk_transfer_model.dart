@@ -124,6 +124,28 @@ class BulkTransferTemplate {
       useCount: useCount ?? this.useCount,
     );
   }
+
+  factory BulkTransferTemplate.fromJson(Map<String, dynamic> json) {
+    final rawRecipients = json['recipients'] as List<dynamic>? ?? [];
+    return BulkTransferTemplate(
+      id: json['id'] as String,
+      name: json['name'] as String,
+      createdAt: DateTime.parse(json['created_at'] as String),
+      useCount: json['use_count'] as int? ?? 0,
+      recipients: rawRecipients
+          .map((r) =>
+              BulkTransferRecipient.fromJson(r as Map<String, dynamic>))
+          .toList(),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'created_at': createdAt.toIso8601String(),
+        'use_count': useCount,
+        'recipients': recipients.map((r) => r.toJson()).toList(),
+      };
 }
 
 class BulkTransferState {

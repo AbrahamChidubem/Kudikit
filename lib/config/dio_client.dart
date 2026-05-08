@@ -32,6 +32,12 @@ import 'package:kudipay/services/connectivity_service.dart';
 import 'package:kudipay/services/storage_services.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Base URL — single source of truth for the live API
+// ─────────────────────────────────────────────────────────────────────────────
+
+const String kBaseUrl = 'http://159.198.75.72:8086';
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Typed exceptions — catch these specifically in providers/notifiers
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -116,13 +122,15 @@ class _LogInterceptor extends Interceptor {
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    debugPrint('[KudiDio] ← ${response.statusCode} ${response.requestOptions.uri}');
+    debugPrint(
+        '[KudiDio] ← ${response.statusCode} ${response.requestOptions.uri}');
     handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    debugPrint('[KudiDio] ✗ ${err.type} ${err.requestOptions.uri} — ${err.message}');
+    debugPrint(
+        '[KudiDio] ✗ ${err.type} ${err.requestOptions.uri} — ${err.message}');
     handler.next(err);
   }
 }
@@ -139,7 +147,8 @@ class DioClient {
     required String baseUrl,
     required StorageService storage,
     required ConnectivityService connectivity,
-    Dio? dio, String? authToken, // injectable for testing
+    Dio? dio,
+    String? authToken, // injectable for testing
   })  : _connectivity = connectivity,
         _dio = dio ??
             Dio(BaseOptions(
@@ -276,7 +285,7 @@ class DioClient {
 
 final dioClientProvider = Provider<DioClient>((ref) {
   return DioClient(
-    baseUrl: 'https://api.Kudikit.com/api/v1',
+    baseUrl: kBaseUrl,
     storage: StorageService.instance,
     connectivity: ConnectivityService.instance,
   );

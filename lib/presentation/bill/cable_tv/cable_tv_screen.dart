@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/transaction_pin_bottom_sheet.dart';
 import 'package:kudipay/model/cable_tv/cable_tv_model.dart';
 import 'package:kudipay/presentation/bill/bill_payment_success.dart';
 import 'package:kudipay/provider/cable_tv/cable_tv_provider.dart';
@@ -376,8 +377,7 @@ class _CableTvScreenState extends ConsumerState<CableTvScreen> {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
                         border: state.isIucInvalid
-                            ? Border.all(
-                                color: Colors.red.shade400, width: 1.5)
+                            ? Border.all(color: Colors.red.shade400, width: 1.5)
                             : null,
                         boxShadow: [
                           BoxShadow(
@@ -440,8 +440,7 @@ class _CableTvScreenState extends ConsumerState<CableTvScreen> {
                                             height: 20,
                                             child: Padding(
                                               padding: EdgeInsets.all(10),
-                                              child:
-                                                  CircularProgressIndicator(
+                                              child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 color: Color(0xFF069494),
                                               ),
@@ -785,8 +784,8 @@ class _PlanSelectionSheet extends ConsumerWidget {
 
     return SafeArea(
       child: Container(
-        constraints:
-            BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85),
+        constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(context).size.height * 0.85),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -858,8 +857,7 @@ class _PlanSelectionSheet extends ConsumerWidget {
                                             ? const Color(0xFF069494)
                                             : const Color(0xFF1A1A2E))),
                                 SizedBox(
-                                    height:
-                                        AppLayout.scaleHeight(context, 2)),
+                                    height: AppLayout.scaleHeight(context, 2)),
                                 Text('₦${_formatAmount(plan.amount)}.00',
                                     style: TextStyle(
                                         fontSize:
@@ -916,8 +914,8 @@ class _ConfirmCableTvSheet extends ConsumerWidget {
 
     return SafeArea(
       child: Container(
-        padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom),
+        padding:
+            EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: AppLayout.scaleWidth(context, 20),
@@ -969,8 +967,7 @@ class _ConfirmCableTvSheet extends ConsumerWidget {
                         label: 'Decoder',
                         value: state.accountDetail?.decoderNumber ?? '-'),
                     _DetailRow(
-                        label: 'Name',
-                        value: state.accountDetail?.name ?? '-'),
+                        label: 'Name', value: state.accountDetail?.name ?? '-'),
                   ],
                 ),
               ),
@@ -1087,19 +1084,38 @@ class _ConfirmCableTvSheet extends ConsumerWidget {
                         onPressed: () async {
                           final nav = Navigator.of(context);
                           final s = ref.read(cableTvProvider);
-                          nav.pop();
+
+                          // Collect PIN before closing the confirm sheet
+                          final pin = await showModalBottomSheet<String>(
+                            context: context,
+                            isScrollControlled: true,
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(24)),
+                            ),
+                            builder: (_) => TransactionPinBottomSheet(
+                              title: '',
+                              onSuccess: () {},
+                            ),
+                          );
+
+                          if (pin == null || pin.length != 4)
+                            return; // user dismissed
+
+                          nav.pop(); // close confirm sheet
                           await ref
                               .read(cableTvProvider.notifier)
-                              .processPayment();
+                              .processPayment(pin);
+
                           final updatedState = ref.read(cableTvProvider);
                           if (updatedState.step == CableTvStep.success) {
                             nav.push(MaterialPageRoute(
                               builder: (_) => BillPaymentSuccessScreen(
                                 title: 'TV Cable',
                                 providerName: s.selectedProvider.name,
-                                amount:
-                                    s.selectedPlan?.amount ?? s.amount ?? 0,
-                                transactionId:
+                                amount: s.selectedPlan?.amount ?? s.amount ?? 0,
+                                transactionId: updatedState.transactionId ??
                                     'TXN${DateTime.now().millisecondsSinceEpoch}',
                                 details: [
                                   BillSuccessDetail(
@@ -1107,8 +1123,8 @@ class _ConfirmCableTvSheet extends ConsumerWidget {
                                       value: s.selectedPlan?.name ?? '-'),
                                   BillSuccessDetail(
                                       label: 'Decoder',
-                                      value:
-                                          s.accountDetail?.decoderNumber ?? '-'),
+                                      value: s.accountDetail?.decoderNumber ??
+                                          '-'),
                                   BillSuccessDetail(
                                       label: 'Name',
                                       value: s.accountDetail?.name ?? '-'),

@@ -1,4 +1,3 @@
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kudipay/config/dio_client.dart';
@@ -151,6 +150,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } else {
         throw Exception(response['message'] ?? 'Verification failed. Please try again.');
       }
+    } catch (e) {
+      state = state.error(e.toString().replaceFirst('Exception: ', ''));
+      rethrow;
+    }
+  }
+
+  // ── Complete Onboarding ────────────────────────────────────────────────────
+
+  Future<void> completeOnboarding({required int tierNumber}) async {
+    try {
+      await _authService.completeOnboarding(
+        bvn: state.user?.bvn ?? '',
+        tierNumber: tierNumber,
+      );
+      // Update local user with selected tier
+      if (state.user != null) {
+        final updatedUser =
+            state.user!.copyWith(selectedTier: tierNumber);
+        await _storageService.saveUserModel(updatedUser);
+        state = state.copyWith(user: updatedUser);
+      }
+    } on KudiApiException catch (e) {
+      state = state.error(e.message);
+      rethrow;
     } catch (e) {
       state = state.error(e.toString().replaceFirst('Exception: ', ''));
       rethrow;

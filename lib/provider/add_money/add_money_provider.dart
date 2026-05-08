@@ -5,21 +5,30 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
+
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/add_money_services.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
 // ── Service provider ──────────────────────────────────────────────────────────
 // FIXED: was returning MockAddMoneyService() with no token and no base URL.
 // Now passes the live auth token so real HTTP calls won't 401.
 final addMoneyServiceProvider = Provider<AddMoneyService>((ref) {
   final token = ref.watch(authTokenProvider);
-  return MockAddMoneyService(baseUrl: kBaseUrl, authToken: token);
+  return AddMoneyService(baseUrl: kBaseUrl, authToken: token);
 });
 
 // ── Error types ───────────────────────────────────────────────────────────────
-enum AddMoneyErrorType { network, authentication, serverError, validation, timeout, unknown }
+enum AddMoneyErrorType {
+  network,
+  authentication,
+  serverError,
+  validation,
+  timeout,
+  unknown
+}
 
 class AddMoneyError {
   final String message;
@@ -55,11 +64,12 @@ class AddMoneyOptionsState {
     bool? isLoading,
     AddMoneyError? error,
     bool clearError = false,
-  }) => AddMoneyOptionsState(
-    options:   options   ?? this.options,
-    isLoading: isLoading ?? this.isLoading,
-    error:     clearError ? null : (error ?? this.error),
-  );
+  }) =>
+      AddMoneyOptionsState(
+        options: options ?? this.options,
+        isLoading: isLoading ?? this.isLoading,
+        error: clearError ? null : (error ?? this.error),
+      );
 }
 
 class AddMoneyOptionsNotifier extends StateNotifier<AddMoneyOptionsState> {
@@ -72,28 +82,48 @@ class AddMoneyOptionsNotifier extends StateNotifier<AddMoneyOptionsState> {
       final options = await _service.getAddMoneyOptions();
       state = AddMoneyOptionsState(options: options, isLoading: false);
     } on SocketException {
-      state = state.copyWith(isLoading: false, error: const AddMoneyError(
-        message: 'No internet connection. Please check your network.',
-        type: AddMoneyErrorType.network));
+      state = state.copyWith(
+          isLoading: false,
+          error: const AddMoneyError(
+              message: 'No internet connection. Please check your network.',
+              type: AddMoneyErrorType.network));
     } on TimeoutException {
-      state = state.copyWith(isLoading: false, error: const AddMoneyError(
-        message: 'Request timed out. Please try again.',
-        type: AddMoneyErrorType.timeout));
+      state = state.copyWith(
+          isLoading: false,
+          error: const AddMoneyError(
+              message: 'Request timed out. Please try again.',
+              type: AddMoneyErrorType.timeout));
     } on AddMoneyException catch (e) {
       state = state.copyWith(isLoading: false, error: _handle(e));
     } catch (_) {
-      state = state.copyWith(isLoading: false, error: const AddMoneyError(
-        message: 'An unexpected error occurred.',
-        type: AddMoneyErrorType.unknown));
+      state = state.copyWith(
+          isLoading: false,
+          error: const AddMoneyError(
+              message: 'An unexpected error occurred.',
+              type: AddMoneyErrorType.unknown));
     }
   }
 
   AddMoneyError _handle(AddMoneyException e) {
     final sc = e.statusCode;
     if (sc != null) {
-      if (sc == 401 || sc == 403) return AddMoneyError(message: 'Session expired. Please log in again.', type: AddMoneyErrorType.authentication, statusCode: sc, isRetryable: false);
-      if (sc >= 500) return AddMoneyError(message: 'Server error. Please try again later.', type: AddMoneyErrorType.serverError, statusCode: sc);
-      if (sc >= 400) return AddMoneyError(message: e.message, type: AddMoneyErrorType.validation, statusCode: sc, isRetryable: false);
+      if (sc == 401 || sc == 403)
+        return AddMoneyError(
+            message: 'Session expired. Please log in again.',
+            type: AddMoneyErrorType.authentication,
+            statusCode: sc,
+            isRetryable: false);
+      if (sc >= 500)
+        return AddMoneyError(
+            message: 'Server error. Please try again later.',
+            type: AddMoneyErrorType.serverError,
+            statusCode: sc);
+      if (sc >= 400)
+        return AddMoneyError(
+            message: e.message,
+            type: AddMoneyErrorType.validation,
+            statusCode: sc,
+            isRetryable: false);
     }
     return AddMoneyError(message: e.message, type: AddMoneyErrorType.unknown);
   }
@@ -106,4 +136,5 @@ final addMoneyOptionsProvider =
   return AddMoneyOptionsNotifier(ref.watch(addMoneyServiceProvider));
 });
 
-final selectedAddMoneyOptionProvider = StateProvider<AddMoneyOption?>((ref) => null);
+final selectedAddMoneyOptionProvider =
+    StateProvider<AddMoneyOption?>((ref) => null);

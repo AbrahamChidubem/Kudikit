@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
+
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/bill_service.dart';
@@ -193,8 +194,7 @@ class AirtimeNotifier extends StateNotifier<AirtimeState> {
   }
 
   void toggleNetworkDropdown() {
-    state = state.copyWith(
-        isNetworkDropdownOpen: !state.isNetworkDropdownOpen);
+    state = state.copyWith(isNetworkDropdownOpen: !state.isNetworkDropdownOpen);
   }
 
   void closeNetworkDropdown() {
@@ -332,8 +332,7 @@ class DataState {
           isNetworkDropdownOpen ?? this.isNetworkDropdownOpen,
       plans: plans ?? this.plans,
       isLoadingPlans: isLoadingPlans ?? this.isLoadingPlans,
-      selectedPlan:
-          clearPlan ? null : (selectedPlan ?? this.selectedPlan),
+      selectedPlan: clearPlan ? null : (selectedPlan ?? this.selectedPlan),
       isProcessing: isProcessing ?? this.isProcessing,
       result: result ?? this.result,
       error: clearError ? null : (error ?? this.error),
@@ -386,8 +385,7 @@ class DataNotifier extends StateNotifier<DataState> {
   }
 
   void toggleNetworkDropdown() {
-    state =
-        state.copyWith(isNetworkDropdownOpen: !state.isNetworkDropdownOpen);
+    state = state.copyWith(isNetworkDropdownOpen: !state.isNetworkDropdownOpen);
   }
 
   void closeNetworkDropdown() {
@@ -470,7 +468,6 @@ class DataNotifier extends StateNotifier<DataState> {
   }
 }
 
-final dataProvider =
-    StateNotifierProvider<DataNotifier, DataState>((ref) {
+final dataProvider = StateNotifierProvider<DataNotifier, DataState>((ref) {
   return DataNotifier(ref.watch(billsServiceProvider));
 });

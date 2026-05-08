@@ -164,7 +164,7 @@ class _GetVerificationCodeScreenState
                 icon,
                 color:
                     isSelected ? const Color(0xFF069494) : Colors.black54,
-                size: AppLayout.scaleWidth(context, 218),
+                size: AppLayout.scaleWidth(context, 22),
               ),
             ),
 

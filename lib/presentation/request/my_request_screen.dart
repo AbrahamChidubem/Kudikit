@@ -36,7 +36,7 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(requestProvider).loadMockData();
+      ref.read(requestProvider).loadRequests();
     });
   }
 

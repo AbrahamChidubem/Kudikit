@@ -7,7 +7,7 @@
 
 import 'dart:async';
 import 'package:flutter_riverpod/legacy.dart';
-import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/config/dio_client.dart'; 
 
 class WalletState {
   final double balance;

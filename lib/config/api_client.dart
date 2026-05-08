@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:kudipay/config/api_config.dart';
-
-
+import 'package:kudipay/config/dio_client.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -21,6 +19,14 @@ class ApiClient {
   final http.Client _client;
   String? _authToken;
 
+  static const Duration _timeout = Duration(seconds: 30);
+
+  static Map<String, String> _headers(String? token) => {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      };
+
   ApiClient({http.Client? client}) : _client = client ?? http.Client();
 
   void setAuthToken(String token) {
@@ -33,13 +39,13 @@ class ApiClient {
 
   Future<dynamic> get(String endpoint) async {
     try {
-      final url = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+      final url = Uri.parse('$kBaseUrl$endpoint');
 
       debugPrint('GET: $url');
 
       final response = await _client
-          .get(url, headers: ApiConfig.getHeaders(_authToken))
-          .timeout(ApiConfig.receiveTimeout);
+          .get(url, headers: _headers(_authToken))
+          .timeout(_timeout);
 
       return _handleResponse(response);
     } on SocketException {
@@ -54,17 +60,17 @@ class ApiClient {
 
   Future<dynamic> post(String endpoint, Map<String, dynamic> body) async {
     try {
-      final url = Uri.parse('${ApiConfig.baseUrl}$endpoint');
+      final url = Uri.parse('$kBaseUrl$endpoint');
 
       debugPrint('POST: $url');
 
       final response = await _client
           .post(
             url,
-            headers: ApiConfig.getHeaders(_authToken),
+            headers: _headers(_authToken),
             body: jsonEncode(body),
           )
-          .timeout(ApiConfig.receiveTimeout);
+          .timeout(_timeout);
 
       return _handleResponse(response);
     } on SocketException {

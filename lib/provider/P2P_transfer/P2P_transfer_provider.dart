@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:flutter_riverpod/legacy.dart';
 // ==================== P2P TRANSFER MODELS ====================
 
@@ -69,16 +69,16 @@ class TransferData {
   final double? amount;
   final TransactionCategory? category;
   final String? note;
-  final double balance;
-  final double fee;
+  final double? balance;
+  final double? fee;
 
   const TransferData({
     this.recipient,
     this.amount,
     this.category,
     this.note,
-    this.balance = 100000.00,
-    this.fee = 10.0,
+    this.balance,
+    this.fee,
   });
 
   TransferData copyWith({
@@ -101,7 +101,7 @@ class TransferData {
 
   bool get hasInsufficientBalance {
     if (amount == null) return false;
-    return (amount! + fee) > balance;
+    return (amount! + fee!) > balance!;
   }
 }
 
@@ -199,56 +199,32 @@ class P2PTransferException implements Exception {
 }
 
 class P2PTransferService {
-  final String baseUrl;
-  final String? authToken;
+  final DioClient _client;
 
-  P2PTransferService({
-    required this.baseUrl,
-    this.authToken,
-  });
+  P2PTransferService(this._client);
 
   Future<RecipientInfo> validateAccount(String accountNumber, TransferType type) async {
-    return _mockValidateAccount(accountNumber, type);
+    final endpoint = type == TransferType.kudikit
+        ? '/transfer/validate-account'
+        : '/transfer/validate-account';
+    final response = await _client.post<Map<String, dynamic>>(
+      endpoint,
+      data: {'account_number': accountNumber},
+    );
+    final data = response.data!;
+    if (data['success'] != true) {
+      throw P2PTransferException(data['message'] as String? ?? 'Account not found');
+    }
+    return RecipientInfo(
+      accountNumber: data['account_number'] as String,
+      name: data['account_name'] as String,
+      bank: data['bank_name'] as String?,
+    );
   }
 
   Future<List<RecentContact>> getRecentContacts() async {
-    return _mockGetRecentContacts();
-  }
-
-  Future<TransactionResult> processTransfer(TransferData data) async {
-    return _mockProcessTransfer(data);
-  }
-
-  // Mock implementations
-  Future<RecipientInfo> _mockValidateAccount(String accountNumber, TransferType type) async {
-    await Future.delayed(const Duration(seconds: 1));
-
-    if (accountNumber.length < 10) {
-      throw P2PTransferException('Invalid account number');
-    }
-
-    if (type == TransferType.kudikit && !accountNumber.startsWith('8')) {
-      throw P2PTransferException('Invalid Kudikit account number.');
-    }
-
-    // Use MockTransferData so validated name comes from centralised mock.
-    final data = MockTransferData.validateAccountSuccess(
-      accountNumber: accountNumber,
-    );
-    return RecipientInfo(
-      accountNumber: accountNumber,
-      name: data['account_name'] as String,
-      bank: type == TransferType.kudikit
-          ? 'Kudikit MFB'
-          : data['bank_name'] as String,
-    );
-  }
-
-  Future<List<RecentContact>> _mockGetRecentContacts() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-
-    // Use MockTransferData.recentContactsResponse
-    final raw = MockTransferData.recentContactsResponse['contacts'] as List<dynamic>;
+    final response = await _client.get<Map<String, dynamic>>('/transfer/recent-contacts');
+    final raw = response.data!['contacts'] as List<dynamic>;
     return raw.map((c) {
       final map = c as Map<String, dynamic>;
       return RecentContact(
@@ -261,22 +237,29 @@ class P2PTransferService {
     }).toList();
   }
 
-  Future<TransactionResult> _mockProcessTransfer(TransferData data) async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    // Use MockTransferData so transaction IDs and bank names match mock data.
-    final result = MockTransferData.transferSuccess(amount: data.amount!);
+  Future<TransactionResult> processTransfer(TransferData data, String pin) async {
+    final response = await _client.post<Map<String, dynamic>>(
+      '/transfer/execute',
+      data: {
+        'account_number': data.recipient!.accountNumber,
+        'amount': data.amount,
+        'pin': pin,
+        if (data.note != null) 'narration': data.note,
+        if (data.category != null) 'category': data.category!.name,
+      },
+    );
+    final result = response.data!;
     return TransactionResult(
       transactionId: result['transaction_id'] as String,
       transactionType: result['transaction_type'] as String,
-      amount: data.amount!,
-      fee: data.fee,
+      amount: (result['amount'] as num).toDouble(),
+      fee: (result['fee'] as num?)?.toDouble() ?? 0,
       payingBank: result['paying_bank'] as String,
       payingBankAccount: result['paying_bank_account'] as String,
       creditedTo: result['credited_to'] as String,
       note: data.note,
       transactionDate: DateTime.now(),
-      isSuccessful: (result['status'] as String) == 'successful',
+      isSuccessful: result['status'] == 'successful',
     );
   }
 }
@@ -385,14 +368,15 @@ class P2PTransferNotifier extends StateNotifier<P2PTransferState> {
         throw P2PTransferException('Invalid PIN');
       }
 
-      final result = await _service.processTransfer(state.transferData);
+      final result = await _service.processTransfer(state.transferData, pin);
 
       state = state.copyWith(
         isProcessingTransfer: false,
         transactionResult: result,
         showPinDialog: false,
       );
-    } on SocketException {
+    } 
+    on SocketException {
       state = state.copyWith(
         isProcessingTransfer: false,
         error: 'No internet connection. Please check your network.',
@@ -425,9 +409,7 @@ class P2PTransferNotifier extends StateNotifier<P2PTransferState> {
 // ==================== PROVIDERS ====================
 
 final p2pTransferServiceProvider = Provider<P2PTransferService>((ref) {
-  return P2PTransferService(
-    baseUrl: kBaseUrl,
-  );
+  return P2PTransferService(ref.read(dioClientProvider));
 });
 
 final p2pTransferProvider =

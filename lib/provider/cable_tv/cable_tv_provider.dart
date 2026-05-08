@@ -3,10 +3,10 @@
 // Riverpod state management for Cable TV bill payment.
 // ============================================================================
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/model/cable_tv/cable_tv_model.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
 // ============================================================================
 // CABLE TV STATE
 // ============================================================================
@@ -31,6 +31,7 @@ class CableTvState {
   final bool autoRenew;
   final bool isProcessing;
   final String? error;
+  final String? transactionId;
 
   const CableTvState({
     this.step = CableTvStep.enterDetails,
@@ -44,6 +45,7 @@ class CableTvState {
     this.autoRenew = false,
     this.isProcessing = false,
     this.error,
+    this.transactionId,
   }) : selectedProvider = selectedProvider ??
             const CableTvProviderInfo(
               provider: CableTvProvider.dstv,
@@ -65,6 +67,7 @@ class CableTvState {
     bool clearError = false,
     bool clearAccountDetail = false,
     bool clearPlan = false,
+    String? transactionId,
   }) {
     return CableTvState(
       step: step ?? this.step,
@@ -79,6 +82,7 @@ class CableTvState {
       autoRenew: autoRenew ?? this.autoRenew,
       isProcessing: isProcessing ?? this.isProcessing,
       error: clearError ? null : (error ?? this.error),
+      transactionId: transactionId ?? this.transactionId,
     );
   }
 
@@ -97,7 +101,9 @@ class CableTvState {
 // ============================================================================
 
 class CableTvNotifier extends StateNotifier<CableTvState> {
-  CableTvNotifier() : super(const CableTvState());
+  final DioClient _client;
+
+  CableTvNotifier(this._client) : super(const CableTvState());
 
   void setProvider(CableTvProviderInfo provider) {
     state = state.copyWith(
@@ -130,37 +136,32 @@ class CableTvNotifier extends StateNotifier<CableTvState> {
 
   Future<void> _validateIuc(String iucNumber) async {
     state = state.copyWith(isValidatingIuc: true, clearAccountDetail: true);
-
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // Mock: 2343323441 is invalid (as shown in Image 7)
-    final isInvalid = iucNumber == '2343323441';
-
-    if (isInvalid) {
-      state = state.copyWith(
-        isValidatingIuc: false,
-        isIucInvalid: true,
-        clearAccountDetail: true,
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/bills/cable-tv/validate-iuc',
+        data: {
+          'iuc_number': iucNumber,
+          'provider': state.selectedProvider.name,
+        },
       );
-    } else {
-      final isExpired = iucNumber == '2343323441x';
-
-      // Pull the default plan name from MockBillsData so it stays in sync.
-      final packages = MockBillsData.dstvPackagesResponse['packages'] as List;
-      final defaultPlan = (packages.isNotEmpty)
-          ? packages.first['name'] as String
-          : 'DSTV Padi';
-
+      final data = response.data!;
       state = state.copyWith(
         isValidatingIuc: false,
         isIucInvalid: false,
         accountDetail: CableTvAccountDetail(
-          name: 'Adebayo Oluwakemi Peters',
+          name: data['name'] as String,
           decoderNumber: iucNumber,
           provider: state.selectedProvider.name,
-          currentPlan: state.selectedPlan?.name ?? defaultPlan,
-          isExpired: isExpired,
+          currentPlan:
+              data['current_plan'] as String? ?? state.selectedPlan?.name ?? '',
+          isExpired: data['is_expired'] as bool? ?? false,
         ),
+      );
+    } on KudiApiException catch (e) {
+      state = state.copyWith(
+        isValidatingIuc: false,
+        isIucInvalid: true,
+        error: e.message,
       );
     }
   }
@@ -178,23 +179,39 @@ class CableTvNotifier extends StateNotifier<CableTvState> {
   }
 
   void backToDetails() {
-    state =
-        state.copyWith(step: CableTvStep.enterDetails, clearError: true);
+    state = state.copyWith(step: CableTvStep.enterDetails, clearError: true);
   }
 
-  Future<void> processPayment() async {
+  Future<void> processPayment(String pin) async {
     state = state.copyWith(
       isProcessing: true,
       clearError: true,
       step: CableTvStep.processing,
     );
-
-    await Future.delayed(const Duration(seconds: 2));
-
-    state = state.copyWith(
-      isProcessing: false,
-      step: CableTvStep.success,
-    );
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/bills/cable-tv/pay',
+        data: {
+          'iuc_number': state.iucNumber,
+          'provider': state.selectedProvider.name,
+          'plan_id': state.selectedPlan?.id,
+          'amount': state.amount,
+          'auto_renew': state.autoRenew,
+          'pin': pin,
+        },
+      );
+      state = state.copyWith(
+        isProcessing: false,
+        step: CableTvStep.success,
+        transactionId: response.data!['transaction_id'] as String?,
+      );
+    } on KudiApiException catch (e) {
+      state = state.copyWith(
+        isProcessing: false,
+        step: CableTvStep.failed,
+        error: e.message,
+      );
+    }
   }
 
   void reset() {
@@ -204,5 +221,5 @@ class CableTvNotifier extends StateNotifier<CableTvState> {
 
 final cableTvProvider =
     StateNotifierProvider<CableTvNotifier, CableTvState>((ref) {
-  return CableTvNotifier();
+  return CableTvNotifier(ref.read(dioClientProvider));
 });

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+
 
 class Bank {
   final String name;
@@ -22,7 +22,7 @@ class Bank {
 //       the backend is ready.
 // ---------------------------------------------------------------------------
 final banksProvider = Provider<List<Bank>>((ref) {
-  final raw = MockAddMoneyData.banksResponse['banks'] as List<dynamic>;
+  final raw = AddMoneyData.banksResponse['banks'] as List<dynamic>;
   return raw.map((b) {
     final map = b as Map<String, dynamic>;
     return Bank(

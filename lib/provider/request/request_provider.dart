@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:kudipay/core/theme/app_theme.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
+
 import '../../model/request/request_model.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:flutter_riverpod/legacy.dart';
+
 class RequestProvider extends ChangeNotifier {
   // Current request being created
   double? _amount;
@@ -26,6 +27,9 @@ class RequestProvider extends ChangeNotifier {
   // Contacts
   final List<Contact> _recentContacts = [];
   final List<Contact> _allContacts = [];
+
+  final DioClient _client;
+  RequestProvider(this._client);
 
   // Getters
   double? get amount => _amount;
@@ -151,93 +155,34 @@ class RequestProvider extends ChangeNotifier {
   // Received/sent requests now sourced from MockRequestData so they stay in
   // sync with the centralised mock API file.
   // isLoading set during fetch so UI can show RequestListShimmer.
-  Future<void> loadMockData() async {
-    if (_isLoading) return; // prevent double-load
+  Future<void> loadRequests() async {
     _isLoading = true;
     notifyListeners();
 
-    // Simulate network latency — remove when wired to real API
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      // Replace with your actual HTTP client instance
+      final response = await _client.get<Map<String, dynamic>>('/requests');
+      final raw = response.data!['requests'] as List<dynamic>;
 
-    // ── Contacts ─────────────────────────────────────────────────────────────
-    _allContacts.addAll([
-      const Contact(
-        id: '1',
-        name: 'Kemi Alabi',
-        phone: '+2348031234567',
-        status: ContactStatus.onApp,
-        avatarColor: AppColors.avatarTeal,
-        isVerified: true,
-      ),
-      const Contact(
-        id: '2',
-        name: 'Asuquo Michael',
-        phone: '+2348051234567',
-        status: ContactStatus.onApp,
-        avatarColor: AppColors.avatarDark,
-        isVerified: true,
-      ),
-      const Contact(
-        id: '3',
-        name: 'Victor Obisi',
-        phone: '+2348061234567',
-        status: ContactStatus.onApp,
-        avatarColor: AppColors.avatarOrange,
-        isVerified: true,
-      ),
-      const Contact(
-        id: '4',
-        name: 'Tega Ibrahim',
-        phone: '+2348071234567',
-        status: ContactStatus.onApp,
-        avatarColor: AppColors.avatarRed,
-        isVerified: true,
-      ),
-      const Contact(
-        id: '5',
-        name: 'Ameachi Uche',
-        phone: '+2348091234567',
-        status: ContactStatus.invite,
-        avatarColor: AppColors.avatarBlue,
-        isInvited: true,
-        isVerified: false,
-      ),
-      const Contact(
-        id: '6',
-        name: 'Paul Adegoke',
-        phone: '+2349011234567',
-        status: ContactStatus.invite,
-        avatarColor: AppColors.avatarLightBlue,
-        isInvited: true,
-        isVerified: false,
-      ),
-    ]);
+      _sentRequests.clear();
+      _receivedRequests.clear();
 
-    _recentContacts.addAll([
-      _allContacts[0],
-      _allContacts[1],
-      _allContacts[2],
-    ]);
-
-    // ── Requests — sourced from MockRequestData ───────────────────────────────
-    // REQ_001 in the mock is a pending request (received by current user).
-    // REQ_002 in the mock is a paid/sent request.
-    final raw = MockRequestData.requestListResponse['requests'] as List<dynamic>;
-    for (final item in raw) {
-      final map = item as Map<String, dynamic>;
-      final request = MoneyRequest.fromJson(map);
-
-      // REQ_001 — pending incoming request → received list
-      // REQ_002 — paid request → sent list (mirrors a sent + paid scenario)
-      if (request.id == 'REQ_001') {
-        _receivedRequests.add(request);
-      } else {
-        _sentRequests.add(request);
+      for (final r in raw) {
+        final request = MoneyRequest.fromJson(r as Map<String, dynamic>);
+        // Route to correct list based on requesterId
+        if (request.requesterId == 'current_user_id') {
+          _sentRequests.add(request);
+        } else {
+          _receivedRequests.add(request);
+        }
       }
+    } on KudiApiException catch (e) {
+      debugPrint('Load requests error: ${e.message}');
+      // Optionally expose error: _errorMessage = e.message;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-
-    _isLoading = false;
-    notifyListeners();
   }
 
   // Get statistics
@@ -292,5 +237,5 @@ class RequestProvider extends ChangeNotifier {
 
 // Riverpod Provider
 final requestProvider = ChangeNotifierProvider<RequestProvider>((ref) {
-  return RequestProvider();
+  return RequestProvider(ref.read(dioClientProvider));
 });

@@ -4,7 +4,7 @@
 
 import 'dart:convert';
 import 'package:dio/dio.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/env.dart';
 import 'package:kudipay/model/user/user.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 

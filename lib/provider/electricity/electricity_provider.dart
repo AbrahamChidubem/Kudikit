@@ -3,8 +3,7 @@
 // Riverpod state management for Electricity bill payment.
 // ============================================================================
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/model/electricity/electricity_model.dart';
 import 'package:flutter_riverpod/legacy.dart';
 // ============================================================================
@@ -94,7 +93,8 @@ class ElectricityState {
 // ============================================================================
 
 class ElectricityNotifier extends StateNotifier<ElectricityState> {
-  ElectricityNotifier() : super(const ElectricityState());
+  final DioClient _client;
+  ElectricityNotifier(this._client) : super(const ElectricityState());
 
   void setProvider(ElectricityProviderInfo provider) {
     state = state.copyWith(
@@ -126,37 +126,31 @@ class ElectricityNotifier extends StateNotifier<ElectricityState> {
     }
   }
 
-  Future<void> _validateMeter(String meterNumber) async {
-    state = state.copyWith(isValidatingMeter: true, clearAccountDetail: true);
-
-    await Future.delayed(const Duration(milliseconds: 800));
-
-    // Mock: specific numbers are "invalid"
-    final isInvalid = meterNumber == '2343323441';
-
-    if (isInvalid) {
-      state = state.copyWith(
-        isValidatingMeter: false,
-        isMeterInvalid: true,
-        clearAccountDetail: true,
-      );
-    } else {
-      final mock = MockBillsData.validateMeterSuccess(
-        meterNumber: meterNumber,
-      );
-      state = state.copyWith(
-        isValidatingMeter: false,
-        isMeterInvalid: false,
-        accountDetail: ElectricityAccountDetail(
-          name: mock['name'] as String,
-          meterNumber: mock['meter_number'] as String,
-          meterType: state.meterType,
-          provider: state.selectedProvider.name,
-          location: mock['location'] as String,
-        ),
-      );
-    }
+Future<void> _validateMeter(String meterNumber) async {
+  state = state.copyWith(isValidatingMeter: true, clearAccountDetail: true);
+  try {
+    final response = await _client.post<Map<String, dynamic>>(
+      '/bills/electricity/validate-meter',
+      data: {
+        'meter_number': meterNumber,
+        'provider': state.selectedProvider.shortCode,
+        'meter_type': state.meterType.name,
+      },
+    );
+    final data = response.data!;
+    state = state.copyWith(
+      isValidatingMeter: false,
+      isMeterInvalid: false,
+      accountDetail: ElectricityAccountDetail.fromJson(data),
+    );
+  } on KudiApiException catch (e) {
+    state = state.copyWith(
+      isValidatingMeter: false,
+      isMeterInvalid: true,
+      error: e.message,
+    );
   }
+}
 
   void setAmount(double amount) {
     state = state.copyWith(amount: amount);
@@ -170,29 +164,31 @@ class ElectricityNotifier extends StateNotifier<ElectricityState> {
     state = state.copyWith(step: ElectricityStep.enterDetails, clearError: true);
   }
 
-  Future<void> processPayment() async {
-    state = state.copyWith(
-      isProcessing: true,
-      clearError: true,
-      step: ElectricityStep.processing,
+  Future<void> processPayment(String pin) async {
+  state = state.copyWith(isProcessing: true, step: ElectricityStep.processing);
+  try {
+    final response = await _client.post<Map<String, dynamic>>(
+      '/bills/electricity/pay',
+      data: {
+        'meter_number': state.meterNumber,
+        'amount': state.amount,
+        'provider': state.selectedProvider.shortCode,
+        'pin': pin,
+      },
     );
-
-    await Future.delayed(const Duration(seconds: 2));
-
     state = state.copyWith(
       isProcessing: false,
       step: ElectricityStep.success,
-      result: ElectricityPaymentResponse(
-        success: true,
-        transactionId: 'TXN${DateTime.now().millisecondsSinceEpoch}',
-        message: 'Payment successful',
-        token: '1234-5678-9012-3456',
-        amount: state.amount ?? 0,
-        meterNumber: state.meterNumber,
-        createdAt: DateTime.now(),
-      ),
+      result: ElectricityPaymentResponse.fromJson(response.data!),
+    );
+  } on KudiApiException catch (e) {
+    state = state.copyWith(
+      isProcessing: false,
+      step: ElectricityStep.failed,
+      error: e.message,
     );
   }
+}
 
   void reset() {
     state = const ElectricityState();
@@ -201,5 +197,5 @@ class ElectricityNotifier extends StateNotifier<ElectricityState> {
 
 final electricityProvider =
     StateNotifierProvider<ElectricityNotifier, ElectricityState>((ref) {
-  return ElectricityNotifier();
+  return ElectricityNotifier(ref.read(dioClientProvider));
 });

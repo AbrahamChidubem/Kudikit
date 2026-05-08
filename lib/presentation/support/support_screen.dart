@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+
 import 'package:kudipay/presentation/ticket/features/tickets/presentation/screens/tickets_screen.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────

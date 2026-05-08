@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/formatting/widget/transaction_pin_bottom_sheet.dart';
 import 'package:kudipay/model/electricity/electricity_model.dart';
 import 'package:kudipay/presentation/bill/bill_payment_success.dart';
 import 'package:kudipay/provider/electricity/electricity_provider.dart';
@@ -1083,66 +1084,68 @@ class _ConfirmPaymentSheetState extends ConsumerState<_ConfirmPaymentSheet> {
                         height: 52,
                         child: ElevatedButton(
                           onPressed: () async {
-                            final nav = Navigator.of(context);
-                            final state =
-                                ref.read(electricityProvider);
-                            nav.pop(); // close sheet
-                            await ref
-                                .read(electricityProvider.notifier)
-                                .processPayment();
-                            final updatedState =
-                                ref.read(electricityProvider);
-                            if (updatedState.step ==
-                                ElectricityStep.success) {
-                              nav.push(
-                                MaterialPageRoute(
-                                  builder: (_) =>
-                                      BillPaymentSuccessScreen(
-                                    title: 'Electricity',
-                                    providerName:
-                                        state.selectedProvider.name,
-                                    amount: state.amount ?? 0,
-                                    transactionId:
-                                        updatedState.result?.transactionId ??
-                                            '',
-                                    prepaidToken: state.meterType ==
-                                            MeterType.prepaid
-                                        ? updatedState.result?.token
-                                        : null,
-                                    details: [
-                                      BillSuccessDetail(
-                                        label: 'Name',
-                                        value: state.accountDetail?.name ??
-                                            '-',
-                                      ),
-                                      BillSuccessDetail(
-                                        label: 'Meter number',
-                                        value: state.meterNumber,
-                                      ),
-                                      BillSuccessDetail(
-                                        label: 'Meter type',
-                                        value: state.meterType ==
-                                                MeterType.prepaid
-                                            ? 'Prepaid'
-                                            : 'Postpaid',
-                                      ),
-                                      BillSuccessDetail(
-                                        label: 'Provider',
-                                        value:
-                                            state.selectedProvider.name,
-                                      ),
-                                      BillSuccessDetail(
-                                        label: 'Transaction ID',
-                                        value: updatedState
-                                                .result?.transactionId ??
-                                            '-',
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }
-                          },
+  final nav = Navigator.of(context);
+  final currentState = ref.read(electricityProvider);
+
+  // Collect PIN before closing the confirm sheet
+  final pin = await showModalBottomSheet<String>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.white,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (_) => TransactionPinBottomSheet(title: '', onSuccess: () { },),
+  );
+
+  if (pin == null || pin.length != 4) return; // user dismissed
+
+  nav.pop(); // close confirm sheet
+  await ref
+      .read(electricityProvider.notifier)
+      .processPayment(pin);
+
+  final updatedState = ref.read(electricityProvider);
+  if (updatedState.step == ElectricityStep.success) {
+    nav.push(
+      MaterialPageRoute(
+        builder: (_) => BillPaymentSuccessScreen(
+          title: 'Electricity',
+          providerName: currentState.selectedProvider.name,
+          amount: currentState.amount ?? 0,
+          transactionId: updatedState.result?.transactionId ?? '',
+          prepaidToken: currentState.meterType == MeterType.prepaid
+              ? updatedState.result?.token
+              : null,
+          details: [
+            BillSuccessDetail(
+              label: 'Name',
+              value: currentState.accountDetail?.name ?? '-',
+            ),
+            BillSuccessDetail(
+              label: 'Meter number',
+              value: currentState.meterNumber,
+            ),
+            BillSuccessDetail(
+              label: 'Meter type',
+              value: currentState.meterType == MeterType.prepaid
+                  ? 'Prepaid'
+                  : 'Postpaid',
+            ),
+            BillSuccessDetail(
+              label: 'Provider',
+              value: currentState.selectedProvider.name,
+            ),
+            BillSuccessDetail(
+              label: 'Transaction ID',
+              value: updatedState.result?.transactionId ?? '-',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+},
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFF069494),
                             elevation: 0,

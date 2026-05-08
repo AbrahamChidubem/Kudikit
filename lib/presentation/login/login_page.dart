@@ -108,62 +108,60 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _hasEmail(UserModel? user) =>
       (widget.email ?? user?.email ?? '').isNotEmpty;
 
-  Future<void> _handleLogin(UserModel? user) async {
-    final isConnected = ref.read(currentConnectivityProvider);
-    if (!isConnected) {
-      ConnectivitySnackBar.showNoInternet(context);
-      return;
-    }
-
-    final password = _passwordCtrl.text.trim();
-    if (password.isEmpty) {
-      _errorNotifier.value = 'Please enter your passcode';
-      return;
-    }
-
-    if (password.length < 8) {
-      _errorNotifier.value = 'Passcode must be at least 8 characters';
-      return;
-    }
-
-    if (mounted) setState(() => _isLoading = true);
-    _errorNotifier.value = null;
-
-    try {
-      final isValid = await StorageService.instance.verifyPin(password);
-      if (!mounted) return;
-
-      if (!isValid) {
-        _errorNotifier.value = 'Incorrect passcode, kindly try again';
-        _passwordCtrl.clear();
-        if (mounted) setState(() => _isLoading = false);
-        return;
-      }
-
-      final email =
-          widget.email ?? user?.email ?? ref.read(userEmailProvider) ?? '';
-      await ref.read(authProvider.notifier).login(
-            email: email,
-            password: password,
-          );
-
-      if (!mounted) return;
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (_) => const BottomNavBar()),
-        (_) => false,
-      );
-    } on NoInternetException {
-      if (mounted) ConnectivitySnackBar.showNoInternet(context);
-    } on TimeoutException catch (e) {
-      _errorNotifier.value = e.toString();
-    } catch (e) {
-      _errorNotifier.value = 'Login failed. Please try again.';
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+Future<void> _handleLogin(UserModel? user) async {
+  final isConnected = ref.read(currentConnectivityProvider);
+  if (!isConnected) {
+    ConnectivitySnackBar.showNoInternet(context);
+    return;
   }
+
+  final password = _passwordCtrl.text.trim();
+  if (password.isEmpty) {
+    _errorNotifier.value = 'Please enter your passcode';
+    return;
+  }
+
+  if (password.length < 8) {
+    _errorNotifier.value = 'Passcode must be at least 8 characters';
+    return;
+  }
+
+  // Build the identifier from whichever field is currently shown
+  final identifier = _showingPhone
+      ? (widget.phoneNumber ?? user?.phoneNumber ?? '')
+      : (widget.email ?? user?.email ?? ref.read(userEmailProvider) ?? '');
+
+  if (identifier.isEmpty) {
+    _errorNotifier.value = 'No account found on this device. Please sign up.';
+    return;
+  }
+
+  if (mounted) setState(() => _isLoading = true);
+  _errorNotifier.value = null;
+
+  try {
+    await ref.read(authProvider.notifier).login(
+          email: identifier,   // field is named email but accepts phone too
+          password: password,
+        );
+
+    if (!mounted) return;
+
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const BottomNavBar()),
+      (_) => false,
+    );
+  } on NoInternetException {
+    if (mounted) ConnectivitySnackBar.showNoInternet(context);
+  } on TimeoutException catch (e) {
+    _errorNotifier.value = e.toString();
+  } catch (e) {
+    _errorNotifier.value = e.toString().replaceFirst('Exception: ', '');
+  } finally {
+    if (mounted) setState(() => _isLoading = false);
+  }
+}
 
   // ---------------------------------------------------------------------------
   // Dropdown menu — opens BELOW the identifier field when the chevron is tapped.

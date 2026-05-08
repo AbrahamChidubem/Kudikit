@@ -32,7 +32,7 @@ class _SelectRecipientsScreenState
     _phoneController.text = '+234';
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(requestProvider.notifier).loadMockData();
+      ref.read(requestProvider.notifier).loadRequests();
     });
   }
 

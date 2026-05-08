@@ -105,7 +105,7 @@ class RefreshNotifier extends StateNotifier<RefreshState> {
         _ref.read(transactionProvider.notifier).loadTransactions(refresh: true),
 
         // ── Money requests (sent & received) ────────────────────────────────
-        _ref.read(requestProvider).loadMockData(),
+        _ref.read(requestProvider.notifier).loadRequests(),
 
         // ── Account details (bank number for Add Money / QR screens) ─────────
         _ref.read(accountDetailsProvider.notifier).loadAccountDetails(),
@@ -147,7 +147,7 @@ class RefreshNotifier extends StateNotifier<RefreshState> {
 
   /// Refreshes only money requests.
   Future<void> refreshRequestsOnly() async {
-    await _ref.read(requestProvider).loadMockData();
+    await _ref.read(requestProvider).loadRequests();
     state = state.copyWith(lastRefreshedAt: DateTime.now());
   }
 }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/config/env.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
+import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/add_money_services.dart';
 import 'package:flutter_riverpod/legacy.dart';
 /// ==================== FUNDING / ADD MONEY PROVIDERS ====================
@@ -20,7 +22,10 @@ import 'package:flutter_riverpod/legacy.dart';
 
 /// Provider for add money service
 final addMoneyServiceProvider = Provider<AddMoneyService>((ref) {
-  return MockAddMoneyService();
+  return AddMoneyService(
+    baseUrl: kBaseUrl,
+    authToken: ref.watch(authTokenProvider), // read token from your auth state
+  );
 });
 
 // ==================== ERROR HANDLING ====================

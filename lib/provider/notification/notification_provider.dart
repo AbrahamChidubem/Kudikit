@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/dio_client.dart';
+
 import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/notification_preference_services.dart';
@@ -8,7 +9,8 @@ import 'package:flutter_riverpod/legacy.dart';
 
 // FIXED: was constructing NotificationPreferencesService() with no args —
 // hardcoded wrong URL and no token, guaranteed 401 in production.
-final notificationPreferencesServiceProvider = Provider<NotificationPreferencesService>((ref) {
+final notificationPreferencesServiceProvider =
+    Provider<NotificationPreferencesService>((ref) {
   final token = ref.watch(authTokenProvider);
   return NotificationPreferencesService(
     baseUrl: kBaseUrl,
@@ -140,9 +142,9 @@ class NotificationPreferencesNotifier
 }
 
 // Provider for notification preferences
-final notificationPreferencesProvider =
-    StateNotifierProvider<NotificationPreferencesNotifier,
-        AsyncValue<NotificationPreferences>>((ref) {
+final notificationPreferencesProvider = StateNotifierProvider<
+    NotificationPreferencesNotifier,
+    AsyncValue<NotificationPreferences>>((ref) {
   final service = ref.watch(notificationPreferencesServiceProvider);
   return NotificationPreferencesNotifier(service);
 });

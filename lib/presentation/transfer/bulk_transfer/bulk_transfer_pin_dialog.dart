@@ -14,6 +14,7 @@ class BulkTransferPinDialog extends ConsumerStatefulWidget {
 
 class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
   String _pin = '';
+  bool _isLoading = false;
   final int _pinLength = 6;
 
   @override
@@ -47,7 +48,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
 
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // Title and Close button
+            // Title and close button
             Padding(
               padding: EdgeInsets.symmetric(
                 horizontal: AppLayout.scaleWidth(context, 20),
@@ -55,7 +56,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(width: 24), // Balance for close button
+                  const SizedBox(width: 24),
                   Text(
                     'Enter Transaction PIN',
                     style: TextStyle(
@@ -78,7 +79,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
 
             SizedBox(height: AppLayout.scaleHeight(context, 32)),
 
-            // PIN Dots
+            // PIN dots
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(_pinLength, (index) {
@@ -98,9 +99,24 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
               }),
             ),
 
-            SizedBox(height: AppLayout.scaleHeight(context, 40)),
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-            // Numeric Keypad
+            // Loading indicator
+            if (_isLoading)
+              const SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  color: Color(0xFF069494),
+                ),
+              )
+            else
+              SizedBox(height: AppLayout.scaleHeight(context, 24)),
+
+            SizedBox(height: AppLayout.scaleHeight(context, 16)),
+
+            // Numeric keypad
             _buildNumericKeypad(context),
 
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
@@ -142,7 +158,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
 
         if (number == 'delete') {
           return GestureDetector(
-            onTap: _deletePin,
+            onTap: _isLoading ? null : _deletePin,
             child: Container(
               width: AppLayout.scaleWidth(context, 70),
               height: AppLayout.scaleWidth(context, 70),
@@ -157,12 +173,12 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
         }
 
         return GestureDetector(
-          onTap: () => _addPin(number),
+          onTap: _isLoading ? null : () => _addPin(number),
           child: Container(
             width: AppLayout.scaleWidth(context, 70),
             height: AppLayout.scaleWidth(context, 70),
             alignment: Alignment.center,
-            decoration: BoxDecoration(
+            decoration: const BoxDecoration(
               shape: BoxShape.circle,
               color: Colors.transparent,
             ),
@@ -182,10 +198,7 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
 
   void _addPin(String digit) {
     if (_pin.length < _pinLength) {
-      setState(() {
-        _pin += digit;
-      });
-
+      setState(() => _pin += digit);
       if (_pin.length == _pinLength) {
         _verifyPin();
       }
@@ -194,60 +207,34 @@ class _BulkTransferPinDialogState extends ConsumerState<BulkTransferPinDialog> {
 
   void _deletePin() {
     if (_pin.isNotEmpty) {
-      setState(() {
-        _pin = _pin.substring(0, _pin.length - 1);
-      });
+      setState(() => _pin = _pin.substring(0, _pin.length - 1));
     }
   }
 
   Future<void> _verifyPin() async {
-    // Show loading
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => const Center(
-        child: CircularProgressIndicator(
-          color: Color(0xFF069494),
-        ),
-      ),
-    );
+    if (_pin.length != _pinLength) return;
 
-    // Simulate PIN verification
-    await Future.delayed(const Duration(seconds: 1));
+    setState(() => _isLoading = true);
 
-    // Close loading dialog
-    if (mounted) {
-      Navigator.pop(context);
-    }
+    try {
+      await ref
+          .read(bulkTransferProvider.notifier)
+          .executeBulkTransfer(pin: _pin);
 
-    // TODO: Verify PIN with backend
-    final pinCorrect = true; // Simulate success
-
-    if (pinCorrect) {
-      // Execute bulk transfer
-      await ref.read(bulkTransferProvider.notifier).executeBulkTransfer();
-
-      // Close PIN dialog
-      if (mounted) {
-        Navigator.pop(context);
-      }
-
-      // Show success dialog
+      if (mounted) Navigator.pop(context);
       if (mounted) {
         await Future.delayed(const Duration(milliseconds: 300));
         _showSuccessDialog();
       }
-    // ignore: dead_code
-    } else {
-      // Show error and reset PIN
-      setState(() {
-        _pin = '';
-      });
-
+    } catch (_) {
       if (mounted) {
+        setState(() {
+          _pin = '';
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Incorrect PIN. Please try again.'),
+            content: Text('Transfer failed. Please try again.'),
             backgroundColor: Colors.red,
           ),
         );

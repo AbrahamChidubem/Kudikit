@@ -29,6 +29,7 @@ class BulkTransferPinDialog extends ConsumerWidget {
       subtitle: 'Enter your 4-digit transaction PIN to proceed.',
       onSuccess: () async {
         await ref.read(bulkTransferProvider.notifier).executeBulkTransfer();
+        // PIN verified locally by TransactionPinBottomSheet — no pin arg needed
         if (context.mounted) Navigator.pop(context);
       },
     );

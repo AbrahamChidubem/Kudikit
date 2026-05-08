@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_success.dart';
 import 'package:kudipay/provider/provider.dart';
-// import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
+import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 /// Masks a phone number showing only the last 4 digits.
 /// e.g. "08124608695" → "*******8695"
@@ -61,7 +61,6 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
     super.initState();
     _secondsRemaining = _countdownSeconds;
     _startTimer();
-    // Auto-focus first box
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNodes[0].requestFocus();
     });
@@ -70,16 +69,13 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
   @override
   void dispose() {
     _timer?.cancel();
-    for (final c in _controllers) {
-      c.dispose();
-    }
-    for (final f in _focusNodes) {
-      f.dispose();
-    }
+    for (final c in _controllers) c.dispose();
+    for (final f in _focusNodes) f.dispose();
     super.dispose();
   }
 
   // ── Timer ──────────────────────────────────────────────────────────────
+
   void _startTimer() {
     _timer?.cancel();
     setState(() => _secondsRemaining = _countdownSeconds);
@@ -100,20 +96,17 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
   bool get _canResend => _secondsRemaining <= 0;
 
-  // ── OTP input handling ──────────────────────────────────────────────────
-  String get _currentOtp =>
-      _controllers.map((c) => c.text).join();
+  // ── OTP input handling ─────────────────────────────────────────────────
+
+  String get _currentOtp => _controllers.map((c) => c.text).join();
 
   void _onDigitChanged(int index, String value) {
-    // Clear error on new input
     if (_hasError) setState(() => _hasError = false);
 
     if (value.isNotEmpty) {
-      // Move to next field
       if (index < _otpLength - 1) {
         _focusNodes[index + 1].requestFocus();
       } else {
-        // Last digit entered — submit
         _focusNodes[index].unfocus();
         _verifyOtp();
       }
@@ -136,15 +129,14 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
     setState(() {
       _hasError = false;
       _errorMessage = '';
-      for (final c in _controllers) {
-        c.clear();
-      }
+      for (final c in _controllers) c.clear();
     });
     _startTimer();
     _focusNodes[0].requestFocus();
   }
 
-  // ── Verification ────────────────────────────────────────────────────────
+  // ── Verification ───────────────────────────────────────────────────────
+
   Future<void> _verifyOtp() async {
     final otp = _currentOtp;
     if (otp.length < _otpLength) return;
@@ -155,29 +147,13 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
     });
 
     try {
-      // Simulate API verification — replace with real call
-      await Future.delayed(const Duration(milliseconds: 800));
-
-      // Mock: any OTP starting with '0' is invalid for demo purposes
-      final isValid = !otp.startsWith('0');
-
-      if (isValid) {
-        // Execute the bulk transfer
-        await ref.read(bulkTransferProvider.notifier).executeBulkTransfer();
-
-        if (mounted) {
-          Navigator.pop(context); // close OTP sheet
-          await Future.delayed(const Duration(milliseconds: 200));
-          _showSuccess();
-        }
-      } else {
-        if (mounted) {
-          setState(() {
-            _hasError = true;
-            _isVerifying = false;
-            _errorMessage = 'Invalid OTP code';
-          });
-        }
+      await ref
+          .read(bulkTransferProvider.notifier)
+          .executeBulkTransfer(pin: otp);
+      if (mounted) {
+        Navigator.pop(context);
+        await Future.delayed(const Duration(milliseconds: 200));
+        _showSuccess();
       }
     } catch (_) {
       if (mounted) {
@@ -201,7 +177,8 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
     );
   }
 
-  // ── Build ───────────────────────────────────────────────────────────────
+  // ── Build ──────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -226,7 +203,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // ── Handle bar ─────────────────────────────────────────
+              // ── Handle bar ───────────────────────────────────────
               Center(
                 child: Container(
                   width: AppLayout.scaleWidth(context, 40),
@@ -240,7 +217,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-              // ── Header ─────────────────────────────────────────────
+              // ── Header ──────────────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -262,8 +239,8 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
                         color: Colors.grey.shade100,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, size: 16,
-                          color: Colors.black54),
+                      child: const Icon(Icons.close,
+                          size: 16, color: Colors.black54),
                     ),
                   ),
                 ],
@@ -271,7 +248,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
-              // ── Amount (from provider state) ──────────────────────
+              // ── Amount ──────────────────────────────────────────
               Consumer(
                 builder: (context, ref, _) {
                   final totalDebit =
@@ -294,7 +271,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-              // ── OTP label ──────────────────────────────────────────
+              // ── OTP label ───────────────────────────────────────
               Row(
                 children: [
                   Icon(
@@ -317,7 +294,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 14)),
 
-              // ── OTP Input Boxes ────────────────────────────────────
+              // ── OTP Input Boxes ──────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: List.generate(_otpLength, (index) {
@@ -331,7 +308,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
                 }),
               ),
 
-              // ── Error message ──────────────────────────────────────
+              // ── Error message ────────────────────────────────────
               AnimatedSize(
                 duration: const Duration(milliseconds: 200),
                 child: _hasError
@@ -352,7 +329,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 12)),
 
-              // ── Timer + Resend row ─────────────────────────────────
+              // ── Timer + Resend ───────────────────────────────────
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -372,9 +349,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
                         fontFamily: 'PolySans',
                         fontSize: AppLayout.fontSize(context, 13),
                         fontWeight: FontWeight.w600,
-                        color: _canResend
-                            ? const Color(0xFF069494)
-                            : const Color(0xFF069494),
+                        color: const Color(0xFF069494),
                       ),
                     ),
                   ),
@@ -383,7 +358,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 20)),
 
-              // ── OTP sent info banner ────────────────────────────────
+              // ── OTP sent banner ──────────────────────────────────
               Container(
                 width: double.infinity,
                 padding: EdgeInsets.symmetric(
@@ -408,7 +383,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
 
               SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
-              // ── Having problem? ─────────────────────────────────────
+              // ── Having problem? ──────────────────────────────────
               GestureDetector(
                 onTap: () {
                   // TODO: navigate to support
@@ -425,7 +400,7 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
                 ),
               ),
 
-              // ── Loading indicator ───────────────────────────────────
+              // ── Loading indicator ────────────────────────────────
               if (_isVerifying) ...[
                 SizedBox(height: AppLayout.scaleHeight(context, 16)),
                 const SizedBox(
@@ -447,7 +422,8 @@ class _BulkTransferOtpSheetState extends ConsumerState<BulkTransferOtpSheet> {
   }
 }
 
-// ── Individual OTP input box ────────────────────────────────────────────────
+// ── Individual OTP input box ───────────────────────────────────────────────
+
 class _OtpBox extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;

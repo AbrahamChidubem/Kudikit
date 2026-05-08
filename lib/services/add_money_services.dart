@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/env.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
 
@@ -36,6 +36,7 @@ class AddMoneyService {
         if (authToken != null) 'Authorization': 'Bearer $authToken',
       };
 
+  
   
   Future<List<AddMoneyOption>> getAddMoneyOptions() async {
     try {
@@ -283,224 +284,224 @@ class AddMoneyService {
 
 // ==================== MOCK SERVICE ====================
 
-class MockAddMoneyService extends AddMoneyService {
-  MockAddMoneyService({String baseUrl = '', String? authToken})
-      : super(baseUrl: baseUrl, authToken: authToken);
+// class MockAddMoneyService extends AddMoneyService {
+//   MockAddMoneyService({String baseUrl = '', String? authToken})
+//       : super(baseUrl: baseUrl, authToken: authToken);
 
-  @override
-  Future<List<AddMoneyOption>> getAddMoneyOptions() async {
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 800));
+//   @override
+//   Future<List<AddMoneyOption>> getAddMoneyOptions() async {
+//     // Simulate network delay
+//     await Future.delayed(const Duration(milliseconds: 800));
 
-    return const [
-      AddMoneyOption(
-        id: '1',
-        title: 'Bank Transfer',
-        subtitle: 'Add money via mobile or internet banking',
-        icon: 'bank',
-        type: AddMoneyType.bankTransfer,
-      ),
-      AddMoneyOption(
-        id: '2',
-        title: 'Cash Deposit',
-        subtitle: 'Fund your account with nearby merchants',
-        icon: 'cash',
-        type: AddMoneyType.cashDeposit,
-      ),
-      AddMoneyOption(
-        id: '3',
-        title: 'Top-up with card or account',
-        subtitle: 'Add money directly from your bank card or account',
-        icon: 'card',
-        type: AddMoneyType.cardTopUp,
-      ),
-      AddMoneyOption(
-        id: '4',
-        title: 'Bank USSD',
-        subtitle: 'With other banks\' USSD code',
-        icon: 'phone',
-        type: AddMoneyType.ussdTransfer,
-      ),
-      AddMoneyOption(
-        id: '5',
-        title: 'Scan my QR code',
-        subtitle: 'Show QR code to any Opay user',
-        icon: 'qr',
-        type: AddMoneyType.qrCode,
-      ),
-    ];
-  }
+//     return const [
+//       AddMoneyOption(
+//         id: '1',
+//         title: 'Bank Transfer',
+//         subtitle: 'Add money via mobile or internet banking',
+//         icon: 'bank',
+//         type: AddMoneyType.bankTransfer,
+//       ),
+//       AddMoneyOption(
+//         id: '2',
+//         title: 'Cash Deposit',
+//         subtitle: 'Fund your account with nearby merchants',
+//         icon: 'cash',
+//         type: AddMoneyType.cashDeposit,
+//       ),
+//       AddMoneyOption(
+//         id: '3',
+//         title: 'Top-up with card or account',
+//         subtitle: 'Add money directly from your bank card or account',
+//         icon: 'card',
+//         type: AddMoneyType.cardTopUp,
+//       ),
+//       AddMoneyOption(
+//         id: '4',
+//         title: 'Bank USSD',
+//         subtitle: 'With other banks\' USSD code',
+//         icon: 'phone',
+//         type: AddMoneyType.ussdTransfer,
+//       ),
+//       AddMoneyOption(
+//         id: '5',
+//         title: 'Scan my QR code',
+//         subtitle: 'Show QR code to any Opay user',
+//         icon: 'qr',
+//         type: AddMoneyType.qrCode,
+//       ),
+//     ];
+//   }
 
-  @override
-  Future<AccountDetails> getAccountDetails() async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    final data = MockAddMoneyData.virtualAccountResponse;
-    return AccountDetails(
-      accountNumber: data['account_number'] as String,
-      accountName: data['account_name'] as String,
-      bankName: data['bank_name'] as String,
-      referenceCode: data['reference_code'] as String?,
-    );
-  }
+//   @override
+//   Future<AccountDetails> getAccountDetails() async {
+//     await Future.delayed(const Duration(milliseconds: 500));
+//     final data = MockAddMoneyData.virtualAccountResponse;
+//     return AccountDetails(
+//       accountNumber: data['account_number'] as String,
+//       accountName: data['account_name'] as String,
+//       bankName: data['bank_name'] as String,
+//       referenceCode: data['reference_code'] as String?,
+//     );
+//   }
 
-  @override
-  Future<String> getUssdCode({required String bankCode}) async {
-    await Future.delayed(const Duration(milliseconds: 500));
+//   @override
+//   Future<String> getUssdCode({required String bankCode}) async {
+//     await Future.delayed(const Duration(milliseconds: 500));
     
-    final acctNum = MockAddMoneyData.virtualAccountResponse['account_number'] as String;
-    final ussdCodes = {
-      '058': '*737*0*$acctNum#',  // GTBank
-      '033': '*901*0*$acctNum#',  // UBA
-      '044': '*894*0*$acctNum#',  // Access Bank
-    };
-    return ussdCodes[bankCode] ?? '*737*0*$acctNum#';
-  }
+//     final acctNum = MockAddMoneyData.virtualAccountResponse['account_number'] as String;
+//     final ussdCodes = {
+//       '058': '*737*0*$acctNum#',  // GTBank
+//       '033': '*901*0*$acctNum#',  // UBA
+//       '044': '*894*0*$acctNum#',  // Access Bank
+//     };
+//     return ussdCodes[bankCode] ?? '*737*0*$acctNum#';
+//   }
 
-  @override
-  Future<String> generateQrCode() async {
-    await Future.delayed(const Duration(milliseconds: 800));
+//   @override
+//   Future<String> generateQrCode() async {
+//     await Future.delayed(const Duration(milliseconds: 800));
     
-    return MockAddMoneyData.qrCodeResponse['qr_code_url'] as String;
-  }
+//     return MockAddMoneyData.qrCodeResponse['qr_code_url'] as String;
+//   }
 
-  @override
-  Future<AddMoneyResponse> initiateCardTopUp({
-    required double amount,
-    required String cardToken,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
-    final acct = MockAddMoneyData.virtualAccountResponse;
-    return AddMoneyResponse(
-      success: true,
-      message: 'Card top-up initiated successfully',
-      accountDetails: AccountDetails(
-        accountNumber: acct['account_number'] as String,
-        accountName: acct['account_name'] as String,
-        bankName: acct['bank_name'] as String,
-      ),
-    );
-  }
+//   @override
+//   Future<AddMoneyResponse> initiateCardTopUp({
+//     required double amount,
+//     required String cardToken,
+//   }) async {
+//     await Future.delayed(const Duration(milliseconds: 1000));
+//     final acct = MockAddMoneyData.virtualAccountResponse;
+//     return AddMoneyResponse(
+//       success: true,
+//       message: 'Card top-up initiated successfully',
+//       accountDetails: AccountDetails(
+//         accountNumber: acct['account_number'] as String,
+//         accountName: acct['account_name'] as String,
+//         bankName: acct['bank_name'] as String,
+//       ),
+//     );
+//   }
 
-  @override
-  Future<List<Bank>> getBanks() async {
-    await Future.delayed(const Duration(milliseconds: 600));
+//   @override
+//   Future<List<Bank>> getBanks() async {
+//     await Future.delayed(const Duration(milliseconds: 600));
 
-    return const [
-      Bank(
-        id: '1',
-        name: 'Guaranty Trust Bank',
-        code: '058',
-        logo: 'gtbank',
-        ussdCode: '*737*',
-      ),
-      Bank(
-        id: '2',
-        name: 'FirstBank of Nigeria',
-        code: '011',
-        logo: 'firstbank',
-        ussdCode: '*894*',
-      ),
-      Bank(
-        id: '3',
-        name: 'Wema Bank',
-        code: '035',
-        logo: 'wema',
-        ussdCode: '*945*',
-      ),
-      Bank(
-        id: '4',
-        name: 'United Bank of Africa',
-        code: '033',
-        logo: 'uba',
-        ussdCode: '*919*',
-      ),
-      Bank(
-        id: '5',
-        name: 'FCMB',
-        code: '214',
-        logo: 'fcmb',
-        ussdCode: '*329*',
-      ),
-      Bank(
-        id: '6',
-        name: 'Sterling Bank',
-        code: '232',
-        logo: 'sterling',
-        ussdCode: '*822*',
-      ),
-      Bank(
-        id: '7',
-        name: 'Parallex Bank',
-        code: '526',
-        logo: 'parallex',
-        ussdCode: '*833*',
-      ),
-      Bank(
-        id: '8',
-        name: 'Globus Bank',
-        code: '103',
-        logo: 'globus',
-        ussdCode: '*989*',
-      ),
-    ];
-  }
+//     return const [
+//       Bank(
+//         id: '1',
+//         name: 'Guaranty Trust Bank',
+//         code: '058',
+//         logo: 'gtbank',
+//         ussdCode: '*737*',
+//       ),
+//       Bank(
+//         id: '2',
+//         name: 'FirstBank of Nigeria',
+//         code: '011',
+//         logo: 'firstbank',
+//         ussdCode: '*894*',
+//       ),
+//       Bank(
+//         id: '3',
+//         name: 'Wema Bank',
+//         code: '035',
+//         logo: 'wema',
+//         ussdCode: '*945*',
+//       ),
+//       Bank(
+//         id: '4',
+//         name: 'United Bank of Africa',
+//         code: '033',
+//         logo: 'uba',
+//         ussdCode: '*919*',
+//       ),
+//       Bank(
+//         id: '5',
+//         name: 'FCMB',
+//         code: '214',
+//         logo: 'fcmb',
+//         ussdCode: '*329*',
+//       ),
+//       Bank(
+//         id: '6',
+//         name: 'Sterling Bank',
+//         code: '232',
+//         logo: 'sterling',
+//         ussdCode: '*822*',
+//       ),
+//       Bank(
+//         id: '7',
+//         name: 'Parallex Bank',
+//         code: '526',
+//         logo: 'parallex',
+//         ussdCode: '*833*',
+//       ),
+//       Bank(
+//         id: '8',
+//         name: 'Globus Bank',
+//         code: '103',
+//         logo: 'globus',
+//         ussdCode: '*989*',
+//       ),
+//     ];
+//   }
 
-  @override
-  Future<UssdTransferData> generateUssdCode({
-    required String bankCode,
-    required double amount,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 800));
+//   @override
+//   Future<UssdTransferData> generateUssdCode({
+//     required String bankCode,
+//     required double amount,
+//   }) async {
+//     await Future.delayed(const Duration(milliseconds: 800));
 
-    // Find the bank
-    final banks = await getBanks();
-    final bank = banks.firstWhere(
-      (b) => b.code == bankCode,
-      orElse: () => banks.first,
-    );
+//     // Find the bank
+//     final banks = await getBanks();
+//     final bank = banks.firstWhere(
+//       (b) => b.code == bankCode,
+//       orElse: () => banks.first,
+//     );
 
-    // Generate USSD code
-    final ussdCode = '${bank.ussdCode}000*7795#';
+//     // Generate USSD code
+//     final ussdCode = '${bank.ussdCode}000*7795#';
 
-    return UssdTransferData(
-      bank: bank,
-      amount: amount,
-      ussdCode: ussdCode,
-      accountNumber: MockAddMoneyData.virtualAccountResponse['account_number'] as String,
-      timeRemaining: const Duration(minutes: 4, seconds: 24),
-    );
-  }
+//     return UssdTransferData(
+//       bank: bank,
+//       amount: amount,
+//       ussdCode: ussdCode,
+//       accountNumber: MockAddMoneyData.virtualAccountResponse['account_number'] as String,
+//       timeRemaining: const Duration(minutes: 4, seconds: 24),
+//     );
+//   }
 
-  @override
-  Future<CardTopUpResponse> initiateCardTopUpWithDetails(
-      CardTopUpRequest request) async {
-    await Future.delayed(const Duration(milliseconds: 1200));
+//   @override
+//   Future<CardTopUpResponse> initiateCardTopUpWithDetails(
+//       CardTopUpRequest request) async {
+//     await Future.delayed(const Duration(milliseconds: 1200));
 
-    // Simulate OTP requirement
-    return const CardTopUpResponse(
-      success: true,
-      message: 'OTP sent to your phone',
-      requiresOtp: true,
-      otpReference: 'OTP-REF-123456789',
-    );
-  }
+//     // Simulate OTP requirement
+//     return const CardTopUpResponse(
+//       success: true,
+//       message: 'OTP sent to your phone',
+//       requiresOtp: true,
+//       otpReference: 'OTP-REF-123456789',
+//     );
+//   }
 
-  @override
-  Future<TransactionReceipt> verifyCardTopUpOtp({
-    required String otpReference,
-    required String otp,
-  }) async {
-    await Future.delayed(const Duration(milliseconds: 1000));
+//   @override
+//   Future<TransactionReceipt> verifyCardTopUpOtp({
+//     required String otpReference,
+//     required String otp,
+//   }) async {
+//     await Future.delayed(const Duration(milliseconds: 1000));
 
-    // Simulate successful verification
-    return TransactionReceipt(
-      transactionType: 'Add Money - Bank Card',
-      amount: 100.00,
-      status: 'successful',
-      payingBank: 'Guaranty Trust Bank (534256*******6758)',
-      creditedTo: 'Kudikit wallet',
-      transactionNumber: '21354636473882937447493',
-      transactionDate: DateTime.now(),
-    );
-  }
-}
+//     // Simulate successful verification
+//     return TransactionReceipt(
+//       transactionType: 'Add Money - Bank Card',
+//       amount: 100.00,
+//       status: 'successful',
+//       payingBank: 'Guaranty Trust Bank (534256*******6758)',
+//       creditedTo: 'Kudikit wallet',
+//       transactionNumber: '21354636473882937447493',
+//       transactionDate: DateTime.now(),
+//     );
+//   }
+// }

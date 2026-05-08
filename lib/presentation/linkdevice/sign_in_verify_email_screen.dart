@@ -375,7 +375,7 @@ class _SignInVerifyEmailScreenState
               BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           borderSide: const BorderSide(
             color: Color(0xFF069494),
-            width: 2,
+            width: 0.5,
           ),
         ),
         errorBorder: OutlineInputBorder(

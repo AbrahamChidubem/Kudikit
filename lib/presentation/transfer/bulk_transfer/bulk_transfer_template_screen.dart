@@ -11,7 +11,8 @@ class BulkTransferTemplatesScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final templates = ref.watch(bulkTransferTemplatesProvider);
+    final templatesAsync = ref.watch(bulkTransferTemplatesProvider);
+
     final NumberFormat currencyFormat = NumberFormat.currency(
       symbol: '₦',
       decimalDigits: 0,
@@ -102,35 +103,53 @@ class BulkTransferTemplatesScreen extends ConsumerWidget {
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
             // Templates List
-            if (templates.isEmpty)
-              _buildEmptyState(context)
-            else
-              ...templates.map((template) {
-                return Padding(
-                  padding: EdgeInsets.only(
-                    bottom: AppLayout.scaleHeight(context, 16),
+            templatesAsync.when(
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 80),
+                  child: CircularProgressIndicator(color: Color(0xFF069494)),
+                ),
+              ),
+              error: (_, __) => Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 80),
+                  child: Text(
+                    'Could not load templates. Pull to refresh.',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 14),
                   ),
-                  child: _TemplateCard(
-                    template: template,
-                    currencyFormat: currencyFormat,
-                    onUseTemplate: () {
-                      ref
-                          .read(bulkTransferProvider.notifier)
-                          .loadFromTemplate(template);
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              const AddRecipientsManuallyScreen(),
-                        ),
-                      );
-                    },
-                    onDelete: () {
-                      _showDeleteDialog(context, template);
-                    },
-                  ),
-                );
-              }).toList(),
+                ),
+              ),
+              data: (templates) => templates.isEmpty
+                  ? _buildEmptyState(context)
+                  : Column(
+                      children: templates.map((template) {
+                        return Padding(
+                          padding: EdgeInsets.only(
+                            bottom: AppLayout.scaleHeight(context, 16),
+                          ),
+                          child: _TemplateCard(
+                            template: template,
+                            currencyFormat: currencyFormat,
+                            onUseTemplate: () {
+                              ref
+                                  .read(bulkTransferProvider.notifier)
+                                  .loadFromTemplate(template);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      const AddRecipientsManuallyScreen(),
+                                ),
+                              );
+                            },
+                            onDelete: () {
+                              _showDeleteDialog(context, template);
+                            },
+                          ),
+                        );
+                      }).toList(),
+                    ),
+            ),
           ],
         ),
       ),

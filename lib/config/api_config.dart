@@ -6,10 +6,10 @@
 // Services that still reference ApiConfig.baseUrl / ApiConfig.getHeaders()
 // continue to compile via the getters below until they are migrated.
 
-import 'package:kudipay/mock/mock_api_data.dart';
+import 'package:kudipay/config/env.dart';
 
-export 'package:kudipay/mock/mock_api_data.dart' show kBaseUrl;
-export 'package:kudipay/config/dio_client.dart';
+export 'package:kudipay/config/env.dart' show kBaseUrl;
+
 
 class ApiConfig {
   // Deprecated: use kBaseUrl directly or inject DioClient via Riverpod.

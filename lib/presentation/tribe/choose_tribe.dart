@@ -24,38 +24,38 @@ class _KudikitTribeScreenState extends ConsumerState<TribeScreen> {
   int get _selectedTierNumber => (selectedTribe ?? 0) + 1;
 
   Future<void> _onContinue() async {
-    if (selectedTribe == null || _isSaving) return;
+  if (selectedTribe == null || _isSaving) return;
+  setState(() => _isSaving = true);
 
-    setState(() => _isSaving = true);
+  try {
+    // 1. Tell the backend the chosen tier
+    await ref.read(authProvider.notifier).completeOnboarding(
+      tierNumber: _selectedTierNumber,
+    );
 
-    // 1. Persist the chosen tier so tierProvider (and the home / profile
-    //    screens that watch it) always shows the correct tier number.
+    // 2. Persist locally so UI updates immediately
     await ref
         .read(tierProvider.notifier)
         .setTierFromOnboarding(_selectedTierNumber);
 
-    // 2. Also persist selectedTier on the UserModel so it survives re-login.
-    final user = ref.read(currentUserProvider);
-    if (user != null) {
-      await ref
-          .read(authProvider.notifier)
-          .updateUser(user.copyWith(selectedTier: _selectedTierNumber));
-    }
-
     if (!mounted) return;
-    setState(() => _isSaving = false);
-
-    // 3. Route based on tier:
-    //    Tier 1 → KycFlowManager (will route straight to ID screen, then home)
-    //    Tier 2 / 3 → KycFlowManager (will route through full KYC steps)
-    //
-    //    KycFlowManager reads both the tier AND the user's KYC flags, so it
-    //    automatically decides the correct next screen for every tier.
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(builder: (_) => const KycFlowManager()),
     );
+  } catch (e) {
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save tier. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  } finally {
+    if (mounted) setState(() => _isSaving = false);
   }
+}
 
   @override
   Widget build(BuildContext context) {
