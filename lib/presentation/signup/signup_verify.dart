@@ -25,16 +25,18 @@ class EmailVerifySignup extends ConsumerStatefulWidget {
   final String email;
   final String phoneNumber;
 
-  // FIXED: renamed from `pin` to `passcode` — this is the user's signup
-  // passcode (8-12 char alphanumeric), NOT the 6-digit OTP shown in the
-  // Pinput widget below. Using `pin` for both caused a naming collision.
+  // The user's signup passcode (8-12 char alphanumeric), NOT the 6-digit OTP.
   final String passcode;
+
+  /// The otpId returned by the send-otp step on the previous screen.
+  final String otpId;
 
   const EmailVerifySignup({
     super.key,
     required this.email,
     required this.phoneNumber,
     required this.passcode,
+    required this.otpId,
   });
 
   @override
@@ -49,6 +51,9 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
   bool isLoading = false;
   bool isResending = false;
 
+  /// Tracks the current otpId — updated when the user resends the code.
+  late String _currentOtpId;
+
   @override
   void dispose() {
     _otpController.dispose();
@@ -59,16 +64,12 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
   @override
   void initState() {
     super.initState();
+    _currentOtpId = widget.otpId;
 
+    // OTP was already sent by the signup screen — do NOT send again here.
+    // Only set up the connectivity listener.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _setupConnectivityListener();
-
-      final isConnected = ref.read(currentConnectivityProvider);
-      if (isConnected) {
-        _sendVerificationCode();
-      } else {
-        _showNoInternetOnLoad();
-      }
     });
   }
 
@@ -160,16 +161,16 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
       return;
     }
 
-    setState(() {
-      isResending = true;
-    });
+    setState(() => isResending = true);
 
     try {
-      // TODO: Replace this delay with the real auth service call:
-      // ref.read(authProvider.notifier).resendVerification(widget.email)
-      await Future.delayed(const Duration(seconds: 1));
+      final newOtpId = await ref.read(authProvider.notifier).resendVerification(
+            email: widget.email,
+            phoneNumber: widget.phoneNumber,
+          );
 
       if (mounted) {
+        setState(() => _currentOtpId = newOtpId);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Verification code sent to ${widget.email}'),
@@ -178,16 +179,11 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
         );
       }
     } on NoInternetException {
-      if (mounted) {
-        ConnectivitySnackBar.showNoInternet(context);
-      }
+      if (mounted) ConnectivitySnackBar.showNoInternet(context);
     } on TimeoutException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.orange,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.orange),
         );
       }
     } catch (e) {
@@ -200,25 +196,18 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          isResending = false;
-        });
-      }
+      if (mounted) setState(() => isResending = false);
     }
   }
 
   Future<void> _verifyCode() async {
     final isConnected = ref.read(currentConnectivityProvider);
-
     if (!isConnected) {
       await NoInternetDialog.show(context);
       return;
     }
 
-    // `otp` clearly means the 6-digit email/SMS code — NOT the passcode.
     final otp = _otpController.text.trim();
-
     if (otp.length != 6) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -229,49 +218,37 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
       return;
     }
 
-    setState(() {
-      isLoading = true;
-    });
+    setState(() => isLoading = true);
 
     try {
-      // TODO: Replace this delay with the real auth service call:
-      // ref.read(authProvider.notifier).verifyEmail(widget.email, otp)
-      await Future.delayed(const Duration(seconds: 2));
-
-      if (otp.isNotEmpty) {
-        final userId = 'user_${DateTime.now().millisecondsSinceEpoch}';
-        ref.read(userIdProvider.notifier).state = userId;
-        ref.read(userEmailProvider.notifier).state = widget.email;
-
-        if (mounted) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const KnowYouBetterForm(),
-            ),
+      await ref.read(authProvider.notifier).verifyOtpAndRegister(
+            otpId: _currentOtpId,
+            otp: otp,
+            email: widget.email,
+            phoneNumber: widget.phoneNumber,
+            passcode: widget.passcode,
           );
 
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Account verified successfully!'),
-              backgroundColor: Color.fromARGB(255, 6, 148, 42),
-            ),
-          );
-        }
-      } else {
-        throw Exception('Invalid verification code');
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => const KnowYouBetterForm(),
+          ),
+        );
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Account verified successfully!'),
+            backgroundColor: Color.fromARGB(255, 6, 148, 42),
+          ),
+        );
       }
     } on NoInternetException {
-      if (mounted) {
-        ConnectivitySnackBar.showNoInternet(context);
-      }
+      if (mounted) ConnectivitySnackBar.showNoInternet(context);
     } on TimeoutException catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString()),
-            backgroundColor: Colors.orange,
-          ),
+          SnackBar(content: Text(e.toString()), backgroundColor: Colors.orange),
         );
       }
     } catch (e) {
@@ -284,11 +261,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          isLoading = false;
-        });
-      }
+      if (mounted) setState(() => isLoading = false);
     }
   }
 

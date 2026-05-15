@@ -243,10 +243,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
     final password = passwordController.text.trim();
 
     try {
-      await ref.read(authProvider.notifier).signup(
+      final otpId = await ref.read(authProvider.notifier).sendSignupOtp(
             email: email,
             phoneNumber: phoneNumber,
-            password: password,
           );
 
       if (!mounted) return;
@@ -258,6 +257,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
             email: email,
             phoneNumber: phoneNumber,
             passcode: password,
+            otpId: otpId,
           ),
         ),
       );

@@ -2,9 +2,9 @@
 // INTEGRATED against real Postman-confirmed endpoints.
 //
 // Registration flow (3 steps):
-//   1. POST /api/v1/auth/send-otp       → { phoneNumber, email, channel }
+//   1. POST /api/v1/auth/send-otp       → { phoneNumber, email, reference, channel }
 //   2. POST /api/v1/auth/verify-otp     → { otpId, otp, action: "registration" }
-//   3. POST /api/v1/auth/register       → { phone, email, passcode, deviceFingerprint }
+//   3. POST /api/v1/auth/register       → { phoneNumber, email, passcode, deviceFingerprint }
 //
 // Login flow:
 //   POST /api/v1/auth/login             → { identifier, passcode, deviceInfo }
@@ -26,7 +26,6 @@ import 'package:kudipay/model/user/user_info.dart';
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/services/device_info_services.dart';
 import 'package:kudipay/services/storage_services.dart';
-import 'package:uuid/uuid.dart';
 
 class AuthService {
   final DioClient _client;
@@ -35,18 +34,24 @@ class AuthService {
   AuthService(this._storage, this._client);
 
   // ── Step 1: Send OTP ───────────────────────────────────────────────────────
+  // POST /api/v1/auth/send-otp
+  // Body: { phoneNumber, email, reference, channel: "EMAIL"|"SMS"|"WHATSAPP" }
+  // Response: { data: { otpId, channel, phoneMasked, emailMasked, expiresIn } }
   Future<Map<String, dynamic>> sendOtp({
     required String phoneNumber,
     required String email,
-    String channel = 'sms',
+    required String reference,
+    String channel = 'EMAIL',
   }) async {
     try {
-      final reference = const Uuid().v4();
-      await _authService.sendOtp(
-        phoneNumber: phoneNumber,
-        email: email,
-        reference: reference,
-        channel: 'WEB',
+      final response = await _client.post<Map<String, dynamic>>(
+        '/api/v1/auth/send-otp',
+        data: {
+          'phone': phoneNumber,
+          'email': email,
+          'reference': reference,
+          'channel': channel,
+        },
       );
       return response.data!;
     } on KudiApiException {
@@ -57,6 +62,8 @@ class AuthService {
   }
 
   // ── Verify Email OTP ───────────────────────────────────────────────────────
+  // POST /api/v1/auth/verify-otp
+  // Body: { email, otp, otpId?, action: "registration" }
   Future<Map<String, dynamic>> verifyEmail({
     required String email,
     required String code,
@@ -81,6 +88,8 @@ class AuthService {
   }
 
   // ── Step 2: Verify OTP ─────────────────────────────────────────────────────
+  // POST /api/v1/auth/verify-otp
+  // Body: { otpId, otp, action: "registration"|"login"|"reset" }
   Future<Map<String, dynamic>> verifyOtp({
     required String otpId,
     required String otp,
@@ -104,6 +113,8 @@ class AuthService {
   }
 
   // ── Step 3: Register ───────────────────────────────────────────────────────
+  // POST /api/v1/auth/register
+  // Body: { phoneNumber, email, passcode, deviceFingerprint }
   Future<Map<String, dynamic>> signup({
     required String email,
     required String phoneNumber,
@@ -130,6 +141,8 @@ class AuthService {
   }
 
   // ── Login ──────────────────────────────────────────────────────────────────
+  // POST /api/v1/auth/login
+  // Body: { identifier, passcode, deviceInfo }
   Future<Map<String, dynamic>> login({
     required String identifier,
     required String passcode,
@@ -181,8 +194,7 @@ class AuthService {
     } on KudiUnauthorizedException {
       return false;
     } catch (e) {
-      debugPrint(
-          '[AuthService] verifyToken network error — keeping session: $e');
+      debugPrint('[AuthService] verifyToken network error — keeping session: $e');
       return true;
     }
   }
@@ -272,8 +284,7 @@ class AuthService {
       final sid = sessionId ?? '';
       await _client.post('/api/v1/auth/logout/$uid/$sid', data: {});
     } catch (e) {
-      debugPrint(
-          '[AuthService] logout server call failed (session still cleared): $e');
+      debugPrint('[AuthService] logout server call failed (session still cleared): $e');
     }
     await _storage.clearAuth();
   }

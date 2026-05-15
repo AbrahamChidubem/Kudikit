@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-import 'package:kudipay/mock/mock_api_data.dart';
+
 import 'package:kudipay/presentation/notification/notification_preferences.dart';
 import 'package:kudipay/services/storage_services.dart';
 import 'package:shared_preferences/shared_preferences.dart';

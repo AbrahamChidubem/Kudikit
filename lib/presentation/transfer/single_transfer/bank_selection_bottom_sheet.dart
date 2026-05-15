@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-
+import 'package:kudipay/provider/network/dio_provider.dart' hide dioClientProvider;
 
 class Bank {
   final String name;
@@ -15,22 +16,24 @@ class Bank {
   });
 }
 
-// ---------------------------------------------------------------------------
-// Shared provider — single source of truth for all bank lists in the app.
-// Reads from MockAddMoneyData.banksResponse in mock_api_data.dart.
-// TODO: Replace with a FutureProvider that calls GET $kBaseUrl/banks when
-//       the backend is ready.
-// ---------------------------------------------------------------------------
-final banksProvider = Provider<List<Bank>>((ref) {
-  final raw = AddMoneyData.banksResponse['banks'] as List<dynamic>;
-  return raw.map((b) {
-    final map = b as Map<String, dynamic>;
-    return Bank(
-      name: map['name'] as String,
-      code: map['code'] as String,
-      logo: map['logo'] as String?,
-    );
-  }).toList();
+// Fetches the bank list from GET /banks.
+// Falls back to an empty list on error so the UI degrades gracefully.
+final bankListProvider = FutureProvider<List<Bank>>((ref) async {
+  final client = ref.read(dioClientProvider);
+  try {
+    final response = await client.get<Map<String, dynamic>>('/banks');
+    final raw = response.data!['banks'] as List<dynamic>;
+    return raw.map((b) {
+      final map = b as Map<String, dynamic>;
+      return Bank(
+        name: map['name'] as String,
+        code: map['code'] as String,
+        logo: map['logo'] as String?,
+      );
+    }).toList();
+  } on KudiApiException {
+    return [];
+  }
 });
 
 class BankSelectionBottomSheet extends ConsumerStatefulWidget {
@@ -70,8 +73,9 @@ class _BankSelectionBottomSheetState
    
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
-        setState(() {
-          _filteredBanks = ref.read(banksProvider);
+        final banksAsync = ref.read(bankListProvider);
+        banksAsync.whenData((banks) {
+          setState(() => _filteredBanks = banks);
         });
       }
     });
@@ -84,14 +88,18 @@ class _BankSelectionBottomSheetState
   }
 
   void _filterBanks(String query) {
-    final allBanks = ref.read(banksProvider);
+    final allBanks = ref.read(bankListProvider).when(
+          data: (banks) => banks,
+          loading: () => <Bank>[],
+          error: (_, __) => <Bank>[],
+        );
     setState(() {
       if (query.isEmpty) {
         _filteredBanks = allBanks;
       } else {
         _filteredBanks = allBanks
-            .where(
-                (bank) => bank.name.toLowerCase().contains(query.toLowerCase()))
+            .where((bank) =>
+                bank.name.toLowerCase().contains(query.toLowerCase()))
             .toList();
       }
     });

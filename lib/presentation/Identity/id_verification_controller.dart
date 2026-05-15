@@ -1,17 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/core/constant/id_type.dart';
-
 import 'package:kudipay/model/IDdocument/id_verification_state.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
+import 'package:kudipay/provider/network/dio_provider.dart' hide dioClientProvider;
 import 'package:flutter_riverpod/legacy.dart';
+
 final idVerificationProvider =
     StateNotifierProvider<IdVerificationController, IdVerificationState>(
-  (ref) => IdVerificationController(),
+  (ref) => IdVerificationController(ref.read(dioClientProvider)),
 );
 
 class IdVerificationController
     extends StateNotifier<IdVerificationState> {
-  IdVerificationController()
+  final DioClient _client;
+
+  IdVerificationController(this._client)
       : super(const IdVerificationState(idType: IdType.bvn));
 
   void changeIdType(IdType type) {
@@ -37,26 +41,41 @@ class IdVerificationController
       error: null,
     );
 
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final response = await _client.post<Map<String, dynamic>>(
+        '/kyc/verify-identity',
+        data: {
+          'id_number': idNumber,
+          'id_type': state.idType.label,
+        },
+      );
 
-    // Use MockKycData so the verified name comes from the centralised mock,
-    // not a literal string buried in the controller.
-    final mockResponse = MockKycData.verifyIdentitySuccess(
-      idNumber: idNumber,
-      idType: state.idType.label,
-    );
-
-    state = state.copyWith(
-      status: VerificationStatus.success,
-      data: {
-        'name': mockResponse['full_name'] as String,
-        'idType': state.idType.label,
-      },
-    );
+      final data = response.data!;
+      state = state.copyWith(
+        status: VerificationStatus.success,
+        data: {
+          'name': data['full_name'] ??
+              '${data['first_name']} ${data['last_name']}',
+          'first_name': data['first_name'] ?? '',
+          'last_name': data['last_name'] ?? '',
+          'date_of_birth': data['date_of_birth'] ?? data['dateOfBirth'] ?? '',
+          'idType': state.idType.label,
+        },
+      );
+    } on KudiApiException catch (e) {
+      state = state.copyWith(
+        status: VerificationStatus.error,
+        error: e.message,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        status: VerificationStatus.error,
+        error: 'Verification failed. Please try again.',
+      );
+    }
   }
 
   void reset() {
     state = IdVerificationState(idType: state.idType);
   }
 }
-
