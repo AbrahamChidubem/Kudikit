@@ -1,18 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kudipay/core/providers/core_providers.dart';
+
 // ==================== CONNECTIVITY PROVIDERS ====================
-
-/// Provider for connectivity service singleton
-final connectivityServiceProvider = Provider<ConnectivityService>((ref) {
-  final service = ConnectivityService.instance;
-
-  ref.onDispose(() {
-    service.dispose();
-  });
-
-  return service;
-});
+// connectivityServiceProvider is defined in core_providers.dart.
+// It is imported above and re-used by the providers below.
 
 /// Stream provider that monitors internet connectivity in real-time
 ///

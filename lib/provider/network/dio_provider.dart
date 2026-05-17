@@ -1,17 +1,9 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/config/dio_client.dart';
-import 'package:kudipay/provider/auth/auth_provider.dart';
-import 'package:kudipay/provider/connectivity/connectivity_provider.dart';
+// lib/provider/network/dio_provider.dart
+// ─────────────────────────────────────────────────────────────────────────────
+// DEPRECATED — This file now re-exports from the canonical location.
+// Existing importers continue to work. New code should import from:
+//   import 'package:kudipay/core/providers/core_providers.dart';
+// ─────────────────────────────────────────────────────────────────────────────
 
-final dioClientProvider = Provider<DioClient>((ref) {
-  // final token = ref.watch(authTokenProvider);
-  final storage = ref.watch(storageServiceProvider);
-  final connectivity = ref.watch(connectivityServiceProvider);
-
-  return DioClient(
-    baseUrl: kBaseUrl,
-    storage: storage,               // ✅ FIXED
-    connectivity: connectivity,     // ✅ FIXED
-    // authToken: token,
-  );
-});
+export 'package:kudipay/core/providers/core_providers.dart'
+    show dioClientProvider, storageServiceProvider, connectivityServiceProvider;

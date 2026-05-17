@@ -3,8 +3,8 @@
 // Single, authoritative HTTP client for KudiPay.
 //
 // REPLACES:
-//   • lib/config/api_client.dart   (raw http.Client wrapper)
-//   • lib/services/api_services.dart (Dio singleton with duplicated methods)
+//   • lib/config/api_client.dart   (raw http.Client wrapper)   — DELETED
+//   • lib/services/api_services.dart (Dio singleton)           — DELETED
 //
 // USAGE:
 //   // In a Riverpod provider:
@@ -27,58 +27,16 @@
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/errors/exceptions.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 import 'package:kudipay/services/storage_services.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Base URL — single source of truth for the live API
-// ─────────────────────────────────────────────────────────────────────────────
+// Re-export the canonical exceptions so existing `import dio_client.dart`
+// call-sites continue to compile without adding a second import.
+export 'package:kudipay/core/errors/exceptions.dart';
 
-const String kBaseUrl = 'http://159.198.75.72:8086';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Typed exceptions — catch these specifically in providers/notifiers
-// ─────────────────────────────────────────────────────────────────────────────
-
-class KudiNetworkException implements Exception {
-  final String message;
-  const KudiNetworkException([this.message = 'No internet connection.']);
-  @override
-  String toString() => message;
-}
-
-class KudiTimeoutException implements Exception {
-  final String message;
-  const KudiTimeoutException(
-      [this.message = 'Request timed out. Please try again.']);
-  @override
-  String toString() => message;
-}
-
-class KudiUnauthorizedException implements Exception {
-  final String message;
-  const KudiUnauthorizedException(
-      [this.message = 'Session expired. Please log in again.']);
-  @override
-  String toString() => message;
-}
-
-class KudiServerException implements Exception {
-  final String message;
-  final int? statusCode;
-  const KudiServerException(this.message, [this.statusCode]);
-  @override
-  String toString() => message;
-}
-
-class KudiApiException implements Exception {
-  final String message;
-  final int? statusCode;
-  const KudiApiException(this.message, [this.statusCode]);
-  @override
-  String toString() => message;
-}
+// Re-export kBaseUrl so callers that imported it from here still work.
+export 'package:kudipay/config/env.dart' show kBaseUrl;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth Interceptor — injects Bearer token on every request
@@ -278,15 +236,3 @@ class DioClient {
     }
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Riverpod provider — single shared DioClient instance
-// ─────────────────────────────────────────────────────────────────────────────
-
-final dioClientProvider = Provider<DioClient>((ref) {
-  return DioClient(
-    baseUrl: kBaseUrl,
-    storage: StorageService.instance,
-    connectivity: ConnectivityService.instance,
-  );
-});

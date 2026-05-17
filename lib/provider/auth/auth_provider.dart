@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/core/providers/core_providers.dart';
 import 'package:kudipay/model/auth/auth_state.dart';
 import 'package:kudipay/model/user/user.dart';
 import 'package:kudipay/model/user/user_model.dart';
@@ -11,10 +12,6 @@ import 'package:kudipay/services/storage_services.dart';
 // =============================================================================
 // 1. SERVICE PROVIDERS
 // =============================================================================
-
-final storageServiceProvider = Provider<StorageService>((ref) {
-  return StorageService.instance;
-});
 
 final authServiceProvider = Provider<AuthService>((ref) {
   return AuthService(
