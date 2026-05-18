@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // lib/formatting/widget/contact_picker_bottom_sheet.dart
 //
 // A full-featured contact picker bottom sheet for the airtime/data flows.
@@ -939,9 +939,9 @@ class _ContactAvatar extends StatelessWidget {
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: color.withOpacity(0.15),
+        color: color.withValues(alpha: 0.15),
         shape: BoxShape.circle,
-        border: Border.all(color: color.withOpacity(0.3), width: 1),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
       ),
       child: Center(
         child: Text(

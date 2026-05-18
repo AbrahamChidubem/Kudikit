@@ -1,4 +1,4 @@
-// lib/features/tickets/presentation/widgets/empty_tickets_state.dart
+﻿// lib/features/tickets/presentation/widgets/empty_tickets_state.dart
 
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_theme.dart';
@@ -16,7 +16,7 @@ class EmptyTicketsState extends StatelessWidget {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: const Icon(

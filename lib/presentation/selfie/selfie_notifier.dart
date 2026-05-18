@@ -1,7 +1,7 @@
 
 import 'package:kudipay/usecases/selfie_state.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ADD this
+import 'package:flutter_riverpod/legacy.dart';           // keep existing
 
 class SelfieNotifier extends StateNotifier<SelfieState> {
   SelfieNotifier() : super(SelfieState());

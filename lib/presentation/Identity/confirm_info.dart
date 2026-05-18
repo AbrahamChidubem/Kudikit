@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -97,8 +97,18 @@ class _ConfirmInfoScreenState extends ConsumerState<ConfirmInfoScreen> {
 
   String _formatDate(DateTime date) {
     const months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
     ];
     return '${months[date.month - 1]} ${date.day.toString().padLeft(2, '0')}, ${date.year}';
   }
@@ -108,8 +118,11 @@ class _ConfirmInfoScreenState extends ConsumerState<ConfirmInfoScreen> {
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async => !_isSubmitting,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!_isSubmitting) Navigator.pop(context);
+      },
       child: Scaffold(
         backgroundColor: AppColors.backgroundScreen,
         appBar: _buildAppBar(context),
@@ -202,7 +215,7 @@ class _ConfirmInfoScreenState extends ConsumerState<ConfirmInfoScreen> {
                     width: AppLayout.scaleWidth(context, 32),
                     height: AppLayout.scaleWidth(context, 32),
                     child: CircularProgressIndicator(
-                      value: 1.0,
+                     value: 1.0,
                       strokeWidth: AppLayout.scaleWidth(context, 2.5),
                       backgroundColor: Colors.grey[200],
                       valueColor: const AlwaysStoppedAnimation<Color>(
@@ -232,9 +245,9 @@ class _ConfirmInfoScreenState extends ConsumerState<ConfirmInfoScreen> {
   // ---------------------------------------------------------------------------
   Widget _buildInfoCard(BuildContext context) {
     final rows = [
-      _RowData(label: 'First Name',    value: widget.userInfo.firstName),
-      _RowData(label: 'Last Name',     value: widget.userInfo.lastName),
-      _RowData(label: 'BVN',           value: widget.userInfo.maskedBvn),
+      _RowData(label: 'First Name', value: widget.userInfo.firstName),
+      _RowData(label: 'Last Name', value: widget.userInfo.lastName),
+      _RowData(label: 'BVN', value: widget.userInfo.maskedBvn),
       _RowData(
         label: 'Date of Birth',
         value: _formatDate(widget.userInfo.dateOfBirth),
@@ -271,7 +284,7 @@ class _ConfirmInfoScreenState extends ConsumerState<ConfirmInfoScreen> {
         color: AppColors.backgroundScreen,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),
@@ -291,7 +304,7 @@ class _ConfirmInfoScreenState extends ConsumerState<ConfirmInfoScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryTeal,
                   disabledBackgroundColor:
-                      AppColors.primaryTeal.withOpacity(0.6),
+                      AppColors.primaryTeal.withValues(alpha: 0.6),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(
@@ -411,5 +424,6 @@ class _RowData {
   final String label;
   final String value;
   final bool isLast;
-  const _RowData({required this.label, required this.value, this.isLast = false});
+  const _RowData(
+      {required this.label, required this.value, this.isLast = false});
 }

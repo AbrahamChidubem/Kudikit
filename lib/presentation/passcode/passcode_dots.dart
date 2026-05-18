@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 class PasscodeDotsIndicator extends StatelessWidget {
   final int length;
@@ -18,7 +18,7 @@ class PasscodeDotsIndicator extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
       decoration: BoxDecoration(
         color:
-            showError ? Colors.red.withOpacity(0.1) : const Color(0xFFE8F5E9),
+            showError ? Colors.red.withValues(alpha: 0.1) : const Color(0xFFE8F5E9),
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(

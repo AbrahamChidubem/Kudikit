@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/presentation/transfer/single_transfer/transaction_review
 import 'package:kudipay/provider/provider.dart';
 
 class ConfirmTransferBottomSheet extends ConsumerWidget {
-  const ConfirmTransferBottomSheet({Key? key}) : super(key: key);
+  const ConfirmTransferBottomSheet({super.key});
 
   static void show(BuildContext context) {
     showModalBottomSheet(
@@ -233,7 +233,7 @@ class ConfirmTransferBottomSheet extends ConsumerWidget {
                     CircleAvatar(
                       radius: AppLayout.scaleWidth(context, 20),
                       backgroundColor:
-                          const Color(0xFF069494).withOpacity(0.15),
+                          const Color(0xFF069494).withValues(alpha: 0.15),
                       child: Text(
                         _initials(senderName),
                         style: TextStyle(

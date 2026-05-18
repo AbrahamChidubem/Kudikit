@@ -1,67 +1,112 @@
+// lib/core/constants/app_constants.dart
+//
+// Single barrel for all app-wide constants and validators.
+// Colors and text styles live in app_theme.dart — not here.
+//
+// Contents:
+//   • Spacing / duration constants
+//   • Input decorations
+//   • Form validators
+//   • IdType enum + extension
+//
+// Usage:
+//   import 'package:kudipay/core/constants/app_constants.dart';
+
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:form_field_validator/form_field_validator.dart';
+import 'package:kudipay/core/theme/app_theme.dart';
 
+// =============================================================================
+// Spacing & Duration
+// =============================================================================
 
-// colors that we use in the app
-const titleColor = Color(0xFF010F07);
-const primaryColor = Color(0xFF069494);
-const accentColor = Color(0xFFEF9920);
-const bodyTextColor = Color(0xFF868686);
-const inputColor = Color(0xFFFBFBFB);
+const double kDefaultPadding   = 16.0;
+const double kSmallPadding     = 8.0;
+const double kLargePadding     = 24.0;
+const double kBorderRadius     = 12.0;
 
-const double defaultPadding = 16;
 const Duration kDefaultDuration = Duration(milliseconds: 250);
+const Duration kLongDuration    = Duration(milliseconds: 500);
 
+// =============================================================================
+// Common EdgeInsets
+// =============================================================================
 
-
-const TextStyle kButtonTextStyle = TextStyle(
-    color: Colors.white,
-    fontSize: 18,
-    fontWeight: FontWeight.bold,
-    fontFamily: 'RaleWay');
+const EdgeInsets kScreenPadding = EdgeInsets.symmetric(
+  horizontal: kDefaultPadding,
+  vertical: kDefaultPadding,
+);
 
 const EdgeInsets kTextFieldPadding = EdgeInsets.symmetric(
-  horizontal: defaultPadding,
-  vertical: defaultPadding,
+  horizontal: kDefaultPadding,
+  vertical: kDefaultPadding,
 );
 
-// Text Field Decoration
-const OutlineInputBorder kDefaultOutlineInputBorder = OutlineInputBorder(
+// =============================================================================
+// Input Decorations
+// =============================================================================
+
+const OutlineInputBorder kDefaultInputBorder = OutlineInputBorder(
   borderRadius: BorderRadius.all(Radius.circular(6)),
-  borderSide: BorderSide(
-    color: Color(0xFFF3F2F2),
-  ),
+  borderSide: BorderSide(color: AppColors.inputBorder),
 );
 
-const InputDecoration otpInputDecoration = InputDecoration(
+const OutlineInputBorder kErrorInputBorder = OutlineInputBorder(
+  borderRadius: BorderRadius.all(Radius.circular(6)),
+  borderSide: BorderSide(color: AppColors.error, width: 1),
+);
+
+const InputDecoration kOtpInputDecoration = InputDecoration(
   contentPadding: EdgeInsets.zero,
-  counterText: "",
+  counterText: '',
   errorStyle: TextStyle(height: 0),
 );
 
-const kErrorBorderSide = BorderSide(color: Colors.red, width: 1);
-//
-// Validator
+// =============================================================================
+// Form Validators
+// =============================================================================
+
 final passwordValidator = MultiValidator([
   RequiredValidator(errorText: 'Password is required'),
   MinLengthValidator(8, errorText: 'Password must be at least 8 digits long'),
-  PatternValidator(r'(?=.*?[#?!@$%^&*-/])',
-      errorText: 'Passwords must have at least one special character')
+  PatternValidator(
+    r'(?=.*?[#?!@$%^&*-/])',
+    errorText: 'Password must have at least one special character',
+  ),
 ]);
 
 final emailValidator = MultiValidator([
   RequiredValidator(errorText: 'Email is required'),
-  EmailValidator(errorText: 'Enter a valid email address')
+  EmailValidator(errorText: 'Enter a valid email address'),
 ]);
 
-final requiredValidator =
-RequiredValidator(errorText: 'This field is required');
-final matchValidator = MatchValidator(errorText: 'passwords do not match');
+final requiredValidator = RequiredValidator(errorText: 'This field is required');
+final matchValidator    = MatchValidator(errorText: 'Passwords do not match');
 
-final phoneNumberValidator = MinLengthValidator(10,
-    errorText: 'Phone Number must be at least 10 digits long');
+final phoneNumberValidator = MinLengthValidator(
+  10,
+  errorText: 'Phone number must be at least 10 digits long',
+);
 
-// Common Text
-final Center kOrText = Center(
-    child: Text("Or", style: TextStyle(color: titleColor.withOpacity(0.7))));
+// =============================================================================
+// IdType
+// =============================================================================
+
+enum IdType { bvn, nin }
+
+extension IdTypeX on IdType {
+  String get label {
+    switch (this) {
+      case IdType.bvn: return 'BVN';
+      case IdType.nin: return 'NIN';
+    }
+  }
+
+  String get hint {
+    switch (this) {
+      case IdType.bvn: return 'Enter your 11-digit BVN';
+      case IdType.nin: return 'Enter your 11-digit NIN';
+    }
+  }
+}

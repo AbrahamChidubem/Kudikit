@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_template_screen.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/presentation/transfer/single_transfer/add_recipient_scre
 
 
 class BulkTransferScreen extends ConsumerWidget {
-  const BulkTransferScreen({Key? key}) : super(key: key);
+  const BulkTransferScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -221,7 +221,7 @@ class BulkTransferScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -263,7 +263,7 @@ class BulkTransferScreen extends ConsumerWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: badgeColor.withOpacity(0.15),
+                        color: badgeColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

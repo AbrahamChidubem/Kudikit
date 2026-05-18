@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/model/bankmodel/bank_model.dart';
 import 'package:kudipay/provider/funding/funding_provider.dart';
 
 class SelectBankScreen extends ConsumerStatefulWidget {
-  const SelectBankScreen({Key? key}) : super(key: key);
+  const SelectBankScreen({super.key});
 
   @override
   ConsumerState<SelectBankScreen> createState() => _SelectBankScreenState();

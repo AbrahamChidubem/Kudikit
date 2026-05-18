@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_otp_sh
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 class BulkTransferPreviewScreen extends ConsumerStatefulWidget {
-  const BulkTransferPreviewScreen({Key? key}) : super(key: key);
+  const BulkTransferPreviewScreen({super.key});
 
   @override
   ConsumerState<BulkTransferPreviewScreen> createState() =>
@@ -102,7 +102,7 @@ class _BulkTransferPreviewScreenState
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF069494).withOpacity(0.3),
+                          color: const Color(0xFF069494).withValues(alpha: 0.3),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -115,7 +115,7 @@ class _BulkTransferPreviewScreenState
                           'Total Amount to Debit',
                           style: TextStyle(
                             fontSize: AppLayout.fontSize(context, 14),
-                            color: Colors.white.withOpacity(0.9),
+                            color: Colors.white.withValues(alpha: 0.9),
                             fontWeight: FontWeight.w500,
                           ),
                         ),
@@ -142,7 +142,7 @@ class _BulkTransferPreviewScreenState
                       borderRadius: BorderRadius.circular(16),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: Colors.black.withValues(alpha: 0.04),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -363,7 +363,7 @@ class _BulkTransferPreviewScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),

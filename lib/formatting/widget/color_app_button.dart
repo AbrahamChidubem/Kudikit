@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../../core/constant/constant.dart';
 
@@ -17,10 +17,10 @@ class ColorAppButton extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding * 1.5),
           backgroundColor: const Color(0xFF069494),
           disabledBackgroundColor:
-                      const Color(0xFF069494).withOpacity(0.5),
+                      const Color(0xFF069494).withValues(alpha: 0.5),
           shape: const RoundedRectangleBorder(
               borderRadius: BorderRadius.all(Radius.circular(28))),
         ),

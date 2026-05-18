@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // lib/presentation/bill/electricity/electricity_screen.dart
 // Electricity bill payment screen — matches designs exactly.
 //
@@ -21,7 +21,7 @@ import 'package:kudipay/provider/electricity/electricity_provider.dart';
 import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 class ElectricityScreen extends ConsumerStatefulWidget {
-  const ElectricityScreen({Key? key}) : super(key: key);
+  const ElectricityScreen({super.key});
 
   @override
   ConsumerState<ElectricityScreen> createState() => _ElectricityScreenState();
@@ -147,7 +147,7 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -184,7 +184,7 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -219,7 +219,7 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -360,7 +360,7 @@ class _ElectricityScreenState extends ConsumerState<ElectricityScreen> {
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),

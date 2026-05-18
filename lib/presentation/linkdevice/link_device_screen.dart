@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/presentation/linkdevice/verify_id.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class LinkDeviceScreen extends ConsumerStatefulWidget {
-  const LinkDeviceScreen({Key? key}) : super(key: key);
+  const LinkDeviceScreen({super.key});
 
   @override
   ConsumerState<LinkDeviceScreen> createState() => _LinkDeviceScreenState();

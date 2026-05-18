@@ -6,8 +6,10 @@
 //   GET /wallet/account-details  → { account_number, account_name, bank_name }
 
 import 'dart:async';
-import 'package:flutter_riverpod/legacy.dart';
-import 'package:kudipay/config/dio_client.dart'; 
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ADD this
+import 'package:flutter_riverpod/legacy.dart';           // keep existing
+import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/core/providers/core_providers.dart'; 
 
 class WalletState {
   final double balance;

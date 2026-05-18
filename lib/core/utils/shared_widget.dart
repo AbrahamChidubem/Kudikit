@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
 const kTeal = Color(0xFF069494);
@@ -140,8 +140,8 @@ class PrimaryButton extends StatelessWidget {
         child: ElevatedButton(
           onPressed: isLoading ? null : onPressed,
           style: ElevatedButton.styleFrom(
-            backgroundColor: onPressed != null ? kTeal : kTeal.withOpacity(0.4),
-            disabledBackgroundColor: kTeal.withOpacity(0.4),
+            backgroundColor: onPressed != null ? kTeal : kTeal.withValues(alpha: 0.4),
+            disabledBackgroundColor: kTeal.withValues(alpha: 0.4),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(14),
@@ -269,7 +269,7 @@ class InfoBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: kTeal.withOpacity(0.08),
+        color: kTeal.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Row(

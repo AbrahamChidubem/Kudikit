@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -35,8 +35,7 @@ class AccountReadyScreen extends ConsumerStatefulWidget {
   const AccountReadyScreen({super.key});
 
   @override
-  ConsumerState<AccountReadyScreen> createState() =>
-      _AccountReadyScreenState();
+  ConsumerState<AccountReadyScreen> createState() => _AccountReadyScreenState();
 }
 
 class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
@@ -95,8 +94,7 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 2),
         shape: RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
+          borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
         ),
         margin: EdgeInsets.symmetric(
           horizontal: AppLayout.scaleWidth(context, 20),
@@ -126,21 +124,18 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
   @override
   Widget build(BuildContext context) {
     final walletState = ref.watch(walletProvider);
-    final tierState   = ref.watch(tierProvider);
-    final tier        = tierState.currentTier;
+    final tierState = ref.watch(tierProvider);
+    final tier = tierState.currentTier;
 
     // Derive account details — fall back to safe placeholders during loading
-    final accountNumber = walletState.accountNumber.isNotEmpty
-        ? walletState.accountNumber
-        : '—';
-    final accountName = walletState.accountName.isNotEmpty
-        ? walletState.accountName
-        : '—';
+    final accountNumber =
+        walletState.accountNumber.isNotEmpty ? walletState.accountNumber : '—';
+    final accountName =
+        walletState.accountName.isNotEmpty ? walletState.accountName : '—';
     final isMaxTier = tier == TierLevel.mega;
 
-    return WillPopScope(
-      // Prevent hardware back — the user must explicitly proceed to dashboard
-      onWillPop: () async => false,
+    return PopScope(
+      canPop: false,
       child: Scaffold(
         backgroundColor: AppColors.backgroundScreen,
         body: SafeArea(
@@ -195,7 +190,8 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
                                 height: 1.35,
                               ),
                             ),
-                            SizedBox(height: AppLayout.scaleHeight(context, 12)),
+                            SizedBox(
+                                height: AppLayout.scaleHeight(context, 12)),
                             Text(
                               'Your account details are shown below.',
                               textAlign: TextAlign.center,
@@ -255,8 +251,7 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
       decoration: BoxDecoration(
         color: const Color(0xFFEFF7F4),
-        borderRadius:
-            BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
+        borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         border: Border.all(
           color: const Color(0xFFDDE8E2),
           width: 1,
@@ -293,7 +288,8 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
                       borderRadius: BorderRadius.circular(
                           AppLayout.scaleWidth(context, 6)),
                       border: Border.all(
-                        color: const Color(0xFFDDE8E2),width: 0.5,
+                        color: const Color(0xFFDDE8E2),
+                        width: 0.5,
                       ),
                     ),
                     child: Icon(
@@ -395,7 +391,8 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
 
   Widget _buildDivider(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 14)),
+      padding:
+          EdgeInsets.symmetric(vertical: AppLayout.scaleHeight(context, 14)),
       child: const Divider(
         color: Color(0xFFDDE8E2),
         height: 1,
@@ -419,7 +416,7 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
         color: AppColors.backgroundScreen,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

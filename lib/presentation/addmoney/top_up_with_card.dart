@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/presentation/otp/otp_verification_screen.dart';
 import 'package:kudipay/provider/funding/funding_provider.dart';
 
 class CardTopUpFormScreen extends ConsumerStatefulWidget {
-  const CardTopUpFormScreen({Key? key}) : super(key: key);
+  const CardTopUpFormScreen({super.key});
 
   @override
   ConsumerState<CardTopUpFormScreen> createState() =>
@@ -432,7 +432,7 @@ Widget _buildConfirmButton(BuildContext context) {
       onPressed: _isFormValid ? _handleConfirm : null,
       style: ElevatedButton.styleFrom(
         backgroundColor: _primaryColor,
-        disabledBackgroundColor: _primaryColor.withOpacity(0.4),
+        disabledBackgroundColor: _primaryColor.withValues(alpha: 0.4),
         disabledForegroundColor: Colors.white,
         minimumSize: Size(
           double.infinity,

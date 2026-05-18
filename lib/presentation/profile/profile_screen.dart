@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -30,7 +30,7 @@ const _phoneFg   = Color(0xFF5C5C5C);
 const _tierSub   = Color(0xFF777777);
 
 class UserProfileScreen extends ConsumerStatefulWidget {
-  const UserProfileScreen({Key? key}) : super(key: key);
+  const UserProfileScreen({super.key});
 
   @override
   ConsumerState<UserProfileScreen> createState() => _UserProfileScreenState();
@@ -238,11 +238,11 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         vertical: AppLayout.scaleHeight(context, 4),
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryTeal.withOpacity(0.1),
+                        color: AppColors.primaryTeal.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(
                             AppLayout.scaleWidth(context, 20)),
                         border: Border.all(
-                            color: AppColors.primaryTeal.withOpacity(0.25)),
+                            color: AppColors.primaryTeal.withValues(alpha: 0.25)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -318,7 +318,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 8),
             offset: const Offset(0, 2),
           ),
@@ -330,7 +330,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             width: iconBoxSize,
             height: iconBoxSize,
             decoration: BoxDecoration(
-              color: AppColors.primaryTeal.withOpacity(0.12),
+              color: AppColors.primaryTeal.withValues(alpha: 0.12),
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
             ),
@@ -423,7 +423,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 8),
             offset: const Offset(0, 2),
           ),
@@ -531,7 +531,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 8),
             offset: const Offset(0, 2),
           ),
@@ -585,7 +585,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 8),
             offset: const Offset(0, 2),
           ),
@@ -626,7 +626,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             Switch(
               value: value,
               onChanged: onChanged,
-              activeColor: AppColors.primaryTeal,
+              activeThumbColor: AppColors.primaryTeal,
               materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
           ],
@@ -646,7 +646,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 8),
             offset: const Offset(0, 2),
           ),

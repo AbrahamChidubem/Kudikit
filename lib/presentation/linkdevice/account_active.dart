@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
 
 class AccountActiveScreen extends ConsumerWidget {
-  const AccountActiveScreen({Key? key}) : super(key: key);
+  const AccountActiveScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

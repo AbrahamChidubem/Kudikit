@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/agent/agent_model.dart';
@@ -250,7 +250,7 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
                             child: Container(
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? const Color(0xFF2BA89A).withOpacity(0.1)
+                                    ? const Color(0xFF2BA89A).withValues(alpha: 0.1)
                                     : const Color(0xFFF5F5F5),
                                 borderRadius: BorderRadius.circular(8),
                                 border: isSelected
@@ -329,7 +329,7 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF2BA89A).withOpacity(0.08),
+                color: const Color(0xFF2BA89A).withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Row(
@@ -368,7 +368,7 @@ class _EnterAmountScreenState extends ConsumerState<EnterAmountScreen> {
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2BA89A),
-              disabledBackgroundColor: const Color(0xFF2BA89A).withOpacity(0.4),
+              disabledBackgroundColor: const Color(0xFF2BA89A).withValues(alpha: 0.4),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(14),
               ),

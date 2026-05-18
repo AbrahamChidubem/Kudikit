@@ -16,7 +16,7 @@ import 'dart:async';
 import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_contacts/flutter_contacts.dart' hide PermissionStatus;
+import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -134,95 +134,95 @@ class ContactService {
   /// UI thread stays completely smooth even with 1,500+ contacts.
   ///
   /// Only call this after permission has been granted.
- Future<List<NigerianContact>> getNigerianContacts() async {
-  final rawContacts = await FlutterContacts.getContacts(
-    withProperties: true, // ✅ REQUIRED (you need phones)
-    deduplicateProperties: false, // ✅ let your logic handle it
-  );
+  Future<List<NigerianContact>> getNigerianContacts() async {
+    final rawContacts = await FlutterContacts.getContacts(
+      withProperties: true, // ✅ REQUIRED (you need phones)
+      deduplicateProperties: false, // ✅ let your logic handle it
+    );
 
-  // ✅ DO NOT convert to Map — pass real objects
-  final result = await compute(_processContacts, rawContacts);
-  return result;
-}
+    // ✅ DO NOT convert to Map — pass real objects
+    final result = await compute(_processContacts, rawContacts);
+    return result;
+  }
 
   // ── Background Isolate Worker ─────────────────────────────────────────────
   // This is a top-level (static) function — required by compute().
   // It runs entirely off the main thread.
 
   static List<NigerianContact> _processContacts(List<Contact> rawContacts) {
-  final List<NigerianContact> result = [];
+    final List<NigerianContact> result = [];
 
-  for (final contact in rawContacts) {
-    if (contact.phones.isEmpty) continue;
+    for (final contact in rawContacts) {
+      if (contact.phones.isEmpty) continue;
 
-    final displayName = _buildDisplayName(contact);
-    if (displayName.isEmpty) continue;
+      final displayName = _buildDisplayName(contact);
+      if (displayName.isEmpty) continue;
 
-    final List<NigerianPhoneNumber> validNumbers = [];
+      final List<NigerianPhoneNumber> validNumbers = [];
 
-    for (final phone in contact.phones) {
-      final processed = _processPhoneNumber(phone);
-      if (processed != null) {
-        validNumbers.add(processed);
+      for (final phone in contact.phones) {
+        final processed = _processPhoneNumber(phone);
+        if (processed != null) {
+          validNumbers.add(processed);
+        }
       }
+
+      if (validNumbers.isEmpty) continue;
+
+      result.add(NigerianContact(
+        displayName: displayName,
+        indexLetter: _indexLetter(displayName),
+        nigerianNumbers: _deduplicateNumbers(validNumbers),
+      ));
     }
 
-    if (validNumbers.isEmpty) continue;
+    result.sort((a, b) =>
+        a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
 
-    result.add(NigerianContact(
-      displayName: displayName,
-      indexLetter: _indexLetter(displayName),
-      nigerianNumbers: _deduplicateNumbers(validNumbers),
-    ));
+    return result;
   }
-
-  result.sort((a, b) =>
-      a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase()));
-
-  return result;
-}
 
   // ── Number Processing ─────────────────────────────────────────────────────
 
- static NigerianPhoneNumber? _processPhoneNumber(Phone phone) {
-  String raw = phone.number.trim();
-  if (raw.isEmpty) return null;
+  static NigerianPhoneNumber? _processPhoneNumber(Phone phone) {
+    String raw = phone.number.trim();
+    if (raw.isEmpty) return null;
 
-  // ✅ Fix Excel ".0" issue FIRST
-  if (raw.endsWith('.0')) {
-    raw = raw.substring(0, raw.length - 2);
+    // ✅ Fix Excel ".0" issue FIRST
+    if (raw.endsWith('.0')) {
+      raw = raw.substring(0, raw.length - 2);
+    }
+
+    String digits = raw.replaceAll(RegExp(r'[^\d]'), '');
+    if (digits.isEmpty) return null;
+
+    String normalized;
+
+    if (digits.startsWith('234') && digits.length == 13) {
+      normalized = '0${digits.substring(3)}';
+    } else if (digits.startsWith('0') && digits.length == 11) {
+      normalized = digits;
+    } else if (digits.length == 10 && !digits.startsWith('0')) {
+      normalized = '0$digits';
+    } else {
+      return null;
+    }
+
+    if (normalized.length != 11 || !normalized.startsWith('0')) return null;
+
+    final network = _detectNetworkLocal(normalized);
+    if (network == null) return null;
+
+    final display =
+        '${normalized.substring(0, 4)} ${normalized.substring(4, 7)} ${normalized.substring(7)}';
+
+    return NigerianPhoneNumber(
+      normalizedNumber: normalized,
+      displayNumber: display,
+      network: network,
+      label: _formatLabel(phone.label), // ← just pass it directly
+    );
   }
-
-  String digits = raw.replaceAll(RegExp(r'[^\d]'), '');
-  if (digits.isEmpty) return null;
-
-  String normalized;
-
-  if (digits.startsWith('234') && digits.length == 13) {
-    normalized = '0${digits.substring(3)}';
-  } else if (digits.startsWith('0') && digits.length == 11) {
-    normalized = digits;
-  } else if (digits.length == 10 && !digits.startsWith('0')) {
-    normalized = '0$digits';
-  } else {
-    return null;
-  }
-
-  if (normalized.length != 11 || !normalized.startsWith('0')) return null;
-
-  final network = _detectNetworkLocal(normalized);
-  if (network == null) return null;
-
-  final display =
-      '${normalized.substring(0, 4)} ${normalized.substring(4, 7)} ${normalized.substring(7)}';
-
-  return NigerianPhoneNumber(
-    normalizedNumber: normalized,
-    displayNumber: display,
-    network: network,
-    label: _formatLabel(phone.label as PhoneLabel), // ✅ FIXED
-  );
-}
 
   // ── NCC Prefix Detection (inline copy for isolate) ───────────────────────
   // compute() can't access providers or singletons in the main isolate,
@@ -313,26 +313,26 @@ class ContactService {
     return RegExp(r'[A-Z]').hasMatch(first) ? first : '#';
   }
 
- static String _formatLabel(PhoneLabel label) {
-  switch (label) {
-    case PhoneLabel.mobile:
-    case PhoneLabel.workMobile:
-      return 'Mobile';
+  static String _formatLabel(PhoneLabel label) {
+    switch (label) {
+      case PhoneLabel.mobile:
+      case PhoneLabel.workMobile:
+        return 'Mobile';
 
-    case PhoneLabel.home:
-      return 'Home';
+      case PhoneLabel.home:
+        return 'Home';
 
-    case PhoneLabel.work:
-    case PhoneLabel.companyMain:
-      return 'Work';
+      case PhoneLabel.work:
+      case PhoneLabel.companyMain:
+        return 'Work';
 
-    case PhoneLabel.main:
-      return 'Main';
+      case PhoneLabel.main:
+        return 'Main';
 
-    default:
-      return 'Other'; // ✅ SAFE FALLBACK (VERY IMPORTANT)
+      default:
+        return 'Other'; // ✅ SAFE FALLBACK (VERY IMPORTANT)
+    }
   }
-}
 
   static List<NigerianPhoneNumber> _deduplicateNumbers(
       List<NigerianPhoneNumber> numbers) {

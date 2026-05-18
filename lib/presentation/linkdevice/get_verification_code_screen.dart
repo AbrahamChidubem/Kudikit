@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/linkdevice/sign_in_verify_email_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class GetVerificationCodeScreen extends ConsumerStatefulWidget {
-  const GetVerificationCodeScreen({Key? key}) : super(key: key);
+  const GetVerificationCodeScreen({super.key});
 
   @override
   ConsumerState<GetVerificationCodeScreen> createState() =>
@@ -143,7 +143,7 @@ class _GetVerificationCodeScreenState
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -156,7 +156,7 @@ class _GetVerificationCodeScreenState
               height: AppLayout.scaleWidth(context, 43),
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF069494).withOpacity(0.35)
+                    ? const Color(0xFF069494).withValues(alpha: 0.35)
                     : const Color(0xFFF5F5F5),
                 borderRadius: BorderRadius.circular(12),
               ),

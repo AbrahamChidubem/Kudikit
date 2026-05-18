@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // lib/presentation/bills/airtime/airtime_amount_screen.dart
 //
 // Screen 2 of the Buy Airtime flow.
@@ -29,7 +29,7 @@ import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 
 class AirtimeAmountScreen extends ConsumerStatefulWidget {
-  const AirtimeAmountScreen({Key? key}) : super(key: key);
+  const AirtimeAmountScreen({super.key});
 
   @override
   ConsumerState<AirtimeAmountScreen> createState() =>
@@ -237,7 +237,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -324,7 +324,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                         borderRadius: BorderRadius.circular(14),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.04),
+                            color: Colors.black.withValues(alpha: 0.04),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -475,7 +475,7 @@ class _AirtimeAmountScreenState extends ConsumerState<AirtimeAmountScreen> {
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
+                    disabledBackgroundColor: const Color(0xFF069494).withValues(alpha: 0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -830,7 +830,7 @@ class _AirtimeSuccessBottomSheetState extends State<AirtimeSuccessBottomSheet> {
                           value: _addToBeneficiary,
                           onChanged: (val) =>
                               setState(() => _addToBeneficiary = val),
-                          activeColor: const Color(0xFF069494),
+                          activeThumbColor: const Color(0xFF069494),
                         ),
                       ],
                     ),

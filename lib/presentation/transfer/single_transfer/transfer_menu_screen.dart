@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_screen.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_receipt_screen.dart';
 
 class TransferMenuScreen extends StatelessWidget {
-  const TransferMenuScreen({Key? key}) : super(key: key);
+  const TransferMenuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -111,7 +111,7 @@ class _MenuCard extends StatelessWidget {
                 BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: AppLayout.scaleWidth(context, 12),
                 offset: Offset(0, AppLayout.scaleHeight(context, 4)),
               ),

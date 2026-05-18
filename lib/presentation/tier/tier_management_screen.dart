@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -77,14 +77,14 @@ class TierManagementScreen extends ConsumerWidget {
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [tier.color, tier.color.withOpacity(0.7)],
+          colors: [tier.color, tier.color.withValues(alpha: 0.7)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: tier.color.withOpacity(0.3),
+            color: tier.color.withValues(alpha: 0.3),
             blurRadius: AppLayout.scaleWidth(context, 15),
             offset: Offset(0, AppLayout.scaleHeight(context, 5)),
           ),
@@ -98,7 +98,7 @@ class TierManagementScreen extends ConsumerWidget {
                 width: AppLayout.scaleWidth(context, 60),
                 height: AppLayout.scaleWidth(context, 60),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.3),
+                  color: Colors.white.withValues(alpha: 0.3),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
@@ -116,7 +116,7 @@ class TierManagementScreen extends ConsumerWidget {
                       'Your Current Tier',
                       style: GoogleFonts.openSans(
                         fontSize: AppLayout.fontSize(context, 12),
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                     SizedBox(height: AppLayout.scaleHeight(context, 4)),
@@ -132,7 +132,7 @@ class TierManagementScreen extends ConsumerWidget {
                       'Tier ${tier.tierNumber}',
                       style: GoogleFonts.openSans(
                         fontSize: AppLayout.fontSize(context, 14),
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ],
@@ -153,7 +153,7 @@ class TierManagementScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: AppLayout.scaleWidth(context, 10),
             offset: Offset(0, AppLayout.scaleHeight(context, 2)),
           ),
@@ -178,7 +178,7 @@ class TierManagementScreen extends ConsumerWidget {
                   width: AppLayout.scaleWidth(context, 32),
                   height: AppLayout.scaleWidth(context, 32),
                   decoration: BoxDecoration(
-                    color: tier.color.withOpacity(0.1),
+                    color: tier.color.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -228,7 +228,7 @@ class TierManagementScreen extends ConsumerWidget {
         border: Border.all(color: nextTier.color, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: AppLayout.scaleWidth(context, 10),
             offset: Offset(0, AppLayout.scaleHeight(context, 2)),
           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/account_ready/account_ready.dart';
@@ -34,16 +34,14 @@ class _CreateTransactionPinScreenState
     }
     if (!state.isComplete && _successDialogShown) _successDialogShown = false;
 
-    return WillPopScope(
-      onWillPop: () async {
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
         if (state.isConfirmStep) {
-          // Allow going back to create step
           notifier.reset();
-          return false;
+          return;
         }
-        // If this is post-onboarding we don't allow skipping PIN creation
-        if (!widget.isChangingPin) return false;
-        return true;
+        if (widget.isChangingPin) Navigator.pop(context);
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFF9F9F9),
@@ -151,7 +149,7 @@ class _CreateTransactionPinScreenState
             // ── Loading overlay ──────────────────────────────────────────
             if (state.isLoading)
               Container(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 child: const Center(
                   child: CircularProgressIndicator(
                     valueColor:
@@ -232,7 +230,7 @@ class _CreateTransactionPinScreenState
       ),
       decoration: BoxDecoration(
         color: state.showError
-            ? Colors.red.withOpacity(0.08)
+            ? Colors.red.withValues(alpha: 0.08)
             : const Color(0xFFDDE8E2),
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 40)),
       ),
@@ -348,7 +346,7 @@ class _CreateTransactionPinScreenState
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                    color: const Color(0xFF069494).withOpacity(0.12),
+                    color: const Color(0xFF069494).withValues(alpha: 0.12),
                     shape: BoxShape.circle),
                 child: const Icon(Icons.check_circle_rounded,
                     color: Color(0xFF069494), size: 52),

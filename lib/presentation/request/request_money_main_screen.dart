@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/formatting/widget/contact_list_item.dart';
@@ -167,7 +167,7 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => SelectRecipient
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -213,7 +213,7 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => SelectRecipient
     return Container(
       height: 44,
       decoration: BoxDecoration(
-        color: AppColors.divider.withOpacity(0.4),
+        color: AppColors.divider.withValues(alpha: 0.4),
         borderRadius: BorderRadius.circular(12),
       ),
       child: TextField(
@@ -365,7 +365,7 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => SelectRecipient
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryTeal,
                   disabledBackgroundColor:
-                      AppColors.primaryTeal.withOpacity(0.5),
+                      AppColors.primaryTeal.withValues(alpha: 0.5),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
@@ -400,7 +400,7 @@ Navigator.push(context, MaterialPageRoute(builder: ((context) => SelectRecipient
         onPressed: _canContinue ? _onContinue : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: Color(0xFF069494),
-          disabledBackgroundColor: Color(0xFF069494).withOpacity(0.45),
+          disabledBackgroundColor: Color(0xFF069494).withValues(alpha: 0.45),
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),

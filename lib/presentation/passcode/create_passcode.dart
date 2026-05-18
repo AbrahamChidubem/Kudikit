@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -7,13 +7,13 @@ import 'package:kudipay/presentation/homescreen/home_screen.dart';
 import 'package:kudipay/presentation/passcode/numeric_keypad.dart';
 import 'package:kudipay/presentation/passcode/passcode_dots.dart';
 import 'package:kudipay/presentation/passcode/passcode_notifier.dart';
-import 'package:flutter_riverpod/legacy.dart';
+
 final passcodeProvider = StateNotifierProvider<PasscodeNotifier, PasscodeState>((ref) {
   return PasscodeNotifier();
 });
 
 class PasscodeCreationScreen extends ConsumerStatefulWidget {
-  const PasscodeCreationScreen({Key? key}) : super(key: key);
+  const PasscodeCreationScreen({super.key});
 
   @override
   ConsumerState<PasscodeCreationScreen> createState() => _PasscodeCreationScreenState();
@@ -39,7 +39,7 @@ class _PasscodeCreationScreenState extends ConsumerState<PasscodeCreationScreen>
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: BoxDecoration(
-                color: Color(0xFF069494).withOpacity(0.1),
+                color: Color(0xFF069494).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -200,7 +200,7 @@ class _PasscodeCreationScreenState extends ConsumerState<PasscodeCreationScreen>
           // Loading Overlay
           if (passcodeState.isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),

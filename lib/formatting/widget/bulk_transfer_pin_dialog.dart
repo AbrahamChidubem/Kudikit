@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/transaction_pin_bottom_sheet.dart';
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
@@ -11,7 +11,7 @@ import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 // =============================================================================
 
 class BulkTransferPinDialog extends ConsumerWidget {
-  const BulkTransferPinDialog({Key? key}) : super(key: key);
+  const BulkTransferPinDialog({super.key});
 
   static void show(BuildContext context, {required VoidCallback onSuccess}) {
     TransactionPinBottomSheet.show(

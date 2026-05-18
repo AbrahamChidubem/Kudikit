@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -9,7 +9,7 @@ import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_d
 import 'package:kudipay/provider/provider.dart';
 
 class TransferAmountScreen extends ConsumerStatefulWidget {
-  const TransferAmountScreen({Key? key}) : super(key: key);
+  const TransferAmountScreen({super.key});
 
   @override
   ConsumerState<TransferAmountScreen> createState() =>
@@ -396,7 +396,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -415,7 +415,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
           ),
           SizedBox(height: AppLayout.scaleHeight(context, 8)),
           DropdownButtonFormField<TransactionCategory>(
-            value: _selectedCategory,
+            initialValue: _selectedCategory,
             decoration: InputDecoration(
               hintText: 'Select Category',
               contentPadding: EdgeInsets.symmetric(
@@ -468,7 +468,7 @@ class _TransferAmountScreenState extends ConsumerState<TransferAmountScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

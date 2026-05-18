@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/presentation/addmoney/add_money_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class TransactionReceiptScreen extends ConsumerWidget {
-  const TransactionReceiptScreen({Key? key}) : super(key: key);
+  const TransactionReceiptScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -95,7 +95,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         // boxShadow: [
         //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
+        //     color: Colors.black.withValues(alpha: 0.05),
         //     blurRadius: 10,
         //     offset: const Offset(0, 4),
         //   ),
@@ -113,7 +113,7 @@ class TransactionReceiptScreen extends ConsumerWidget {
             ),
             child: Icon(
               Icons.account_balance,
-              color: const Color(0xFF069494).withOpacity(0.35),
+              color: const Color(0xFF069494).withValues(alpha: 0.35),
               size: AppLayout.scaleWidth(context, 15),
             ),
           ),

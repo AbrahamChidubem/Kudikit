@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:kudipay/presentation/linkdevice/upload_id_screen.dart';
 
 class VerifyIdentityScreen extends ConsumerStatefulWidget {
-  const VerifyIdentityScreen({Key? key}) : super(key: key);
+  const VerifyIdentityScreen({super.key});
 
   @override
   ConsumerState<VerifyIdentityScreen> createState() =>
@@ -230,7 +230,7 @@ class _VerifyIdentityScreenState
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -244,7 +244,7 @@ class _VerifyIdentityScreenState
               decoration: BoxDecoration(
                 color: isCompleted
                     ? const Color(0xFFE8F5E9)
-                    : iconColor.withOpacity(0.1),
+                    : iconColor.withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(

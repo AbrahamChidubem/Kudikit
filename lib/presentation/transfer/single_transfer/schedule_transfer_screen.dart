@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/provider/provider.dart';
 
 
 class ScheduledTransferScreen extends ConsumerStatefulWidget {
-  const ScheduledTransferScreen({Key? key}) : super(key: key);
+  const ScheduledTransferScreen({super.key});
 
   @override
   ConsumerState<ScheduledTransferScreen> createState() =>
@@ -155,7 +155,7 @@ class _ScheduledTransferScreenState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -194,7 +194,7 @@ class _ScheduledTransferScreenState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -294,7 +294,7 @@ class _ScheduledTransferScreenState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -312,7 +312,7 @@ class _ScheduledTransferScreenState
                   ),
                   SizedBox(height: AppLayout.scaleHeight(context, 8)),
                   DropdownButtonFormField<String>(
-                    value: _selectedRepeat,
+                    initialValue: _selectedRepeat,
                     decoration: InputDecoration(
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -359,7 +359,7 @@ class _ScheduledTransferScreenState
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
+                    color: Colors.black.withValues(alpha: 0.05),
                     blurRadius: 10,
                     offset: const Offset(0, 2),
                   ),
@@ -382,7 +382,7 @@ class _ScheduledTransferScreenState
                         _sendReminder = value;
                       });
                     },
-                    activeColor: const Color(0xFF069494),
+                    activeThumbColor: const Color(0xFF069494),
                   ),
                 ],
               ),

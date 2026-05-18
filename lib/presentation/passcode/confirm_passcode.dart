@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -14,7 +14,7 @@ final passcodeProvider = StateNotifierProvider<PasscodeNotifier, PasscodeState>(
 
 class PasscodeConfirmationScreen extends ConsumerStatefulWidget {
   
-  const PasscodeConfirmationScreen({Key? key}) : super(key: key);
+  const PasscodeConfirmationScreen({super.key});
 
   @override
   ConsumerState<PasscodeConfirmationScreen> createState() => _PasscodeConfirmationScreenState();
@@ -40,7 +40,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: BoxDecoration(
-                color: const Color(0xFF069494).withOpacity(0.1),
+                color: const Color(0xFF069494).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
@@ -201,7 +201,7 @@ class _PasscodeConfirmationScreenState extends ConsumerState<PasscodeConfirmatio
           // Loading Overlay
           if (passcodeState.isLoading)
             Container(
-              color: Colors.black.withOpacity(0.3),
+              color: Colors.black.withValues(alpha: 0.3),
               child: const Center(
                 child: CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF069494)),

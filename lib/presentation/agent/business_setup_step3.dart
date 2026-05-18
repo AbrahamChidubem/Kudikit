@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -77,8 +77,7 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
       ),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme:
-              const ColorScheme.light(primary: AppColors.primaryTeal),
+          colorScheme: const ColorScheme.light(primary: AppColors.primaryTeal),
         ),
         child: child!,
       ),
@@ -142,17 +141,14 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                       // Day chips — LayoutBuilder makes them fit any width
                       LayoutBuilder(
                         builder: (ctx, constraints) {
-                          final chipW =
-                              (constraints.maxWidth -
-                                      AppLayout.scaleWidth(ctx, 48)) /
-                                  7;
+                          final chipW = (constraints.maxWidth -
+                                  AppLayout.scaleWidth(ctx, 48)) /
+                              7;
                           return Row(
                             children: _days.map((day) {
-                              final selected =
-                                  app.operatingDays.contains(day);
+                              final selected = app.operatingDays.contains(day);
                               return GestureDetector(
-                                onTap: () =>
-                                    notifier.toggleOperatingDay(day),
+                                onTap: () => notifier.toggleOperatingDay(day),
                                 child: Container(
                                   width: chipW,
                                   height: chipW,
@@ -169,8 +165,7 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                                     child: Text(
                                       day,
                                       style: TextStyle(
-                                        fontSize:
-                                            AppLayout.fontSize(ctx, 11),
+                                        fontSize: AppLayout.fontSize(ctx, 11),
                                         fontWeight: FontWeight.w600,
                                         color: selected
                                             ? AppColors.white
@@ -191,8 +186,7 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           GestureDetector(
-                            onTap: () =>
-                                _pickTime(context, isOpening: true),
+                            onTap: () => _pickTime(context, isOpening: true),
                             child: Text(
                               app.openingTime,
                               style: TextStyle(
@@ -203,8 +197,7 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                             ),
                           ),
                           GestureDetector(
-                            onTap: () =>
-                                _pickTime(context, isOpening: false),
+                            onTap: () => _pickTime(context, isOpening: false),
                             child: Text(
                               app.closingTime,
                               style: TextStyle(
@@ -231,8 +224,8 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                       _AmountField(
                         hint: '50,000',
                         controller: _cashCtrl,
-                        onChanged: (v) => notifier.updateCashFloat(
-                            double.tryParse(v) ?? 0),
+                        onChanged: (v) =>
+                            notifier.updateCashFloat(double.tryParse(v) ?? 0),
                       ),
                       SizedBox(height: AppLayout.scaleHeight(context, 16)),
 
@@ -246,14 +239,12 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                                 Text(
                                   'Min per Transaction',
                                   style: TextStyle(
-                                    fontSize:
-                                        AppLayout.fontSize(context, 12),
+                                    fontSize: AppLayout.fontSize(context, 12),
                                     color: AppColors.textGrey,
                                   ),
                                 ),
                                 SizedBox(
-                                    height:
-                                        AppLayout.scaleHeight(context, 6)),
+                                    height: AppLayout.scaleHeight(context, 6)),
                                 _AmountField(
                                   hint: '',
                                   controller: _minCtrl,
@@ -264,8 +255,7 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                               ],
                             ),
                           ),
-                          SizedBox(
-                              width: AppLayout.scaleWidth(context, 12)),
+                          SizedBox(width: AppLayout.scaleWidth(context, 12)),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,14 +263,12 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                                 Text(
                                   'Max per Transaction',
                                   style: TextStyle(
-                                    fontSize:
-                                        AppLayout.fontSize(context, 12),
+                                    fontSize: AppLayout.fontSize(context, 12),
                                     color: AppColors.textGrey,
                                   ),
                                 ),
                                 SizedBox(
-                                    height:
-                                        AppLayout.scaleHeight(context, 6)),
+                                    height: AppLayout.scaleHeight(context, 6)),
                                 _AmountField(
                                   hint: '',
                                   controller: _maxCtrl,
@@ -305,8 +293,8 @@ class _Step3State extends ConsumerState<Step3BusinessSetupScreen> {
                           FilteringTextInputFormatter.allow(
                               RegExp(r'^\d*\.?\d*'))
                         ],
-                        onChanged: (v) => notifier.updateCommissionRate(
-                            double.tryParse(v) ?? 1.5),
+                        onChanged: (v) => notifier
+                            .updateCommissionRate(double.tryParse(v) ?? 1.5),
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 14),
                           color: AppColors.textDark,
@@ -460,7 +448,8 @@ class _AmountField extends StatelessWidget {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(radius),
-          borderSide: const BorderSide(color: AppColors.primaryTeal, width: 1.5),
+          borderSide:
+              const BorderSide(color: AppColors.primaryTeal, width: 1.5),
         ),
       ),
     );

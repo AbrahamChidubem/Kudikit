@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +8,7 @@ import 'package:kudipay/model/bankmodel/bank_model.dart';
 import 'package:kudipay/provider/funding/funding_provider.dart';
 
 class UssdCodeDisplayScreen extends ConsumerStatefulWidget {
-  const UssdCodeDisplayScreen({Key? key}) : super(key: key);
+  const UssdCodeDisplayScreen({super.key});
 
   @override
   ConsumerState<UssdCodeDisplayScreen> createState() =>
@@ -54,7 +54,7 @@ class _UssdCodeDisplayScreenState
     showDialog(
       context: context,
       barrierDismissible: false,
-      barrierColor: Colors.black.withOpacity(0.55),
+      barrierColor: Colors.black.withValues(alpha: 0.55),
       builder: (ctx) => _ExpiredDialog(
         ussdCode: ref.read(ussdTransferProvider).data?.ussdCode ?? '',
         onCancel: () {

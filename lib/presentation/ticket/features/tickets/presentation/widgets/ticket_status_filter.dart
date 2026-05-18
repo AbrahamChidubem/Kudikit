@@ -1,4 +1,4 @@
-// lib/features/tickets/presentation/widgets/ticket_status_filter.dart
+﻿// lib/features/tickets/presentation/widgets/ticket_status_filter.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,7 +47,7 @@ class TicketStatusFilter extends ConsumerWidget {
                 boxShadow: isSelected
                     ? [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.25),
+                          color: AppColors.primary.withValues(alpha: 0.25),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         )

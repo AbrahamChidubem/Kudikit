@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -62,7 +62,7 @@ class TierSelectionScreen extends ConsumerWidget {
             Container(
               padding: EdgeInsets.all(AppLayout.scaleWidth(context, 12)),
               decoration: BoxDecoration(
-                color: const Color(0xFF069494).withOpacity(0.1),
+                color: const Color(0xFF069494).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
                 border: Border.all(color: const Color(0xFF069494)),
               ),
@@ -121,7 +121,7 @@ class TierSelectionScreen extends ConsumerWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: AppLayout.scaleWidth(context, 10),
             offset: Offset(0, AppLayout.scaleHeight(context, 2)),
           ),
@@ -133,7 +133,7 @@ class TierSelectionScreen extends ConsumerWidget {
           Container(
             padding: EdgeInsets.all(AppLayout.scaleWidth(context, 20)),
             decoration: BoxDecoration(
-              color: tier.color.withOpacity(0.1),
+              color: tier.color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(AppLayout.scaleWidth(context, 16)),
                 topRight: Radius.circular(AppLayout.scaleWidth(context, 16)),
@@ -145,7 +145,7 @@ class TierSelectionScreen extends ConsumerWidget {
                   width: AppLayout.scaleWidth(context, 50),
                   height: AppLayout.scaleWidth(context, 50),
                   decoration: BoxDecoration(
-                    color: tier.color.withOpacity(0.2),
+                    color: tier.color.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(

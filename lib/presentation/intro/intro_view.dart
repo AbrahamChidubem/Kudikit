@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/login/login_page.dart';
@@ -63,7 +63,7 @@ class IntroviewPage extends StatelessWidget {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primaryTeal,
                           disabledBackgroundColor:
-                              AppColors.primaryTeal.withOpacity(0.5),
+                              AppColors.primaryTeal.withValues(alpha: 0.5),
                           elevation: 0,
                           shape: const RoundedRectangleBorder(
                             borderRadius: BorderRadius.all(Radius.circular(28)),

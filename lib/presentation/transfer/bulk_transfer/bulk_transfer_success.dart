@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -8,7 +8,7 @@ import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 
 class BulkTransferSuccessDialog extends ConsumerStatefulWidget {
-  const BulkTransferSuccessDialog({Key? key}) : super(key: key);
+  const BulkTransferSuccessDialog({super.key});
 
   @override
   ConsumerState<BulkTransferSuccessDialog> createState() =>
@@ -200,7 +200,7 @@ class _BulkTransferSuccessDialogState
                         _saveAsTemplate = value;
                       });
                     },
-                    activeColor: const Color(0xFF389165),
+                    activeThumbColor: const Color(0xFF389165),
                   ),
                 ],
               ),

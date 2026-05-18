@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/address/nigeria_state.dart';
@@ -9,7 +9,7 @@ import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/Identity/upload_ID.dart';
 
 class AddressVerificationScreen extends ConsumerWidget {
-  const AddressVerificationScreen({Key? key}) : super(key: key);
+  const AddressVerificationScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,7 +54,7 @@ class AddressVerificationScreen extends ConsumerWidget {
               _dropdownContainer(
                 context,
                 DropdownButtonFormField<String>(
-                  value: addressData.state,
+                  initialValue: addressData.state,
                   hint: const Text('Select State'),
                   isExpanded: true,
                   decoration: _inputDecoration(context),
@@ -85,7 +85,7 @@ class AddressVerificationScreen extends ConsumerWidget {
               _dropdownContainer(
                 context,
                 DropdownButtonFormField<String>(
-                  value: addressData.lga,
+                  initialValue: addressData.lga,
                   hint: Text(selectedState == null
                       ? 'Select State First'
                       : 'Select LGA'),

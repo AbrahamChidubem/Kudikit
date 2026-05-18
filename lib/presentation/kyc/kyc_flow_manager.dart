@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:kudipay/formatting/widget/bottom_nav.dart';
@@ -46,7 +46,7 @@ import 'package:kudipay/provider/tier/tier_provider.dart';
 // =============================================================================
 
 class KycFlowManager extends ConsumerWidget {
-  const KycFlowManager({Key? key}) : super(key: key);
+  const KycFlowManager({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

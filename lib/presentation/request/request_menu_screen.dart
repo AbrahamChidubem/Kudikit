@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -115,7 +115,7 @@ class _MenuCard extends StatelessWidget {
                 BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05),
                 blurRadius: AppLayout.scaleWidth(context, 12),
                 offset: Offset(0, AppLayout.scaleHeight(context, 4)),
               ),

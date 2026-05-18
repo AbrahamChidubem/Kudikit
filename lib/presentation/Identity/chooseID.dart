@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/constant/id_type.dart';
@@ -10,7 +10,7 @@ import 'package:kudipay/presentation/Identity/id_verification_controller.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
 
 class IdVerificationScreen extends ConsumerStatefulWidget {
-  const IdVerificationScreen({Key? key}) : super(key: key);
+  const IdVerificationScreen({super.key});
 
   @override
   ConsumerState<IdVerificationScreen> createState() =>
@@ -407,7 +407,7 @@ class _IdVerificationScreenState extends ConsumerState<IdVerificationScreen> {
         color: const Color(0xFFF5F9F5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, -2),
           ),

@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 //
 // Screen 2 of the Buy Data flow.
 //
@@ -23,7 +23,7 @@ import 'package:kudipay/presentation/bill/bill_transaction_detail.dart';
 import 'package:kudipay/provider/provider.dart';
 
 class DataPlansScreen extends ConsumerStatefulWidget {
-  const DataPlansScreen({Key? key}) : super(key: key);
+  const DataPlansScreen({super.key});
 
   @override
   ConsumerState<DataPlansScreen> createState() => _DataPlansScreenState();
@@ -33,8 +33,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
     with SingleTickerProviderStateMixin {
   late TabController _validityTab;
   static const _tabs = ['Daily', 'Weekly', 'Monthly'];
-  final _fmt = NumberFormat('#,###', 'en_NG');
-
+  
   @override
   void initState() {
     super.initState();
@@ -207,7 +206,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -290,7 +289,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 6,
                                 offset: const Offset(0, 2),
                               ),
@@ -464,7 +463,7 @@ class _DataPlansScreenState extends ConsumerState<DataPlansScreen>
                       : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
+                    disabledBackgroundColor: const Color(0xFF069494).withValues(alpha: 0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),
@@ -583,7 +582,7 @@ class _DataPlanTile extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -634,7 +633,7 @@ class _DataPlanTile extends StatelessWidget {
                         const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF069494).withOpacity(0.15)
+                          ? const Color(0xFF069494).withValues(alpha: 0.15)
                           : const Color(0xFFF5F5F5),
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -1111,7 +1110,7 @@ class _DataSuccessBottomSheetState extends State<DataSuccessBottomSheet> {
                           value: _addToBeneficiary,
                           onChanged: (val) =>
                               setState(() => _addToBeneficiary = val),
-                          activeColor: const Color(0xFF069494),
+                          activeThumbColor: const Color(0xFF069494),
                         ),
                       ],
                     ),

@@ -1,4 +1,4 @@
-import 'dart:math' as math;
+﻿import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -47,7 +47,7 @@ class AgentRegistrationFlow extends ConsumerWidget {
     }
 
     return PopScope(
-      onPopInvoked: (didPop) {
+    onPopInvokedWithResult: (didPop, _) {
         // Android back: go to previous step instead of leaving the flow
         if (didPop && state.currentStep > 0) {
           notifier.goToStep(state.currentStep - 1);
@@ -241,7 +241,7 @@ class KudiCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 12),
             offset: Offset(0, AppLayout.scaleHeight(context, 4)),
           ),
@@ -361,7 +361,7 @@ class KudiInfoBanner extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 14)),
       decoration: BoxDecoration(
-        color: AppColors.primaryTeal.withOpacity(0.08),
+        color: AppColors.primaryTeal.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
       ),
       child: Row(
@@ -419,8 +419,8 @@ class KudiPrimaryButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: isEnabled
                 ? AppColors.primaryTeal
-                : AppColors.primaryTeal.withOpacity(0.4),
-            disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.4),
+                : AppColors.primaryTeal.withValues(alpha: 0.4),
+            disabledBackgroundColor: AppColors.primaryTeal.withValues(alpha: 0.4),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius:

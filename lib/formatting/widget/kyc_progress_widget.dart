@@ -1,4 +1,4 @@
-
+﻿
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/presentation/Identity/chooseID.dart';
@@ -42,7 +42,7 @@ class KycProgressWidget extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -111,7 +111,7 @@ class KycProgressWidget extends ConsumerWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF069494).withOpacity(0.3),
+            color: const Color(0xFF069494).withValues(alpha: 0.3),
             blurRadius: 20,
             offset: const Offset(0, 10),
           ),
@@ -134,7 +134,7 @@ class KycProgressWidget extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -154,7 +154,7 @@ class KycProgressWidget extends ConsumerWidget {
             child: LinearProgressIndicator(
               value: progress,
               minHeight: 10,
-              backgroundColor: Colors.white.withOpacity(0.3),
+              backgroundColor: Colors.white.withValues(alpha: 0.3),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
@@ -188,9 +188,9 @@ class KycProgressWidget extends ConsumerWidget {
             context,
             ref,
             icon: Icons.credit_card,
-            title: 'BVN/NIN Verification',
-            isCompleted: user.isBvnVerified,
-            onTap: showNavigationButtons && !user.isBvnVerified
+            title: '/NIN Verification',
+            isCompleted: user.isVerified,
+            onTap: showNavigationButtons && !user.isVerified
                 ? () => Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -236,7 +236,7 @@ class KycProgressWidget extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Row(
@@ -287,10 +287,10 @@ class KycProgressWidget extends ConsumerWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.15),
+          color: Colors.white.withValues(alpha: 0.15),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
           ),
         ),
         child: Row(
@@ -301,7 +301,7 @@ class KycProgressWidget extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: isCompleted
                     ? Colors.white
-                    : Colors.white.withOpacity(0.2),
+                    : Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -359,7 +359,7 @@ class KycProgressWidget extends ConsumerWidget {
 
   String _getNextStepMessage(user) {
     if (!user.isSelfieVerified) return 'Next: Complete selfie capture';
-    if (!user.isBvnVerified) return 'Next: Verify your BVN/NIN';
+    if (!user.isVerified) return 'Next: Verify your /NIN';
     if (!user.isAddressVerified) return 'Next: Verify your address';
     if (!user.isDocumentVerified) return 'Next: Upload ID document';
     return 'Almost there!';

@@ -1,4 +1,4 @@
-// lib/presentation/signup/signup_verify.dart
+﻿// lib/presentation/signup/signup_verify.dart
 //
 // FIXED:
 //   - Constructor parameter renamed: `pin` → `passcode`.
@@ -294,7 +294,7 @@ class _EmailVerifySignupState extends ConsumerState<EmailVerifySignup> {
 
     final submittedPinTheme = defaultPinTheme.copyWith(
       decoration: defaultPinTheme.decoration?.copyWith(
-        color: const Color.fromARGB(255, 235, 238, 237).withOpacity(0.8),
+        color: const Color.fromARGB(255, 235, 238, 237).withValues(alpha: 0.8),
       ),
     );
 

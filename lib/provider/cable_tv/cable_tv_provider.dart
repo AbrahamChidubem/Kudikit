@@ -4,6 +4,7 @@
 // ============================================================================
 
 import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/core/providers/core_providers.dart';
 import 'package:kudipay/model/cable_tv/cable_tv_model.dart';
 import 'package:flutter_riverpod/legacy.dart';
 

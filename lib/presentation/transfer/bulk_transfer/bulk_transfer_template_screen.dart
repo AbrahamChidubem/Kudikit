@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/presentation/transfer/single_transfer/add_recipient_scre
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 class BulkTransferTemplatesScreen extends ConsumerWidget {
-  const BulkTransferTemplatesScreen({Key? key}) : super(key: key);
+  const BulkTransferTemplatesScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -254,7 +254,7 @@ class _TemplateCard extends StatelessWidget {
         border: Border.all(color: Colors.grey[200]!),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

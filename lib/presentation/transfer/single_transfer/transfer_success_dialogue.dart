@@ -1,15 +1,15 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transaction_detail.dart';
 import 'package:kudipay/provider/P2P_transfer/P2P_transfer_provider.dart';
-import 'package:kudipay/provider/provider_pack.dart';
+
 
 /// Full-screen success (or error) page shown after a transfer completes.
 /// Navigated to via [Navigator.pushReplacement] from [ProcessingPaymentScreen].
 class TransactionSuccessBottomSheet extends ConsumerStatefulWidget {
-  const TransactionSuccessBottomSheet({Key? key}) : super(key: key);
+  const TransactionSuccessBottomSheet({super.key});
 
   /// Legacy modal helper kept for any callers that still reference it.
   static void show(BuildContext context) {
@@ -161,9 +161,9 @@ class _TransactionSuccessBottomSheetState
                       onChanged: (value) {
                         setState(() => _addToFavourite = value);
                       },
-                      activeColor: const Color(0xFF389165),
+                      activeThumbColor: const Color(0xFF389165),
                       activeTrackColor:
-                          const Color(0xFF389165).withOpacity(0.35),
+                          const Color(0xFF389165).withValues(alpha: 0.35),
                       inactiveThumbColor: Colors.white,
                       inactiveTrackColor: Colors.grey.shade300,
                     ),

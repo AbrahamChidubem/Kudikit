@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/provider/provider.dart';
 // ── Processing Payment Screen ───────────────────────────────────────────────
 // Shown as a full screen while the transfer is being processed.
 class ProcessingPaymentScreen extends StatelessWidget {
-  const ProcessingPaymentScreen({Key? key}) : super(key: key);
+  const ProcessingPaymentScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,7 @@ class ProcessingPaymentScreen extends StatelessWidget {
 
 // ── PIN Entry Bottom Sheet ──────────────────────────────────────────────────
 class PinEntryBottomSheet extends ConsumerStatefulWidget {
-  const PinEntryBottomSheet({Key? key}) : super(key: key);
+  const PinEntryBottomSheet({super.key});
 
   static void show(BuildContext context) {
     showModalBottomSheet(

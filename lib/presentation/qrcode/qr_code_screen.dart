@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/provider/funding/funding_provider.dart';
 import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 class QrCodeScreen extends ConsumerStatefulWidget {
-  const QrCodeScreen({Key? key}) : super(key: key);
+  const QrCodeScreen({super.key});
 
   @override
   ConsumerState<QrCodeScreen> createState() => _QrCodeScreenState();
@@ -112,7 +112,7 @@ class _QrCodeScreenState extends ConsumerState<QrCodeScreen> {
         vertical: AppLayout.scaleHeight(context, 12),
       ),
       decoration: BoxDecoration(
-        color: AppColors.lightGreen,
+        color: AppColors.checkGreen,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
       ),
       child: Row(
@@ -152,7 +152,7 @@ class _QrCodeScreenState extends ConsumerState<QrCodeScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 4),
           ),
@@ -403,7 +403,7 @@ class _QrCodeScreenState extends ConsumerState<QrCodeScreen> {
       ),
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.primaryTeal ,
-        disabledBackgroundColor: AppColors.primaryTeal .withOpacity(0.4),
+        disabledBackgroundColor: AppColors.primaryTeal .withValues(alpha: 0.4),
         minimumSize:
             Size(double.infinity, AppLayout.scaleHeight(context, 52)),
         shape: RoundedRectangleBorder(

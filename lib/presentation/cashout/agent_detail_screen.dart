@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/model/agent/agent_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'enter_amount_screen.dart';
@@ -418,7 +418,7 @@ class _AgentAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: const Color(0xFF2BA89A).withOpacity(0.15),
+        color: const Color(0xFF2BA89A).withValues(alpha: 0.15),
       ),
       child: imageUrl.isNotEmpty
           ? ClipOval(

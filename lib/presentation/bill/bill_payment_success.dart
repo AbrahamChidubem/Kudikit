@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // lib/presentation/bill/bill_payment_success.dart
 // Generic success screen used after Electricity & Cable TV payments.
 // Shows animated checkmark, transaction details, and navigation actions.
@@ -263,7 +263,7 @@ class _BillPaymentSuccessScreenState extends State<BillPaymentSuccessScreen>
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.04),
+                                  color: Colors.black.withValues(alpha: 0.04),
                                   blurRadius: 8,
                                   offset: const Offset(0, 2),
                                 ),

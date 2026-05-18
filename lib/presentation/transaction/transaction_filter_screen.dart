@@ -1,4 +1,4 @@
-// lib/presentation/transaction/transaction_filter_screen.dart
+﻿// lib/presentation/transaction/transaction_filter_screen.dart
 //
 // Full-page filter screen for the Transactions tab.
 // Called via Navigator.push from TransactionsScreen (_showFilterDialog replaced
@@ -21,7 +21,7 @@ import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/provider/transaction/transaction_provider.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/legacy.dart';           // keep existing
 // ---------------------------------------------------------------------------
 // Local enums & draft model
 // ---------------------------------------------------------------------------
@@ -453,7 +453,7 @@ class _BottomBar extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   foregroundColor: AppColors.white,
                   disabledBackgroundColor:
-                      AppColors.primaryTeal.withOpacity(0.45),
+                      AppColors.primaryTeal.withValues(alpha: 0.45),
                   elevation: 0,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28)),
@@ -522,7 +522,7 @@ BoxDecoration _cardDecoration(BuildContext context) => BoxDecoration(
       borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
       boxShadow: [
         BoxShadow(
-          color: Colors.black.withOpacity(0.04),
+          color: Colors.black.withValues(alpha: 0.04),
           blurRadius: 6,
           offset: const Offset(0, 2),
         ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/services/transaction_pin_service.dart';
@@ -216,7 +216,7 @@ class _TransactionPinBottomSheetState extends ConsumerState<TransactionPinBottom
         vertical: AppLayout.scaleHeight(context, 14),
       ),
       decoration: BoxDecoration(
-        color: _showError ? Colors.red.withOpacity(0.07) : const Color(0xFFDDE8E2),
+        color: _showError ? Colors.red.withValues(alpha: 0.07) : const Color(0xFFDDE8E2),
         borderRadius: BorderRadius.circular(40),
       ),
       child: Row(

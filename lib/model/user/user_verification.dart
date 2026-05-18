@@ -9,7 +9,7 @@ class UserVerificationData {
   final String phoneNumber;
   final String? photoUrl;
   final String gender;
-  final String bvn; // or nin
+  final String BVN; // or NIN
   
   UserVerificationData({
     required this.firstName,
@@ -20,7 +20,7 @@ class UserVerificationData {
     required this.phoneNumber,
     this.photoUrl,
     required this.gender,
-    required this.bvn,
+    required this.BVN,
   });
   
   factory UserVerificationData.fromJson(Map<String, dynamic> json) {
@@ -33,7 +33,7 @@ class UserVerificationData {
       phoneNumber: json['phone_number'],
       photoUrl: json['photo_url'],
       gender: json['gender'],
-      bvn: json['bvn'],
+      BVN: json['BVN'],
     );
   }
 }

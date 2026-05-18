@@ -1,4 +1,4 @@
-// lib/presentation/onboarding/onboarding_screen.dart
+﻿// lib/presentation/onboarding/onboarding_screen.dart
 // Benefit-style onboarding — 3 slides with phone mockup images,
 // smooth dot indicator, and dual Sign In / Get Started buttons.
 
@@ -11,7 +11,7 @@ import 'package:kudipay/presentation/login/login_page.dart';
 import 'package:kudipay/services/onboarding_services.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();

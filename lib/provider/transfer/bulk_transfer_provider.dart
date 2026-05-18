@@ -4,8 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/model/transfer/bulk_transfer_model.dart';
-import 'package:flutter_riverpod/legacy.dart';
-import 'package:kudipay/provider/network/dio_provider.dart' hide dioClientProvider;
+import 'package:flutter_riverpod/legacy.dart'; // keep existing
+import 'package:kudipay/provider/network/dio_provider.dart';
+
 class BulkTransferNotifier extends StateNotifier<BulkTransferState> {
   final DioClient _client;
 
@@ -83,8 +84,7 @@ class BulkTransferNotifier extends StateNotifier<BulkTransferState> {
         '/transfer/bulk/execute',
         data: {
           'recipients': state.recipients.map((r) => r.toJson()).toList(),
-          'total_amount':
-              state.totalAmount ?? state.calculatedTotalAmount,
+          'total_amount': state.totalAmount ?? state.calculatedTotalAmount,
           'distribution_type': state.distributionType.name,
           if (pin != null) 'pin': pin,
           if (state.isScheduled && state.scheduledDate != null)
@@ -123,8 +123,7 @@ final bulkTransferTemplatesProvider =
         await client.get<Map<String, dynamic>>('/transfer/bulk/templates');
     final raw = response.data!['templates'] as List<dynamic>;
     return raw
-        .map((t) =>
-            BulkTransferTemplate.fromJson(t as Map<String, dynamic>))
+        .map((t) => BulkTransferTemplate.fromJson(t as Map<String, dynamic>))
         .toList();
   } on KudiApiException {
     return [];

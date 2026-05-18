@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/formatting/widget/transaction_pin_bottom_sheet.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
@@ -12,7 +12,7 @@ import 'package:kudipay/provider/P2P_transfer/P2P_transfer_provider.dart';
 // =============================================================================
 
 class PinEntryBottomSheet extends ConsumerWidget {
-  const PinEntryBottomSheet({Key? key}) : super(key: key);
+  const PinEntryBottomSheet({super.key});
 
   /// Open the transaction PIN sheet for a P2P transfer.
   static void show(BuildContext context) {

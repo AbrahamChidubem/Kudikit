@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/provider/provider.dart';
 
 
 class KnowYouBetterForm extends ConsumerStatefulWidget {
-  const KnowYouBetterForm({Key? key}) : super(key: key);
+  const KnowYouBetterForm({super.key});
 
   @override
   ConsumerState<KnowYouBetterForm> createState() => _KnowYouBetterFormState();
@@ -244,7 +244,7 @@ class _KnowYouBetterFormState extends ConsumerState<KnowYouBetterForm> {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: DropdownButtonFormField<String>(
-                        value: _selectedSource,
+                        initialValue: _selectedSource,
                         decoration: const InputDecoration(
                           hintText: 'Select',
                           hintStyle: TextStyle(

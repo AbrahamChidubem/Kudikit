@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/shared_widget.dart';
@@ -96,7 +96,7 @@ class AgentDashboardScreen extends ConsumerWidget {
                   Switch(
                     value: state.isAvailable,
                     onChanged: (_) => notifier.toggleAvailability(),
-                    activeColor: kTeal,
+                    activeThumbColor: kTeal,
                   ),
                 ],
               ),
@@ -151,21 +151,21 @@ class AgentDashboardScreen extends ConsumerWidget {
                     icon: Icons.arrow_downward_rounded,
                     label: 'Cash Out',
                     value: '12',
-                    iconBg: kTeal.withOpacity(0.1),
+                    iconBg: kTeal.withValues(alpha: 0.1),
                     iconColor: kTeal,
                   ),
                   _MiniStat(
                     icon: Icons.arrow_upward_rounded,
                     label: 'Cash Out',
                     value: '12',
-                    iconBg: Colors.orange.withOpacity(0.1),
+                    iconBg: Colors.orange.withValues(alpha: 0.1),
                     iconColor: Colors.orange,
                   ),
                   _MiniStat(
                     icon: Icons.show_chart_rounded,
                     label: 'Cash Out',
                     value: '12',
-                    iconBg: Colors.blue.withOpacity(0.1),
+                    iconBg: Colors.blue.withValues(alpha: 0.1),
                     iconColor: Colors.blue,
                   ),
                 ],

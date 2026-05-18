@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:image_picker/image_picker.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/presentation/linkdevice/verification_in_progress.dart';
 import 'dart:io';
 
 class UploadSelfieScreen extends ConsumerStatefulWidget {
-  const UploadSelfieScreen({Key? key}) : super(key: key);
+  const UploadSelfieScreen({super.key});
 
   @override
   ConsumerState<UploadSelfieScreen> createState() => _UploadSelfieScreenState();

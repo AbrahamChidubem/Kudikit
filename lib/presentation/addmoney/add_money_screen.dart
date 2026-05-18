@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -12,7 +12,7 @@ import 'package:kudipay/provider/funding/funding_provider.dart';
 import 'package:kudipay/provider/refresh/refresh_provider.dart';
 
 class AddMoneyScreen extends ConsumerStatefulWidget {
-  const AddMoneyScreen({Key? key}) : super(key: key);
+  const AddMoneyScreen({super.key});
 
   @override
   ConsumerState<AddMoneyScreen> createState() => _AddMoneyScreenState();
@@ -143,7 +143,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -346,7 +346,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
               BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.03),
+              color: Colors.black.withValues(alpha: 0.03),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),

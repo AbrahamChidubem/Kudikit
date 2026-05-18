@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -38,7 +38,7 @@ class _HelpVideo {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class SupportScreen extends StatefulWidget {
-  const SupportScreen({Key? key}) : super(key: key);
+  const SupportScreen({super.key});
 
   @override
   State<SupportScreen> createState() => _SupportScreenState();
@@ -255,7 +255,7 @@ class _SupportScreenState extends State<SupportScreen> {
               width: iconBoxSize,
               height: iconBoxSize,
               decoration: BoxDecoration(
-                color: AppColors.lightGreen,
+                color: AppColors.checkGreen,
                 borderRadius:
                     BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
               ),
@@ -415,7 +415,7 @@ class _SupportScreenState extends State<SupportScreen> {
                     width: double.infinity,
                     height: thumbHeight,
                     decoration: BoxDecoration(
-                      color: AppColors.lightGreen,
+                      color: AppColors.checkGreen,
                       borderRadius: BorderRadius.vertical(
                         top: Radius.circular(AppLayout.scaleWidth(context, 12)),
                       ),
@@ -709,7 +709,7 @@ class _ReportIssueSheetState extends State<_ReportIssueSheet> {
               onPressed: (_canSubmit && !_isSubmitting) ? _submit : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryTeal,
-                disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.4),
+                disabledBackgroundColor: AppColors.primaryTeal.withValues(alpha: 0.4),
                 minimumSize:
                     Size(double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(

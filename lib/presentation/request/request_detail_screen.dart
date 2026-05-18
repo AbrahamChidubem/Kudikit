@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -258,7 +258,7 @@ class _RequestDetailScreenState
             label,
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 12),
-              color: _white.withOpacity(0.8),
+              color: _white.withValues(alpha: 0.8),
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -337,7 +337,7 @@ class _RequestDetailScreenState
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8, offset: const Offset(0, 2),
           ),
         ],
@@ -411,7 +411,7 @@ class _RequestDetailScreenState
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8, offset: const Offset(0, 2),
           ),
         ],
@@ -435,7 +435,7 @@ class _RequestDetailScreenState
     return Container(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
-        color: AppColors.lightGreen,
+        color: AppColors.checkGreen,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
       ),
       child: Row(
@@ -920,7 +920,7 @@ class _PartialPaymentSheetState extends State<_PartialPaymentSheet> {
               onPressed: _amount > 0 ? () => widget.onContinue(_amount) : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _teal,
-                disabledBackgroundColor: _teal.withOpacity(0.4),
+                disabledBackgroundColor: _teal.withValues(alpha: 0.4),
                 minimumSize: Size(double.infinity, AppLayout.scaleHeight(context, 52)),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 30))),

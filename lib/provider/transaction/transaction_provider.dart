@@ -331,10 +331,12 @@
 
 
 import 'package:flutter_riverpod/flutter_riverpod.dart' show Provider;
-import 'package:kudipay/config/dio_client.dart'; 
+import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/core/providers/core_providers.dart'; 
 import 'package:kudipay/model/transaction/transaction_model.dart';
 import 'package:kudipay/services/transaction_service.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ADD this
+import 'package:flutter_riverpod/legacy.dart';           // keep existing
 // ==================== TRANSACTION PROVIDERS ====================
 
 final transactionServiceProvider = Provider<TransactionService>((ref) {

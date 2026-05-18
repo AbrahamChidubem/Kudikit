@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/KudiAppbar.dart';
@@ -325,7 +325,7 @@ class _PhoneTab extends StatelessWidget {
                 );
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.lightGreen,
+                backgroundColor: AppColors.checkGreen,
                 foregroundColor: AppColors.primaryTeal ,
                 elevation: 0,
                 padding: EdgeInsets.symmetric(
@@ -369,7 +369,7 @@ class _BottomCta extends StatelessWidget {
         color: AppColors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),

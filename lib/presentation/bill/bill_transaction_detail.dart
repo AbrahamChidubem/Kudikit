@@ -1,4 +1,4 @@
-// ============================================================================
+﻿// ============================================================================
 // lib/presentation/bill/bill_transaction_detail.dart
 // Generic transaction receipt screen used after any successful bill payment
 // (airtime, data, electricity, cable TV).
@@ -204,7 +204,7 @@ class BillTransactionDetail extends StatelessWidget {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -341,7 +341,7 @@ class _DetailCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

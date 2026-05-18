@@ -54,7 +54,7 @@ dependencies:
   camera:
   image_picker:
   file_picker:
-  csv:
+  csv: ^8.0.0
   permission_handler:
   flutter_contacts: ^1.1.7  # or latest
 

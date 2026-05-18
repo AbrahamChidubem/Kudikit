@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/model/agent/cashout_transaction_model.dart';
@@ -197,7 +197,7 @@ class _TransactionCodeScreenState
             height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: const Color(0xFF2BA89A).withOpacity(0.15),
+              color: const Color(0xFF2BA89A).withValues(alpha: 0.15),
             ),
             child: Center(
               child: Text(

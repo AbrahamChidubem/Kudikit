@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
@@ -9,7 +9,7 @@ import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/bank_selection_bottom_sheet.dart';
 
 class AddRecipientsManuallyScreen extends ConsumerStatefulWidget {
-  const AddRecipientsManuallyScreen({Key? key}) : super(key: key);
+  const AddRecipientsManuallyScreen({super.key});
 
   @override
   ConsumerState<AddRecipientsManuallyScreen> createState() =>
@@ -143,7 +143,7 @@ class _AddRecipientsManuallyScreenState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -313,7 +313,7 @@ class _AddRecipientsManuallyScreenState
                 vertical: AppLayout.scaleHeight(context, 4),
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF069494).withOpacity(0.1),
+                color: const Color(0xFF069494).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -428,7 +428,7 @@ class _AddRecipientsManuallyScreenState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -519,7 +519,7 @@ class _AddRecipientsManuallyScreenState
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -565,7 +565,7 @@ class _AddRecipientsManuallyScreenState
                       .read(bulkTransferProvider.notifier)
                       .setScheduledTransfer(isScheduled: value);
                 },
-                activeColor: const Color(0xFF069494),
+                activeThumbColor: const Color(0xFF069494),
               ),
             ],
           ),
@@ -755,7 +755,7 @@ class _AddRecipientsManuallyScreenState
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.08),
+            color: Colors.black.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, -4),
           ),
@@ -949,7 +949,7 @@ class _RecipientCardState extends ConsumerState<_RecipientCard> {
         boxShadow: isComplete
             ? [
                 BoxShadow(
-                  color: const Color(0xFF069494).withOpacity(0.1),
+                  color: const Color(0xFF069494).withValues(alpha: 0.1),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),

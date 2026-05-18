@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/model/agent/agent_model.dart';
 
 
@@ -155,7 +155,7 @@ class ConfirmBottomSheet extends StatelessWidget {
                     width: 36,
                     height: 36,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2BA89A).withOpacity(0.15),
+                      color: const Color(0xFF2BA89A).withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: Center(

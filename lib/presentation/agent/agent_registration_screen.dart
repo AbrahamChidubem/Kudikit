@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -43,7 +43,7 @@ class AgentRegistrationFlow extends ConsumerWidget {
     }
 
     return PopScope(
-      onPopInvoked: (didPop) {
+     onPopInvokedWithResult: (didPop, _) {
         if (didPop && state.currentStep > 0) {
           notifier.goToStep(state.currentStep - 1);
         }
@@ -234,7 +234,7 @@ class _SectionCard extends StatelessWidget {
             BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 12),
             offset: Offset(0, AppLayout.scaleHeight(context, 4)),
           ),
@@ -348,7 +348,7 @@ class _InfoBanner extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(AppLayout.scaleWidth(context, 14)),
       decoration: BoxDecoration(
-        color: AppColors.primaryTeal.withOpacity(0.08),
+        color: AppColors.primaryTeal.withValues(alpha: 0.08),
         borderRadius:
             BorderRadius.circular(AppLayout.scaleWidth(context, 10)),
       ),
@@ -404,8 +404,8 @@ class _PrimaryButton extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             backgroundColor: onPressed != null
                 ? AppColors.primaryTeal
-                : AppColors.primaryTeal.withOpacity(0.4),
-            disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.4),
+                : AppColors.primaryTeal.withValues(alpha: 0.4),
+            disabledBackgroundColor: AppColors.primaryTeal.withValues(alpha: 0.4),
             elevation: 0,
             shape: RoundedRectangleBorder(
               borderRadius:
@@ -463,7 +463,7 @@ class _BusinessTypeDropdown extends StatelessWidget {
               size: AppLayout.scaleWidth(context, 20)),
           items: BusinessType.values
               .map((t) => DropdownMenuItem(
-                    value: t,
+                   value: t,
                     child: Text(t.label,
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 14),

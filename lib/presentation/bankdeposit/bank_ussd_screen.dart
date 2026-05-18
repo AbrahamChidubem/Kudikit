@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -9,7 +9,7 @@ import 'package:kudipay/presentation/bankdeposit/ussd_code_display_screen.dart';
 import 'package:kudipay/provider/funding/funding_provider.dart';
 
 class BankUssdScreen extends ConsumerStatefulWidget {
-  const BankUssdScreen({Key? key}) : super(key: key);
+  const BankUssdScreen({super.key});
 
   @override
   ConsumerState<BankUssdScreen> createState() => _BankUssdScreenState();
@@ -318,7 +318,7 @@ class _BankUssdScreenState extends ConsumerState<BankUssdScreen> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryTeal.withOpacity(0.08)
+              ? AppColors.primaryTeal.withValues(alpha: 0.08)
               : AppColors.backgroundScreen,
           borderRadius:
               BorderRadius.circular(AppLayout.scaleWidth(context, 6)),
@@ -386,7 +386,7 @@ class _BankUssdScreenState extends ConsumerState<BankUssdScreen> {
         onPressed: (_isFormValid && !isLoading) ? _handleConfirm : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primaryTeal,
-          disabledBackgroundColor: AppColors.primaryTeal.withOpacity(0.35),
+          disabledBackgroundColor: AppColors.primaryTeal.withValues(alpha: 0.35),
           disabledForegroundColor: Colors.white,
           minimumSize:
               Size(double.infinity, AppLayout.scaleHeight(context, 52)),

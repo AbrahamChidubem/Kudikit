@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +18,7 @@ String _maskPhone(String phone) {
 /// OTP Verification bottom sheet shown at the end of the bulk transfer flow.
 /// The OTP is sent to the phone number on the user's account (from UserModel).
 class BulkTransferOtpSheet extends ConsumerStatefulWidget {
-  const BulkTransferOtpSheet({Key? key}) : super(key: key);
+  const BulkTransferOtpSheet({super.key});
 
   static void show(BuildContext context) {
     showModalBottomSheet(

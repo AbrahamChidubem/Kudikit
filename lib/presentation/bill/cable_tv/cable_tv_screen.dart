@@ -1,4 +1,4 @@
-// lib/presentation/bill/cable_tv/cable_tv_screen.dart
+﻿// lib/presentation/bill/cable_tv/cable_tv_screen.dart
 // Cable TV subscription payment screen — matches all 7 design images.
 //
 // FIXED (3 errors at the ref.listen block):
@@ -25,7 +25,7 @@ import 'package:kudipay/provider/wallet/wallet_provider.dart';
 // ============================================================================
 
 class CableTvBillerScreen extends ConsumerWidget {
-  const CableTvBillerScreen({Key? key}) : super(key: key);
+  const CableTvBillerScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -168,7 +168,7 @@ class CableTvBillerScreen extends ConsumerWidget {
 // ============================================================================
 
 class CableTvScreen extends ConsumerStatefulWidget {
-  const CableTvScreen({Key? key}) : super(key: key);
+  const CableTvScreen({super.key});
 
   @override
   ConsumerState<CableTvScreen> createState() => _CableTvScreenState();
@@ -1005,7 +1005,7 @@ class _ConfirmCableTvSheet extends ConsumerWidget {
                       value: state.autoRenew,
                       onChanged: (_) =>
                           ref.read(cableTvProvider.notifier).toggleAutoRenew(),
-                      activeColor: const Color(0xFF069494),
+                      activeThumbColor: const Color(0xFF069494),
                       inactiveTrackColor: const Color(0xFFE0E0E0),
                       inactiveThumbColor: Colors.white,
                     ),

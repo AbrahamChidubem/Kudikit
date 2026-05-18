@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -6,7 +6,7 @@ import 'package:kudipay/provider/wallet/wallet_provider.dart';
 
 
 class CashDepositInstructionsScreen extends ConsumerWidget {
-  const CashDepositInstructionsScreen({Key? key}) : super(key: key);
+  const CashDepositInstructionsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -108,7 +108,7 @@ class CashDepositInstructionsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -24,7 +24,7 @@ import 'package:kudipay/provider/wallet/wallet_provider.dart';
 // ============================================================================
 
 class DataPhoneScreen extends ConsumerStatefulWidget {
-  const DataPhoneScreen({Key? key}) : super(key: key);
+  const DataPhoneScreen({super.key});
 
   @override
   ConsumerState<DataPhoneScreen> createState() => _DataPhoneScreenState();
@@ -169,7 +169,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -322,7 +322,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
                             borderRadius: BorderRadius.circular(16),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withValues(alpha: 0.04),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -417,7 +417,7 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
                       state.canProceedFromPhone ? () => _proceed() : null,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF069494),
-                    disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.35),
+                    disabledBackgroundColor: const Color(0xFF069494).withValues(alpha: 0.35),
                     elevation: 0,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(28),

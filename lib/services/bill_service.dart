@@ -119,34 +119,6 @@ class BillsService {
     return buyAirtime(request);
 
     // ── Real implementation ──────────────────────────────────────────────
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/bills/airtime'),
-        headers: _headers,
-        body: jsonEncode({
-          ...request.toJson(),
-          'request_id': _generateRequestId(),
-        }),
-      ).timeout(const Duration(seconds: 30));
-    
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-    
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return AirtimePurchaseResponse.fromJson(data);
-      } else {
-        throw BillsException(
-          data['message'] ?? 'Airtime purchase failed',
-          response.statusCode,
-        );
-      }
-    } on SocketException {
-      throw BillsException('No internet connection. Please check your network.');
-    } on TimeoutException {
-      throw BillsException('Request timed out. Please try again.');
-    } catch (e) {
-      if (e is BillsException) rethrow;
-      throw BillsException('Airtime purchase failed. Please try again.');
-    }
   }
 
   // Future<AirtimePurchaseResponse> _mockBuyAirtime(AirtimePurchaseRequest request) async {
@@ -176,28 +148,6 @@ class BillsService {
     return getDataPlans(network);
 
     // ── Real implementation ──────────────────────────────────────────────
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/bills/data/plans?network=${network.name.toUpperCase()}'),
-        headers: _headers,
-      ).timeout(const Duration(seconds: 30));
-    
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 200) {
-        final list = data['plans'] as List<dynamic>;
-        return list.map((p) => DataPlan.fromJson(p as Map<String, dynamic>)).toList();
-      } else {
-        throw BillsException(
-          data['message'] ?? 'Failed to load data plans',
-          response.statusCode,
-        );
-      }
-    } on SocketException {
-      throw BillsException('No internet connection.');
-    } catch (e) {
-      if (e is BillsException) rethrow;
-      throw BillsException('Failed to load data plans. Please try again.');
-    }
   }
 
   // Future<List<DataPlan>> _mockGetDataPlans(NetworkProvider network) async {
@@ -281,28 +231,6 @@ class BillsService {
     return buyData(request);
 
     // ── Real implementation ──────────────────────────────────────────────
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/bills/data'),
-        headers: _headers,
-        body: jsonEncode({
-          ...request.toJson(),
-          'request_id': _generateRequestId(),
-        }),
-      ).timeout(const Duration(seconds: 30));
-    
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return DataPurchaseResponse.fromJson(data);
-      } else {
-        throw BillsException(data['message'] ?? 'Data purchase failed', response.statusCode);
-      }
-    } on SocketException {
-      throw BillsException('No internet connection.');
-    } catch (e) {
-      if (e is BillsException) rethrow;
-      throw BillsException('Data purchase failed. Please try again.');
-    }
   }
 
   // Future<DataPurchaseResponse> _mockBuyData(DataPurchaseRequest request) async {

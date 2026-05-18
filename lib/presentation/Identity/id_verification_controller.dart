@@ -1,18 +1,18 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/core/constant/id_type.dart';
+import 'package:kudipay/core/providers/core_providers.dart'; // ← use this
 import 'package:kudipay/model/IDdocument/id_verification_state.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
-import 'package:kudipay/provider/network/dio_provider.dart' hide dioClientProvider;
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ADD this
+import 'package:flutter_riverpod/legacy.dart'; // keep existing
+// Remove the dio_provider.dart import entirely
 
 final idVerificationProvider =
     StateNotifierProvider<IdVerificationController, IdVerificationState>(
   (ref) => IdVerificationController(ref.read(dioClientProvider)),
 );
 
-class IdVerificationController
-    extends StateNotifier<IdVerificationState> {
+class IdVerificationController extends StateNotifier<IdVerificationState> {
   final DioClient _client;
 
   IdVerificationController(this._client)
@@ -54,8 +54,8 @@ class IdVerificationController
       state = state.copyWith(
         status: VerificationStatus.success,
         data: {
-          'name': data['full_name'] ??
-              '${data['first_name']} ${data['last_name']}',
+          'name':
+              data['full_name'] ?? '${data['first_name']} ${data['last_name']}',
           'first_name': data['first_name'] ?? '',
           'last_name': data['last_name'] ?? '',
           'date_of_birth': data['date_of_birth'] ?? data['dateOfBirth'] ?? '',

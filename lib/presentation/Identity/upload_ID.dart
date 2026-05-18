@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:kudipay/core/providers/core_providers.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/IDdocument/document_data.dart';
 import 'package:kudipay/model/user/user_info.dart';
@@ -12,7 +13,7 @@ import 'dart:io';
 
 
 class UploadIdCardScreen extends ConsumerWidget {
-  const UploadIdCardScreen({Key? key}) : super(key: key);
+  const UploadIdCardScreen({super.key});
 
   Future<void> _pickDocument(WidgetRef ref) async {
     try {
@@ -85,7 +86,7 @@ class UploadIdCardScreen extends ConsumerWidget {
                           border: Border.all(color: Colors.grey[300]!),
                         ),
                         child: DropdownButtonFormField<DocumentType>(
-                          value: documentData.documentType,
+                          initialValue: documentData.documentType,
                           decoration: InputDecoration(
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.symmetric(

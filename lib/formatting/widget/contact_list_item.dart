@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 
 import 'package:kudipay/model/request/request_model.dart';
@@ -192,7 +192,7 @@ class _InviteBadge extends StatelessWidget {
         color: AppColors.inviteBadgeBackground,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Color(0xFF069494).withOpacity(0.3),
+          color: Color(0xFF069494).withValues(alpha: 0.3),
           width: 0.5,
         ),
       ),

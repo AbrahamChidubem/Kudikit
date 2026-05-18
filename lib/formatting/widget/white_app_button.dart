@@ -16,7 +16,7 @@ class WhiteAppButton extends StatelessWidget {
       width: double.infinity,
       child: ElevatedButton(
         style: TextButton.styleFrom(
-          padding: const EdgeInsets.symmetric(horizontal: defaultPadding * 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: kDefaultPadding * 1.5),
           backgroundColor: Colors.white,
           shape:  const RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(28)),

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -164,7 +164,7 @@ class _Step2State extends ConsumerState<Step2BusinessLocationScreen> {
             vertical: AppLayout.scaleHeight(context, 8),
           ),
           decoration: BoxDecoration(
-            color: AppColors.primaryTeal.withOpacity(0.12),
+            color: AppColors.primaryTeal.withValues(alpha: 0.12),
             borderRadius:
                 BorderRadius.circular(AppLayout.scaleWidth(context, 20)),
           ),

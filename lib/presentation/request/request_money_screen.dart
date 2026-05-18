@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
@@ -263,7 +263,7 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: DropdownButtonFormField<String>(
-                  value: _selectedCategory,
+                  initialValue: _selectedCategory,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -481,7 +481,7 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> {
                           _isPrivate = value;
                         });
                       },
-                      activeColor: const Color(0xFF069494),
+                      activeThumbColor: const Color(0xFF069494),
                     ),
                   ],
                 ),
@@ -496,7 +496,7 @@ class _RequestMoneyScreenState extends ConsumerState<RequestMoneyScreen> {
           color: Colors.white,
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, -4),
             ),

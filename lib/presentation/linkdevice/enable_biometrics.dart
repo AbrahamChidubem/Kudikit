@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/linkdevice/account_active.dart';
 
 
 class EnableBiometricsScreen extends ConsumerWidget {
-  const EnableBiometricsScreen({Key? key}) : super(key: key);
+  const EnableBiometricsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,7 +137,7 @@ class EnableBiometricsScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),
@@ -150,7 +150,7 @@ class EnableBiometricsScreen extends ConsumerWidget {
             width: AppLayout.scaleWidth(context, 48),
             height: AppLayout.scaleWidth(context, 48),
             decoration: BoxDecoration(
-              color: iconColor.withOpacity(0.1),
+              color: iconColor.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(

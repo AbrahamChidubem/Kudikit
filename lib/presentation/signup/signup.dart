@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,7 +21,10 @@ class SignUpScreen extends ConsumerStatefulWidget {
   ConsumerState<SignUpScreen> createState() => _SignUpScreenState();
 }
 
+// ✅ Top-level — lives outside any class, at file scope
+
 class _SignUpScreenState extends ConsumerState<SignUpScreen> {
+  // now ref.watch(_termsAcceptedProvider) works correctly
 
   // ---------------------------------------------------------------------------
   // CONTROLLERS
@@ -843,7 +846,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
         //     : null,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.03),
+            color: Colors.black.withValues(alpha: 0.03),
             blurRadius: AppLayout.scaleWidth(context, 8),
             offset: Offset(0, AppLayout.scaleHeight(context, 2)),
           ),

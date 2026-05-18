@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/model/tribe/tribe_card.dart';
@@ -7,7 +7,7 @@ import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
 
 class TribeScreen extends ConsumerStatefulWidget {
-  const TribeScreen({Key? key}) : super(key: key);
+  const TribeScreen({super.key});
 
   @override
   ConsumerState<TribeScreen> createState() => _KudikitTribeScreenState();
@@ -222,7 +222,7 @@ class _KudikitTribeScreenState extends ConsumerState<TribeScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF069494),
                   disabledBackgroundColor:
-                      const Color(0xFF069494).withOpacity(0.5),
+                      const Color(0xFF069494).withValues(alpha: 0.5),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(28),
                   ),

@@ -1,4 +1,4 @@
-// lib/presentation/request/preview_request_screen.dart
+﻿// lib/presentation/request/preview_request_screen.dart
 //
 // Covers two states shown in the designs:
 //   1. Preview state  — shows amount card, recipient, delivery method,
@@ -135,7 +135,7 @@ class _AmountCard extends StatelessWidget {
             'Requesting',
             style: TextStyle(
               fontSize: AppLayout.fontSize(context, 13),
-              color: AppColors.white.withOpacity(0.8),
+              color: AppColors.white.withValues(alpha: 0.8),
               fontWeight: FontWeight.w400,
             ),
           ),
@@ -154,7 +154,7 @@ class _AmountCard extends StatelessWidget {
             children: [
               Icon(
                 Icons.chat_bubble_outline,
-                color: AppColors.white.withOpacity(0.8),
+                color: AppColors.white.withValues(alpha: 0.8),
                 size: AppLayout.scaleWidth(context, 14),
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 6)),
@@ -162,7 +162,7 @@ class _AmountCard extends StatelessWidget {
                 'Rent',
                 style: TextStyle(
                   fontSize: AppLayout.fontSize(context, 13),
-                  color: AppColors.white.withOpacity(0.9),
+                  color: AppColors.white.withValues(alpha: 0.9),
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -253,7 +253,7 @@ class _DeliveryMethodCard extends StatelessWidget {
         color: AppColors.backgroundGreen,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         border: Border.all(
-          color: AppColors.primaryTeal .withOpacity(0.25),
+          color: AppColors.primaryTeal .withValues(alpha: 0.25),
           width: 1,
         ),
       ),
@@ -392,7 +392,7 @@ class _PreviewBottomBar extends StatelessWidget {
         color: AppColors.backgroundScreen,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 10,
             offset: const Offset(0, -4),
           ),

@@ -3,7 +3,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/ticket_model.dart';
 import '../../data/tickets_repository.dart';
-import 'package:flutter_riverpod/legacy.dart';
+ // ADD this
+import 'package:flutter_riverpod/legacy.dart';           // keep existing
 // Repository provider
 final ticketsRepositoryProvider = Provider<TicketsRepository>((ref) {
   return TicketsRepository();

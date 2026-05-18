@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
@@ -11,7 +11,7 @@ import 'package:kudipay/presentation/Identity/chooseID.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SelfieCaptureScreen extends ConsumerStatefulWidget {
-  const SelfieCaptureScreen({Key? key}) : super(key: key);
+  const SelfieCaptureScreen({super.key});
 
   @override
   ConsumerState<SelfieCaptureScreen> createState() =>
@@ -237,7 +237,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                 decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.6),
+                    color: Colors.black.withValues(alpha: 0.6),
                     borderRadius: BorderRadius.circular(
                         AppLayout.scaleWidth(context, 8))),
                 child: Text(
@@ -293,7 +293,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
           ),
           if (selfieState.isLoading)
             Container(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -331,7 +331,7 @@ class _SelfieCaptureScreenState extends ConsumerState<SelfieCaptureScreen> {
               width: AppLayout.scaleWidth(context, 80),
               height: AppLayout.scaleWidth(context, 80),
               decoration: BoxDecoration(
-                color: Color(0xFF069494).withOpacity(0.1),
+                color: Color(0xFF069494).withValues(alpha: 0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(Icons.check_circle,

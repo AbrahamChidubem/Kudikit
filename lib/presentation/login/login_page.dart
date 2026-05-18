@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -699,7 +699,7 @@ class _ContinueButton extends StatelessWidget {
             onPressed: disabled ? null : onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF069494),
-              disabledBackgroundColor: const Color(0xFF069494).withOpacity(0.5),
+              disabledBackgroundColor: const Color(0xFF069494).withValues(alpha: 0.5),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius:
@@ -912,7 +912,7 @@ class _ForgotPinSheet extends StatelessWidget {
               width: AppLayout.scaleWidth(context, 64),
               height: AppLayout.scaleWidth(context, 64),
               decoration: BoxDecoration(
-                  color: brand.withOpacity(0.1), shape: BoxShape.circle),
+                  color: brand.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: Icon(Icons.lock_reset_rounded,
                   color: brand, size: AppLayout.scaleWidth(context, 32)),
             ),
@@ -957,7 +957,7 @@ class _ForgotPinSheet extends StatelessWidget {
                               width: 56,
                               height: 56,
                               decoration: BoxDecoration(
-                                color: brand.withOpacity(0.12),
+                                color: brand.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(16),
                               ),
                               child: Icon(Icons.lock_reset,

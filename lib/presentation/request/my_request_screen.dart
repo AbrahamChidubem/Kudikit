@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -71,7 +71,7 @@ class _MyRequestsScreenState extends ConsumerState<MyRequestsScreen>
                       BorderRadius.circular(AppLayout.scaleWidth(context, 16)),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 12,
                       offset: const Offset(0, 2),
                     ),
@@ -521,9 +521,9 @@ class _StatusBadge extends StatelessWidget {
         vertical: AppLayout.scaleHeight(context, 3),
       ),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 6)),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Text(
         request.statusText,

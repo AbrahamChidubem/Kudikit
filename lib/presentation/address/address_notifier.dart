@@ -1,5 +1,7 @@
 import 'package:kudipay/model/address/nigeria_state.dart';
-import 'package:flutter_riverpod/legacy.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart'; // ADD this
+import 'package:flutter_riverpod/legacy.dart';           // keep existing
+
 class AddressNotifier extends StateNotifier<AddressData> {
   AddressNotifier() : super(AddressData());
 

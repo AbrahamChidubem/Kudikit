@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
@@ -11,7 +11,7 @@ import 'package:kudipay/presentation/transfer/single_transfer/transfer_amount_sc
 import 'package:kudipay/presentation/transfer/single_transfer/bank_selection_bottom_sheet.dart';
 
 class TransferRecipientScreen extends ConsumerStatefulWidget {
-  const TransferRecipientScreen({Key? key}) : super(key: key);
+  const TransferRecipientScreen({super.key});
 
   @override
   ConsumerState<TransferRecipientScreen> createState() =>
@@ -232,7 +232,7 @@ class _TransferRecipientScreenState
         borderRadius: BorderRadius.circular(12),
         // boxShadow: [
         //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
+        //     color: Colors.black.withValues(alpha: 0.05),
         //     blurRadius: 10,
         //     offset: const Offset(0, 2),
         //   ),
@@ -478,7 +478,7 @@ class _TransferRecipientScreenState
         borderRadius: BorderRadius.circular(12),
         // boxShadow: [
         //   BoxShadow(
-        //     color: Colors.black.withOpacity(0.05),
+        //     color: Colors.black.withValues(alpha: 0.05),
         //     blurRadius: 10,
         //     offset: const Offset(0, 2),
         //   ),
@@ -741,7 +741,7 @@ class _TransferRecipientScreenState
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 2),
           ),

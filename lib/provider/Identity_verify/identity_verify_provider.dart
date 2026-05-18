@@ -2,6 +2,7 @@
 
 import 'package:kudipay/config/dio_client.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kudipay/core/providers/core_providers.dart';
 
 // ── Enum ──────────────────────────────────────────────────────────────────────
 enum IdentificationType {

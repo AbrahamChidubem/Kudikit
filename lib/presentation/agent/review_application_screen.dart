@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+﻿// ─────────────────────────────────────────────────────────────────────────────
 // Review Application Screen
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -82,7 +82,7 @@ class ReviewApplicationScreen extends ConsumerWidget {
               rows: [
                 _ReviewRow(
                     label: 'Business Name',
-                    value: app.businessName,
+                   value: app.businessName,
                     onEdit: () => notifier.goToStep(0)),
                 _ReviewRow(
                     label: 'Business Type',
@@ -247,7 +247,7 @@ class _ReviewSection extends StatelessWidget {
                 BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.04),
+                color: Colors.black.withValues(alpha: 0.04),
                 blurRadius: AppLayout.scaleWidth(context, 12),
                 offset: Offset(0, AppLayout.scaleHeight(context, 4)),
               ),
@@ -528,7 +528,7 @@ class AgentDashboardScreen extends ConsumerWidget {
                   Switch(
                     value: state.isAvailable,
                     onChanged: (_) => notifier.toggleAvailability(),
-                    activeColor: AppColors.primaryTeal,
+                    activeThumbColor: AppColors.primaryTeal,
                   ),
                 ],
               ),
@@ -581,21 +581,21 @@ class AgentDashboardScreen extends ConsumerWidget {
                     icon: Icons.arrow_downward_rounded,
                     label: 'Cash Out',
                     value: '12',
-                    iconBg: AppColors.primaryTeal.withOpacity(0.1),
+                    iconBg: AppColors.primaryTeal.withValues(alpha: 0.1),
                     iconColor: AppColors.primaryTeal,
                   ),
                   _MiniStat(
                     icon: Icons.arrow_upward_rounded,
                     label: 'Cash Out',
                     value: '12',
-                    iconBg: Colors.orange.withOpacity(0.1),
+                    iconBg: Colors.orange.withValues(alpha: 0.1),
                     iconColor: Colors.orange,
                   ),
                   _MiniStat(
                     icon: Icons.show_chart_rounded,
                     label: 'Cash Out',
                     value: '12',
-                    iconBg: Colors.blue.withOpacity(0.1),
+                    iconBg: Colors.blue.withValues(alpha: 0.1),
                     iconColor: Colors.blue,
                   ),
                 ],
@@ -672,7 +672,7 @@ class _StatCard extends StatelessWidget {
             BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: AppLayout.scaleWidth(context, 12),
             offset: Offset(0, AppLayout.scaleHeight(context, 4)),
           ),

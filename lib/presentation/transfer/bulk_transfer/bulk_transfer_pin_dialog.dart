@@ -1,11 +1,11 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_success.dart';
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
 
 class BulkTransferPinDialog extends ConsumerStatefulWidget {
-  const BulkTransferPinDialog({Key? key}) : super(key: key);
+  const BulkTransferPinDialog({super.key});
 
   @override
   ConsumerState<BulkTransferPinDialog> createState() =>

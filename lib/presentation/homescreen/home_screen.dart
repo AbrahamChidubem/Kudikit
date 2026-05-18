@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -22,7 +22,7 @@ import 'package:kudipay/provider/wallet/wallet_provider.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
@@ -202,7 +202,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       vertical: AppLayout.scaleHeight(context, 3),
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF069494).withOpacity(0.12),
+                                      color: const Color(0xFF069494).withValues(alpha: 0.12),
                                       borderRadius: BorderRadius.circular(
                                           AppLayout.scaleWidth(context, 20)),
                                     ),
@@ -380,7 +380,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                         fontSize:
                                             AppLayout.fontSize(context, 11),
                                         color:
-                                            Colors.white.withOpacity(0.7)),
+                                            Colors.white.withValues(alpha: 0.7)),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   SizedBox(
@@ -396,7 +396,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                               fontSize: AppLayout.fontSize(
                                                   context, 12),
                                               color: Colors.white
-                                                  .withOpacity(0.9),
+                                                  .withValues(alpha: 0.9),
                                               fontWeight: FontWeight.w500),
                                         ),
                                         SizedBox(
@@ -407,7 +407,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                 fontSize: AppLayout.fontSize(
                                                     context, 12),
                                                 color: Colors.white
-                                                    .withOpacity(0.5))),
+                                                    .withValues(alpha: 0.5))),
                                         SizedBox(
                                             width: AppLayout.scaleWidth(
                                                 context, 4)),
@@ -421,7 +421,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                                 fontSize: AppLayout.fontSize(
                                                     context, 12),
                                                 color: Colors.white
-                                                    .withOpacity(0.9)),
+                                                    .withValues(alpha: 0.9)),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -432,7 +432,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             size: AppLayout.scaleWidth(
                                                 context, 12),
                                             color: Colors.white
-                                                .withOpacity(0.7)),
+                                                .withValues(alpha: 0.7)),
                                       ],
                                     ),
                                   ),
@@ -929,7 +929,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Container(
             padding: EdgeInsets.all(AppLayout.scaleWidth(context, 8)),
             decoration: BoxDecoration(
-              color: const Color(0xFF069494).withOpacity(0.1),
+              color: const Color(0xFF069494).withValues(alpha: 0.1),
               borderRadius:
                   BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
             ),
@@ -978,7 +978,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
                 decoration: BoxDecoration(
                   color: isSuccess
-                      ? const Color(0xFF069494).withOpacity(0.1)
+                      ? const Color(0xFF069494).withValues(alpha: 0.1)
                       : Colors.red.shade50,
                   borderRadius: BorderRadius.circular(
                       AppLayout.scaleWidth(context, 8)),

@@ -1,15 +1,16 @@
-import 'dart:io';
-import 'package:csv/csv.dart';
+﻿import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:csv/csv.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+
 import 'package:kudipay/model/transfer/bulk_transfer_model.dart';
 import 'package:kudipay/presentation/transfer/bulk_transfer/bulk_transfer_file_validation_screen.dart';
 
 class BulkTransferUploadFileScreen extends ConsumerStatefulWidget {
-  const BulkTransferUploadFileScreen({Key? key}) : super(key: key);
+  const BulkTransferUploadFileScreen({super.key});
 
   @override
   ConsumerState<BulkTransferUploadFileScreen> createState() =>
@@ -19,6 +20,10 @@ class BulkTransferUploadFileScreen extends ConsumerStatefulWidget {
 class _BulkTransferUploadFileScreenState
     extends ConsumerState<BulkTransferUploadFileScreen> {
   bool _isUploading = false;
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Build
+  // ─────────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +87,7 @@ class _BulkTransferUploadFileScreenState
           children: [
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // Upload Area
+            // ── Upload tap area ──────────────────────────────────────────────
             GestureDetector(
               onTap: _isUploading ? null : () => _pickFile(context),
               child: Container(
@@ -96,7 +101,6 @@ class _BulkTransferUploadFileScreenState
                   border: Border.all(
                     color: const Color(0xFF069494),
                     width: 2,
-                    style: BorderStyle.solid,
                   ),
                 ),
                 child: Column(
@@ -104,8 +108,8 @@ class _BulkTransferUploadFileScreenState
                     Container(
                       width: AppLayout.scaleWidth(context, 64),
                       height: AppLayout.scaleWidth(context, 64),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE8F5E9),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8F5E9),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -125,7 +129,7 @@ class _BulkTransferUploadFileScreenState
                     ),
                     SizedBox(height: AppLayout.scaleHeight(context, 8)),
                     Text(
-                      'Support formats: CSV, Excel (.xlsx, xls)',
+                      'Support formats: CSV, Excel (.xlsx, .xls)',
                       style: TextStyle(
                         fontSize: AppLayout.fontSize(context, 13),
                         color: Colors.grey[600],
@@ -138,7 +142,7 @@ class _BulkTransferUploadFileScreenState
 
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // Info Box
+            // ── Template info box ────────────────────────────────────────────
             Container(
               padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
               decoration: BoxDecoration(
@@ -158,7 +162,7 @@ class _BulkTransferUploadFileScreenState
                       ),
                       SizedBox(width: AppLayout.scaleWidth(context, 12)),
                       Text(
-                        'Don\'t have a file ready?',
+                        "Don't have a file ready?",
                         style: TextStyle(
                           fontSize: AppLayout.fontSize(context, 14),
                           fontWeight: FontWeight.w600,
@@ -200,7 +204,7 @@ class _BulkTransferUploadFileScreenState
 
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
 
-            // File Format Requirements
+            // ── Format requirements ──────────────────────────────────────────
             Container(
               padding: EdgeInsets.all(AppLayout.scaleWidth(context, 16)),
               decoration: BoxDecoration(
@@ -267,13 +271,15 @@ class _BulkTransferUploadFileScreenState
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // File picking
+  // ─────────────────────────────────────────────────────────────────────────
+
   Future<void> _pickFile(BuildContext context) async {
     try {
-      setState(() {
-        _isUploading = true;
-      });
+      setState(() => _isUploading = true);
 
-      FilePickerResult? result = await FilePicker.pickFiles(
+      final result = await FilePicker.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['csv', 'xlsx', 'xls'],
       );
@@ -281,8 +287,6 @@ class _BulkTransferUploadFileScreenState
       if (result != null && result.files.single.path != null) {
         final file = File(result.files.single.path!);
         final fileName = result.files.single.name;
-
-        // Process the file
         await _processFile(context, file, fileName);
       }
     } catch (e) {
@@ -295,173 +299,187 @@ class _BulkTransferUploadFileScreenState
         );
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isUploading = false;
-        });
-      }
+      if (mounted) setState(() => _isUploading = false);
     }
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // File processing — parse CSV → validate → navigate
+  // ─────────────────────────────────────────────────────────────────────────
 
   Future<void> _processFile(
     BuildContext context,
     File file,
     String fileName,
   ) async {
-    try {
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(
-              color: Color(0xFF069494),
-            ),
-          ),
-        );
-      }
+    // Show loading spinner
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(
+          child: CircularProgressIndicator(color: Color(0xFF069494)),
+        ),
+      );
+    }
 
+    try {
       final fileContent = await file.readAsString();
 
-      // ✅ NEW CSV PARSER (v8)
-      final csv = Csv(
-        dynamicTyping: true, // converts numbers automatically
-      );
 
-      // ✅ Use headers (VERY IMPORTANT)
-      final rows = csv.decodeWithHeaders(fileContent);
+      // CsvToListConverter produces List<List<dynamic>>.
+      // Use \r\n to handle both Windows and Unix line endings.
+      final List<List<dynamic>> allRows = Csv(
+        fieldDelimiter: ',',
+        dynamicTyping:
+            true, // auto-converts numbers, replaces shouldParseNumbers
+      ).decode(fileContent.replaceAll('\r\n', '\n'));
 
-      final result = _parseRecipientsWithHeaders(rows, fileName);
+      if (allRows.isEmpty) {
+        _dismissAndSnack(context, 'The file is empty.');
+        return;
+      }
 
-      if (mounted) Navigator.pop(context);
+      // First row = column headers
+      final headers = allRows.first.map((e) => e.toString().trim()).toList();
+
+      // Remaining rows = data, each mapped to {header: value}
+      final List<Map<String, dynamic>> dataRows = allRows
+          .skip(1)
+          .where((row) => row.any((cell) => cell.toString().trim().isNotEmpty))
+          .map((row) {
+        return {
+          for (int i = 0; i < headers.length; i++)
+            headers[i]: i < row.length ? row[i] : null,
+        };
+      }).toList();
+
+      final result = _parseRecipients(dataRows);
+
+      if (mounted) Navigator.pop(context); // dismiss spinner
 
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => BulkTransferFileValidationScreen(
+            builder: (_) => BulkTransferFileValidationScreen(
               fileName: fileName,
               recipients: result.validRecipients,
               errors: result.errors,
-              totalRecipients: rows.length,
+              totalRecipients: dataRows.length,
             ),
           ),
         );
       }
     } catch (e) {
-      if (mounted) Navigator.pop(context);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error processing file: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
+      _dismissAndSnack(context, 'Error processing file: $e');
     }
   }
 
-  ParseResult _parseRecipientsWithHeaders(
-    List<dynamic> rows,
-    String fileName,
-  ) {
-    List<BulkTransferRecipient> validRecipients = [];
-    List<FileError> errors = [];
+  void _dismissAndSnack(BuildContext context, String message) {
+    if (mounted) Navigator.pop(context); // dismiss spinner
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(message), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Parsing — each row is already Map<String, dynamic> with header keys
+  // ─────────────────────────────────────────────────────────────────────────
+
+  ParseResult _parseRecipients(List<Map<String, dynamic>> rows) {
+    final List<BulkTransferRecipient> validRecipients = [];
+    final List<FileError> errors = [];
 
     if (rows.isEmpty) {
-      errors.add(FileError(
-        row: 0,
-        field: 'File',
-        message: 'File is empty',
-      ));
+      errors.add(FileError(row: 0, field: 'File', message: 'File is empty'));
       return ParseResult(validRecipients, errors);
     }
 
     for (int i = 0; i < rows.length; i++) {
       final row = rows[i];
+      final rowNumber = i + 2; // +2: row 1 = header, data starts at row 2
 
-      try {
-        final name = (row['Name'] ?? '').toString().trim();
-        final accountType =
-            (row['Account Type'] ?? '').toString().trim().toLowerCase();
-        final accountNumber = (row['Phone/Account'] ?? '').toString().trim();
-        final bankName = (row['Bank Name'] ?? '').toString().trim();
-        final amount = row['Amount'] is num
-            ? (row['Amount'] as num).toDouble()
-            : double.tryParse(row['Amount']?.toString() ?? '');
+      final name = (row['Name'] ?? '').toString().trim();
+      final accountType =
+          (row['Account Type'] ?? '').toString().trim().toLowerCase();
+      final accountNumber = (row['Phone/Account'] ?? '').toString().trim();
+      final bankName = (row['Bank Name'] ?? '').toString().trim();
+      final rawAmount = row['Amount'];
+      final amount = rawAmount is num
+          ? rawAmount.toDouble()
+          : double.tryParse(rawAmount?.toString() ?? '');
 
-        // ✅ VALIDATIONS
+      // ── Validate each field ──────────────────────────────────────────────
 
-        if (name.isEmpty) {
-          errors.add(FileError(
-            row: i + 2, // +2 because header is row 1
-            field: 'Name',
-            message: 'Name is required',
-          ));
-        }
-
-        if (accountType != 'kudikit' && accountType != 'bank') {
-          errors.add(FileError(
-            row: i + 2,
-            field: 'Account Type',
-            message: 'Must be "Kudikit" or "Bank"',
-          ));
-        }
-
-        if (accountNumber.isEmpty) {
-          errors.add(FileError(
-            row: i + 2,
-            field: 'Phone/Account',
-            message: 'Account/Phone is required',
-          ));
-        }
-
-        if (accountType == 'bank' && bankName.isEmpty) {
-          errors.add(FileError(
-            row: i + 2,
-            field: 'Bank Name',
-            message: 'Bank name is required for bank transfers',
-          ));
-        }
-
-        if (amount == null || amount <= 0) {
-          errors.add(FileError(
-            row: i + 2,
-            field: 'Amount',
-            message: 'Valid amount is required',
-          ));
-        }
-
-        // ✅ ONLY ADD VALID ROWS
-        if (!errors.any((e) => e.row == i + 2)) {
-          validRecipients.add(
-            BulkTransferRecipient(
-              id: DateTime.now().millisecondsSinceEpoch.toString() +
-                  i.toString(),
-              name: name,
-              accountType: accountType == 'kudikit'
-                  ? TransferAccountType.kudikit
-                  : TransferAccountType.bank,
-              accountNumber: accountNumber,
-              phoneNumber: accountType == 'kudikit' ? accountNumber : null,
-              bankName: accountType == 'bank' ? bankName : null,
-              amount: amount,
-              isVerified: true,
-            ),
-          );
-        }
-      } catch (e) {
+      if (name.isEmpty) {
         errors.add(FileError(
-          row: i + 2,
-          field: 'Row',
-          message: 'Error parsing row: $e',
+          row: rowNumber,
+          field: 'Name',
+          message: 'Name is required',
         ));
+      }
+
+      if (accountType != 'kudikit' && accountType != 'bank') {
+        errors.add(FileError(
+          row: rowNumber,
+          field: 'Account Type',
+          message: 'Must be "Kudikit" or "Bank"',
+        ));
+      }
+
+      if (accountNumber.isEmpty) {
+        errors.add(FileError(
+          row: rowNumber,
+          field: 'Phone/Account',
+          message: 'Account/Phone is required',
+        ));
+      }
+
+      if (accountType == 'bank' && bankName.isEmpty) {
+        errors.add(FileError(
+          row: rowNumber,
+          field: 'Bank Name',
+          message: 'Bank name is required for bank transfers',
+        ));
+      }
+
+      if (amount == null || amount <= 0) {
+        errors.add(FileError(
+          row: rowNumber,
+          field: 'Amount',
+          message: 'Valid amount is required',
+        ));
+      }
+
+      // ── Only add the row if it produced no errors ────────────────────────
+      final rowHasErrors = errors.any((e) => e.row == rowNumber);
+      if (!rowHasErrors) {
+        validRecipients.add(
+          BulkTransferRecipient(
+            id: '${DateTime.now().millisecondsSinceEpoch}$i',
+            name: name,
+            accountType: accountType == 'kudikit'
+                ? TransferAccountType.kudikit
+                : TransferAccountType.bank,
+            accountNumber: accountNumber,
+            phoneNumber: accountType == 'kudikit' ? accountNumber : null,
+            bankName: accountType == 'bank' ? bankName : null,
+            amount: amount,
+            isVerified: true,
+          ),
+        );
       }
     }
 
     return ParseResult(validRecipients, errors);
   }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Template download (copy to clipboard)
+  // ─────────────────────────────────────────────────────────────────────────
 
   void _downloadTemplate(BuildContext context) {
     const template = 'Name,Account Type,Phone/Account,Bank Name,Amount\n'
@@ -471,21 +489,25 @@ class _BulkTransferUploadFileScreenState
     Clipboard.setData(const ClipboardData(text: template));
 
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text(
+      const SnackBar(
+        content: Text(
           'CSV template copied to clipboard — paste into Excel or Sheets',
         ),
-        backgroundColor: const Color(0xFF069494),
+        backgroundColor: Color(0xFF069494),
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Supporting types
+// ─────────────────────────────────────────────────────────────────────────────
+
 class ParseResult {
   final List<BulkTransferRecipient> validRecipients;
   final List<FileError> errors;
 
-  ParseResult(this.validRecipients, this.errors);
+  const ParseResult(this.validRecipients, this.errors);
 }
 
 class FileError {
@@ -493,7 +515,7 @@ class FileError {
   final String field;
   final String message;
 
-  FileError({
+  const FileError({
     required this.row,
     required this.field,
     required this.message,
