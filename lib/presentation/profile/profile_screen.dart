@@ -1,33 +1,33 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/shimmer_widget.dart';
 import 'package:kudipay/presentation/email/change_email_screen.dart';
-import 'package:kudipay/presentation/login/login_page.dart';
+
 import 'package:kudipay/presentation/notification/notification_preference_screen.dart';
-import 'package:kudipay/presentation/tier/upgrade_tier_screen.dart';
+
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/provider/refresh/refresh_provider.dart';
 
-
 // ── SVG icon paths ──────────────────────────────────────────────────────────
 const _iconPerson = 'assets/icons/person.svg';
-const _iconEmail  = 'assets/icons/email.svg';
-const _iconPhone  = 'assets/icons/phone.svg';
-const _iconBell   = 'assets/icons/bell.svg';
-const _iconLock   = 'assets/icons/lock.svg';
+const _iconEmail = 'assets/icons/email.svg';
+const _iconPhone = 'assets/icons/phone.svg';
+const _iconBell = 'assets/icons/bell.svg';
+const _iconLock = 'assets/icons/lock.svg';
 const _iconFaceId = 'assets/icons/face_id.svg';
 
 // Extra colour not in AppColors
-const _iconTeal  = Color(0xFF339992);
-const _headerBg  = Color(0xFFE8F5F3);
-const _iconBg    = Color(0xFFF5F5F5);
-const _dividerC  = Color(0xFFF0F0F0);
-const _arrowC    = Color(0xFFBDBDBD);
-const _phoneFg   = Color(0xFF5C5C5C);
-const _tierSub   = Color(0xFF777777);
+const _iconTeal = Color(0xFF339992);
+const _headerBg = Color(0xFFE8F5F3);
+const _iconBg = Color(0xFFF5F5F5);
+const _dividerC = Color(0xFFF0F0F0);
+const _arrowC = Color(0xFFBDBDBD);
+const _phoneFg = Color(0xFF5C5C5C);
+const _tierSub = Color(0xFF777777);
 
 class UserProfileScreen extends ConsumerStatefulWidget {
   const UserProfileScreen({super.key});
@@ -37,18 +37,18 @@ class UserProfileScreen extends ConsumerStatefulWidget {
 }
 
 class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
-  bool _faceIdPasscode    = false;
+  bool _faceIdPasscode = false;
   bool _faceIdTransaction = false;
 
   @override
   Widget build(BuildContext context) {
-    final user           = ref.watch(currentUserProvider);
-    final userInfo       = ref.watch(userInfoProvider);
-    final tierState      = ref.watch(tierProvider);
+    final user = ref.watch(currentUserProvider);
+    final userInfo = ref.watch(userInfoProvider);
+    final tierState = ref.watch(tierProvider);
     final currentTierObj = tierState.getTierObject();
 
-    final firstName = userInfo?.firstName ??
-        user?.name?.split(' ').first ?? 'User';
+    final firstName =
+        userInfo?.firstName ?? user?.name?.split(' ').first ?? 'User';
     final fullName = userInfo != null
         ? '${userInfo.firstName} ${userInfo.lastName ?? ''}'.trim()
         : user?.name ?? 'Full name not set';
@@ -96,38 +96,37 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             children: [
               _buildHeaderCard(context, user, firstName),
               SizedBox(height: AppLayout.scaleHeight(context, 20)),
-
               _sectionLabel(context, 'Current tier'),
               SizedBox(height: AppLayout.scaleHeight(context, 8)),
               _buildTierCard(context, currentTierObj),
               SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
               _sectionLabel(context, 'Personal Information'),
               SizedBox(height: AppLayout.scaleHeight(context, 8)),
               _buildPersonalInfoCard(context, fullName, user),
               SizedBox(height: AppLayout.scaleHeight(context, 8)),
-
               _buildSingleCard(
                 context,
                 svgPath: _iconBell,
                 title: 'Notification Preference',
                 showArrow: true,
-                onTap: () => Navigator.push(context, MaterialPageRoute(
-                  builder: (_) => const NotificationPreferenceScreen(),
-                )),
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const NotificationPreferenceScreen(),
+                    )),
               ),
               SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
               _sectionLabel(context, 'Security'),
               SizedBox(height: AppLayout.scaleHeight(context, 8)),
-
-              _buildSingleCard(context,
+              _buildSingleCard(
+                context,
                 svgPath: _iconLock,
                 title: 'Change Transaction PIN',
                 showArrow: true,
               ),
               SizedBox(height: AppLayout.scaleHeight(context, 8)),
-              _buildSingleCard(context,
+              _buildSingleCard(
+                context,
                 svgPath: _iconLock,
                 title: 'Change Passcode',
                 showArrow: true,
@@ -151,8 +150,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 onChanged: (v) => setState(() => _faceIdTransaction = v),
               ),
               SizedBox(height: AppLayout.scaleHeight(context, 24)),
-
-              _buildSingleCard(context,
+              _buildSingleCard(
+                context,
                 svgPath: _iconPhone,
                 title: 'App management',
                 showArrow: true,
@@ -169,9 +168,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   // ── Header card ─────────────────────────────────────────────────────────────
   Widget _buildHeaderCard(BuildContext context, user, String firstName) {
-    final photoSize    = AppLayout.scaleWidth(context, 40);
-    final photoRadius  = AppLayout.scaleWidth(context, 6);
-    final tierNumber   = ref.watch(tierProvider).getTierObject().tierNumber;
+    final photoSize = AppLayout.scaleWidth(context, 40);
+    final photoRadius = AppLayout.scaleWidth(context, 6);
+    final tierNumber = ref.watch(tierProvider).getTierObject().tierNumber;
 
     return Container(
       margin: EdgeInsets.fromLTRB(
@@ -242,7 +241,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                         borderRadius: BorderRadius.circular(
                             AppLayout.scaleWidth(context, 20)),
                         border: Border.all(
-                            color: AppColors.primaryTeal.withValues(alpha: 0.25)),
+                            color:
+                                AppColors.primaryTeal.withValues(alpha: 0.25)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -308,7 +308,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final iconBoxSize = AppLayout.scaleWidth(context, 38);
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      margin:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
       padding: EdgeInsets.symmetric(
         horizontal: AppLayout.scaleWidth(context, 16),
         vertical: AppLayout.scaleHeight(context, 14),
@@ -339,7 +340,6 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                 size: AppLayout.scaleWidth(context, 20)),
           ),
           SizedBox(width: AppLayout.scaleWidth(context, 12)),
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -382,11 +382,9 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               ],
             ),
           ),
-
           TextButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(
-              builder: (_) => UpgradeTierScreen(tier: currentTierObj),
-            )),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.upgradeTier,
+                arguments: UpgradeTierArgs(tier: currentTierObj)),
             style: TextButton.styleFrom(
               backgroundColor: _headerBg,
               padding: EdgeInsets.symmetric(
@@ -417,7 +415,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   // ── Personal info grouped card ────────────────────────────────────────────────
   Widget _buildPersonalInfoCard(BuildContext context, String fullName, user) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      margin:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
@@ -442,8 +441,10 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
               title: _maskEmail(user.email),
               subtitle: 'Email address',
               showArrow: true,
-              onTap: () => Navigator.push(context, MaterialPageRoute(
-                    builder: (_) => const ChangeEmailScreen()))),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const ChangeEmailScreen()))),
           _divider(context),
           _infoRow(context,
               svgPath: _iconPhone,
@@ -525,7 +526,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     VoidCallback? onTap,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      margin:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
@@ -579,7 +581,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     required ValueChanged<bool> onChanged,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      margin:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
@@ -640,7 +643,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
     final iconBoxSize = AppLayout.scaleWidth(context, 36);
 
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
+      margin:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
       decoration: BoxDecoration(
         color: AppColors.white,
         borderRadius: BorderRadius.circular(AppLayout.scaleWidth(context, 12)),
@@ -671,8 +675,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
                       BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
                 ),
                 child: Icon(Icons.logout,
-                    color: _iconTeal,
-                    size: AppLayout.scaleWidth(context, 18)),
+                    color: _iconTeal, size: AppLayout.scaleWidth(context, 18)),
               ),
               SizedBox(width: AppLayout.scaleWidth(context, 14)),
               Expanded(
@@ -697,7 +700,7 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
   // ── Shared helpers ────────────────────────────────────────────────────────────
 
   Widget _svgIcon(BuildContext context, String path) {
-    final boxSize  = AppLayout.scaleWidth(context, 36);
+    final boxSize = AppLayout.scaleWidth(context, 36);
     final iconSize = AppLayout.scaleWidth(context, 16);
     return Container(
       width: boxSize,
@@ -719,8 +722,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
 
   Widget _sectionLabel(BuildContext context, String text) {
     return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: AppLayout.scaleWidth(context, 16)),
+      padding:
+          EdgeInsets.symmetric(horizontal: AppLayout.scaleWidth(context, 16)),
       child: Text(
         text,
         style: AppTextStyles.responsiveLabel(context).copyWith(
@@ -763,8 +766,8 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-                AppLayout.scaleWidth(context, 16))),
+            borderRadius:
+                BorderRadius.circular(AppLayout.scaleWidth(context, 16))),
         title: Text(
           'Log out',
           style: TextStyle(fontSize: AppLayout.fontSize(context, 16)),
@@ -788,18 +791,14 @@ class _UserProfileScreenState extends ConsumerState<UserProfileScreen> {
             onPressed: () async {
               await ref.read(authProvider.notifier).logout();
               if (mounted) {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                  (route) => false,
-                );
+                Navigator.pushReplacementNamed(context, AppRoutes.login);
               }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(
-                    AppLayout.scaleWidth(context, 8)),
+                borderRadius:
+                    BorderRadius.circular(AppLayout.scaleWidth(context, 8)),
               ),
             ),
             child: Text(

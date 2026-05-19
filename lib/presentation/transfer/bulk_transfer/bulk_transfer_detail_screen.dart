@@ -2,11 +2,10 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/presentation/support/support_screen.dart';
+
 import 'package:kudipay/provider/transfer/bulk_transfer_provider.dart';
-
-
 
 class BulkTransferDetailsScreen extends ConsumerWidget {
   const BulkTransferDetailsScreen({super.key});
@@ -44,10 +43,7 @@ class BulkTransferDetailsScreen extends ConsumerWidget {
           IconButton(
             icon: const Icon(Icons.headset_mic_outlined, color: Colors.black),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SupportScreen()),
-              );
+              Navigator.pushNamed(context, AppRoutes.support);
             },
           ),
         ],

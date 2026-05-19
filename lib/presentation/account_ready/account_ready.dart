@@ -1,9 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/formatting/widget/bottom_nav.dart';
+
 import 'package:kudipay/model/tier/tier_model.dart';
 import 'package:kudipay/provider/tier/tier_provider.dart';
 import 'package:kudipay/provider/wallet/wallet_provider.dart';
@@ -431,11 +432,7 @@ class _AccountReadyScreenState extends ConsumerState<AccountReadyScreen>
             onPressed: () {
               // Remove the entire onboarding / KYC stack and land on the
               // main dashboard. The user cannot navigate back.
-              Navigator.pushAndRemoveUntil(
-                context,
-                MaterialPageRoute(builder: (_) => const BottomNavBar()),
-                (_) => false,
-              );
+              Navigator.pushNamedAndRemoveUntil(context, AppRoutes.bottomNav, (_) => false);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.primaryTeal,

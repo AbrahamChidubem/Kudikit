@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/presentation/support/support_screen.dart';
+
 
 class VerificationInProgressScreen extends ConsumerWidget {
   const VerificationInProgressScreen({super.key});
@@ -84,7 +85,8 @@ class VerificationInProgressScreen extends ConsumerWidget {
               icon: Icons.email_outlined,
               iconColor: const Color(0xFF5E35B1),
               title: 'Email updates',
-              subtitle: 'We\'ll send you an email as soon as we\'ve\ncompleted the review',
+              subtitle:
+                  'We\'ll send you an email as soon as we\'ve\ncompleted the review',
             ),
 
             SizedBox(height: AppLayout.scaleHeight(context, 24)),
@@ -271,12 +273,7 @@ class VerificationInProgressScreen extends ConsumerWidget {
             alignment: Alignment.centerRight,
             child: TextButton(
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const SupportScreen(),
-                  ),
-                );
+                Navigator.pushNamed(context, AppRoutes.support);
               },
               style: TextButton.styleFrom(
                 padding: EdgeInsets.zero,

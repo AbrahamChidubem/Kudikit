@@ -1,11 +1,10 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
-import 'package:kudipay/presentation/support/support_screen.dart';
 import 'package:kudipay/provider/provider.dart';
-
 
 class TransactionDetailsScreen extends ConsumerWidget {
   const TransactionDetailsScreen({super.key});
@@ -261,10 +260,7 @@ class TransactionDetailsScreen extends ConsumerWidget {
         IconButton(
           icon: const Icon(Icons.headset_mic_outlined, color: Colors.black87),
           onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const SupportScreen()),
-            );
+            Navigator.pushNamed(context, AppRoutes.support);
           },
         ),
       ],
@@ -356,7 +352,8 @@ class TransactionDetailsScreen extends ConsumerWidget {
     Clipboard.setData(ClipboardData(text: result.transactionId));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('Transaction ID copied — use it to request a receipt'),
+        content:
+            const Text('Transaction ID copied — use it to request a receipt'),
         backgroundColor: const Color(0xFF069494),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

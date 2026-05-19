@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'dart:async';
-
-import 'package:kudipay/presentation/support/support_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_success_dialogue.dart';
 
 class OtpVerificationBottomSheet extends ConsumerStatefulWidget {
@@ -109,9 +108,10 @@ class _OtpVerificationBottomSheetState
         _isVerifying = false;
       });
       Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) =>const TransactionSuccessBottomSheet()),);
+        context,
+        MaterialPageRoute(
+            builder: (context) => const TransactionSuccessBottomSheet()),
+      );
       // Success modal would show here
     }
   }
@@ -132,8 +132,7 @@ class _OtpVerificationBottomSheetState
           content: Text('OTP sent to ${widget.maskedPhone}'),
           backgroundColor: const Color(0xFF069494),
           behavior: SnackBarBehavior.floating,
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     }
@@ -145,7 +144,7 @@ class _OtpVerificationBottomSheetState
 
     return Container(
       decoration: const BoxDecoration(
-        color:  Color(0xFFF9F9F9),
+        color: Color(0xFFF9F9F9),
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
@@ -332,12 +331,7 @@ class _OtpVerificationBottomSheetState
                 // Having problem link
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => const SupportScreen(),
-                      ),
-                    );
+                    Navigator.pushNamed(context, AppRoutes.support);
                   },
                   child: Text(
                     'Having problem?',

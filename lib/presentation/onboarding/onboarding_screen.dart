@@ -4,10 +4,11 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/presentation/onboarding/onboarding_content.dart';
 import 'package:kudipay/presentation/intro/intro_view.dart';
-import 'package:kudipay/presentation/login/login_page.dart';
+
 import 'package:kudipay/services/onboarding_services.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -38,10 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   void _goToLogin() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const LoginPage()),
-    );
+    Navigator.pushReplacementNamed(context, AppRoutes.login);
   }
 
   @override

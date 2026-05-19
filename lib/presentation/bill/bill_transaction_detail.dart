@@ -291,7 +291,8 @@ class BillTransactionDetail extends StatelessWidget {
                     child: SizedBox(
                       height: 52,
                       child: ElevatedButton(
-                        onPressed: () => Navigator.pushAndRemoveUntil(
+                        onPressed: () => 
+                        Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(
                               builder: (_) => const BottomNavBar()),

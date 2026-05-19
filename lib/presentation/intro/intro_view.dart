@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
-import 'package:kudipay/presentation/login/login_page.dart';
+
 import 'package:kudipay/presentation/signup/signup.dart';
 
 class IntroviewPage extends StatelessWidget {
@@ -106,12 +107,7 @@ class IntroviewPage extends StatelessWidget {
                           ),
                         ),
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const LoginPage(),
-                            ),
-                          );
+                          Navigator.pushReplacementNamed(context, AppRoutes.login);
                         },
                         child: Text(
                           'Login',

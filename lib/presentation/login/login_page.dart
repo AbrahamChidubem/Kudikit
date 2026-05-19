@@ -2,14 +2,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kudipay/core/navigation/app_route.dart';
 import 'package:kudipay/core/utils/responsive.dart';
 import 'package:kudipay/formatting/widget/app_loading_indicator.dart';
-import 'package:kudipay/formatting/widget/bottom_nav.dart';
+
 import 'package:kudipay/formatting/widget/connectivity_widget.dart';
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/presentation/linkdevice/link_device_screen.dart';
 import 'package:kudipay/presentation/signup/signup.dart';
-import 'package:kudipay/presentation/support/support_screen.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/services/api_services.dart';
 import 'package:kudipay/services/storage_services.dart';
@@ -108,60 +108,57 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   bool _hasEmail(UserModel? user) =>
       (widget.email ?? user?.email ?? '').isNotEmpty;
 
-Future<void> _handleLogin(UserModel? user) async {
-  final isConnected = ref.read(currentConnectivityProvider);
-  if (!isConnected) {
-    ConnectivitySnackBar.showNoInternet(context);
-    return;
+  Future<void> _handleLogin(UserModel? user) async {
+    final isConnected = ref.read(currentConnectivityProvider);
+    if (!isConnected) {
+      ConnectivitySnackBar.showNoInternet(context);
+      return;
+    }
+
+    final password = _passwordCtrl.text.trim();
+    if (password.isEmpty) {
+      _errorNotifier.value = 'Please enter your passcode';
+      return;
+    }
+
+    if (password.length < 8) {
+      _errorNotifier.value = 'Passcode must be at least 8 characters';
+      return;
+    }
+
+    // Build the identifier from whichever field is currently shown
+    final identifier = _showingPhone
+        ? (widget.phoneNumber ?? user?.phoneNumber ?? '')
+        : (widget.email ?? user?.email ?? ref.read(userEmailProvider) ?? '');
+
+    if (identifier.isEmpty) {
+      _errorNotifier.value = 'No account found on this device. Please sign up.';
+      return;
+    }
+
+    if (mounted) setState(() => _isLoading = true);
+    _errorNotifier.value = null;
+
+    try {
+      await ref.read(authProvider.notifier).login(
+            email: identifier, // field is named email but accepts phone too
+            password: password,
+          );
+
+      if (!mounted) return;
+
+      Navigator.pushNamedAndRemoveUntil(
+          context, AppRoutes.bottomNav, (_) => false);
+    } on NoInternetException {
+      if (mounted) ConnectivitySnackBar.showNoInternet(context);
+    } on TimeoutException catch (e) {
+      _errorNotifier.value = e.toString();
+    } catch (e) {
+      _errorNotifier.value = e.toString().replaceFirst('Exception: ', '');
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
-
-  final password = _passwordCtrl.text.trim();
-  if (password.isEmpty) {
-    _errorNotifier.value = 'Please enter your passcode';
-    return;
-  }
-
-  if (password.length < 8) {
-    _errorNotifier.value = 'Passcode must be at least 8 characters';
-    return;
-  }
-
-  // Build the identifier from whichever field is currently shown
-  final identifier = _showingPhone
-      ? (widget.phoneNumber ?? user?.phoneNumber ?? '')
-      : (widget.email ?? user?.email ?? ref.read(userEmailProvider) ?? '');
-
-  if (identifier.isEmpty) {
-    _errorNotifier.value = 'No account found on this device. Please sign up.';
-    return;
-  }
-
-  if (mounted) setState(() => _isLoading = true);
-  _errorNotifier.value = null;
-
-  try {
-    await ref.read(authProvider.notifier).login(
-          email: identifier,   // field is named email but accepts phone too
-          password: password,
-        );
-
-    if (!mounted) return;
-
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (_) => const BottomNavBar()),
-      (_) => false,
-    );
-  } on NoInternetException {
-    if (mounted) ConnectivitySnackBar.showNoInternet(context);
-  } on TimeoutException catch (e) {
-    _errorNotifier.value = e.toString();
-  } catch (e) {
-    _errorNotifier.value = e.toString().replaceFirst('Exception: ', '');
-  } finally {
-    if (mounted) setState(() => _isLoading = false);
-  }
-}
 
   // ---------------------------------------------------------------------------
   // Dropdown menu — opens BELOW the identifier field when the chevron is tapped.
@@ -699,7 +696,8 @@ class _ContinueButton extends StatelessWidget {
             onPressed: disabled ? null : onPressed,
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF069494),
-              disabledBackgroundColor: const Color(0xFF069494).withValues(alpha: 0.5),
+              disabledBackgroundColor:
+                  const Color(0xFF069494).withValues(alpha: 0.5),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius:
@@ -722,7 +720,6 @@ class _ContinueButton extends StatelessWidget {
     );
   }
 }
-
 
 // =============================================================================
 // Sign-up row
@@ -990,12 +987,8 @@ class _ForgotPinSheet extends StatelessWidget {
                               child: ElevatedButton(
                                 onPressed: () {
                                   Navigator.pop(context);
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => const SupportScreen(),
-                                    ),
-                                  );
+                                  Navigator.pushNamed(
+                                      context, AppRoutes.support);
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: brand,
