@@ -1,3 +1,9 @@
+// lib/provider/add_money/add_money_provider.dart
+//
+// BACKWARD-COMPAT RE-EXPORT ONLY.
+// All add money state now lives in:
+//   lib/features/wallet/presentation/controllers/wallet_controllers.dart
+
 // lib/provider/add_money_provider.dart
 // FIXED: This is the canonical file for AddMoneyOptionsState.
 // provider_pack.dart now re-exports from here — no more duplicate definitions.
@@ -11,6 +17,13 @@ import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/add_money_services.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
+export 'package:kudipay/features/wallet/presentation/controllers/wallet_controllers.dart'
+    show
+        AddMoneyOptionsState,
+        AddMoneyOptionsNotifier,
+        addMoneyOptionsProvider,
+        selectedAddMoneyOptionProvider;
 
 // ── Service provider ──────────────────────────────────────────────────────────
 // FIXED: was returning MockAddMoneyService() with no token and no base URL.
@@ -138,3 +151,5 @@ final addMoneyOptionsProvider =
 
 final selectedAddMoneyOptionProvider =
     StateProvider<AddMoneyOption?>((ref) => null);
+
+

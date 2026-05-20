@@ -491,7 +491,7 @@ Widget _buildConfirmButton(BuildContext context) {
     if (state.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(state.error!.message),
+          content: Text(state.error!),
           backgroundColor: Colors.red,
         ),
       );

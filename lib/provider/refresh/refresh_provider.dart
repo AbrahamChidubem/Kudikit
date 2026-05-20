@@ -147,7 +147,7 @@ class RefreshNotifier extends StateNotifier<RefreshState> {
 
   /// Refreshes only money requests.
   Future<void> refreshRequestsOnly() async {
-    await _ref.read(requestProvider).loadRequests();
+    await _ref.read(requestProvider.notifier).loadRequests();
     state = state.copyWith(lastRefreshedAt: DateTime.now());
   }
 }

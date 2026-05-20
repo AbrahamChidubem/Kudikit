@@ -225,7 +225,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
                 top: AppLayout.scaleHeight(context, 12),
               ),
               child: Text(
-                accountDetailsState.error!.message,
+                accountDetailsState.error!,
                 style: TextStyle(
                   color: Colors.red[400],
                   fontSize: AppLayout.fontSize(context, 12),

@@ -1,51 +1,62 @@
 // lib/features/wallet/presentation/controllers/wallet_controllers.dart
 //
-// Replaces:
+// SINGLE SOURCE OF TRUTH for all Wallet + Funding state.
+//
+// Replaces (kept for backward compat as re-exports):
 //   lib/provider/wallet/wallet_provider.dart
 //   lib/provider/funding/funding_provider.dart
+//   lib/provider/add_money/add_money_provider.dart
+//
+// All state notifiers use clean-arch use cases via the wallet repository.
+// No direct DioClient or http.Client usage here.
 
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/core/errors/exceptions.dart';
 import 'package:kudipay/core/providers/core_providers.dart';
-import 'package:kudipay/features/auth/presentation/controllers/auth_controllers.dart';
+import 'package:kudipay/features/wallet/data/datasources/wallet_remote_datasources.dart';
 
 import 'package:kudipay/features/wallet/data/repositories/wallet_repository_impl.dart';
-import 'package:kudipay/features/wallet/domain/entities/wallet_entities.dart';
 import 'package:kudipay/features/wallet/domain/repositories/wallet_repository.dart';
 import 'package:kudipay/features/wallet/domain/usecases/wallet_usecases.dart';
 import 'package:kudipay/model/addmoney/addmoney.dart';
 import 'package:kudipay/model/bankmodel/bank_model.dart';
-import 'package:kudipay/services/add_money_services.dart';
-import 'package:kudipay/config/env.dart';
 
 // =============================================================================
-// DI — repository + use-case providers
+// Dependency Injection
 // =============================================================================
+
+final walletDataSourceProvider = Provider<WalletRemoteDataSource>((ref) {
+  return WalletRemoteDataSourceImpl(ref.read(dioClientProvider));
+});
 
 final walletRepositoryProvider = Provider<WalletRepository>((ref) {
-  return WalletRepositoryImpl(ref.read(dioClientProvider));
+  return WalletRepositoryImpl(ref.read(walletDataSourceProvider));
 });
 
-final getWalletUseCaseProvider =
+// Use-case providers
+final _getWalletUCProvider =
     Provider((ref) => GetWalletUseCase(ref.read(walletRepositoryProvider)));
-final getAccountDetailsUseCaseProvider = Provider(
-    (ref) => GetAccountDetailsUseCase(ref.read(walletRepositoryProvider)));
-final generateQrCodeUseCaseProvider = Provider(
-    (ref) => GenerateQrCodeUseCase(ref.read(walletRepositoryProvider)));
-
-final addMoneyServiceProvider = Provider<AddMoneyService>((ref) {
-  return AddMoneyService(
-    baseUrl: kBaseUrl,
-    authToken: ref.watch(authTokenProvider),
-  );
-});
+final _getAccountDetailsUCProvider =
+    Provider((ref) => GetAccountDetailsUseCase(ref.read(walletRepositoryProvider)));
+final _generateQrUCProvider =
+    Provider((ref) => GenerateQrCodeUseCase(ref.read(walletRepositoryProvider)));
+final _getAddMoneyOptionsUCProvider =
+    Provider((ref) => GetAddMoneyOptionsUseCase(ref.read(walletRepositoryProvider)));
+final _getBanksUCProvider =
+    Provider((ref) => GetBanksUseCase(ref.read(walletRepositoryProvider)));
+final _generateUssdUCProvider =
+    Provider((ref) => GenerateUssdCodeUseCase(ref.read(walletRepositoryProvider)));
+final _initiateCardTopUpUCProvider =
+    Provider((ref) => InitiateCardTopUpUseCase(ref.read(walletRepositoryProvider)));
+final _verifyCardTopUpOtpUCProvider =
+    Provider((ref) => VerifyCardTopUpOtpUseCase(ref.read(walletRepositoryProvider)));
 
 // =============================================================================
 // WalletState + WalletNotifier
-// Drop-in replacement for the old WalletNotifier
 // =============================================================================
 
 class WalletState {
@@ -69,6 +80,7 @@ class WalletState {
     this.error,
   });
 
+  /// Formatted balance string — e.g. "50,000.00"
   String get formattedBalance {
     final parts = balance.toStringAsFixed(2).split('.');
     final whole = parts[0];
@@ -83,6 +95,7 @@ class WalletState {
     return '${result.toString().split('').reversed.join('')}.$decimal';
   }
 
+  /// Two-letter initials from accountName.
   String get initials {
     final parts = accountName.trim().split(RegExp(r'\s+'));
     if (parts.length >= 2) {
@@ -136,8 +149,8 @@ class WalletNotifier extends StateNotifier<WalletState> {
         lastUpdated: wallet.lastUpdated,
       );
     } on KudiNetworkException {
-      state = state.copyWith(
-          isLoading: false, error: 'No internet. Pull to refresh.');
+      state =
+          state.copyWith(isLoading: false, error: 'No internet. Pull to refresh.');
     } catch (_) {
       state = state.copyWith(
           isLoading: false, error: 'Could not load wallet. Pull to refresh.');
@@ -161,8 +174,8 @@ class WalletNotifier extends StateNotifier<WalletState> {
       state =
           state.copyWith(isRefreshing: false, error: 'No internet connection.');
     } catch (_) {
-      state = state.copyWith(
-          isRefreshing: false, error: 'Refresh failed. Try again.');
+      state =
+          state.copyWith(isRefreshing: false, error: 'Refresh failed. Try again.');
     }
   }
 
@@ -181,7 +194,7 @@ class WalletNotifier extends StateNotifier<WalletState> {
 
 final walletProvider =
     StateNotifierProvider<WalletNotifier, WalletState>((ref) {
-  return WalletNotifier(ref.read(getWalletUseCaseProvider));
+  return WalletNotifier(ref.read(_getWalletUCProvider));
 });
 
 // =============================================================================
@@ -213,14 +226,15 @@ class AddMoneyOptionsState {
 }
 
 class AddMoneyOptionsNotifier extends StateNotifier<AddMoneyOptionsState> {
-  final AddMoneyService _service;
+  final GetAddMoneyOptionsUseCase _useCase;
 
-  AddMoneyOptionsNotifier(this._service) : super(const AddMoneyOptionsState());
+  AddMoneyOptionsNotifier(this._useCase)
+      : super(const AddMoneyOptionsState());
 
   Future<void> loadOptions() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final options = await _service.getAddMoneyOptions();
+      final options = await _useCase.call();
       state = AddMoneyOptionsState(options: options);
     } on SocketException {
       state = state.copyWith(
@@ -229,6 +243,9 @@ class AddMoneyOptionsNotifier extends StateNotifier<AddMoneyOptionsState> {
     } on TimeoutException {
       state = state.copyWith(
           isLoading: false, error: 'Request timed out. Please try again.');
+    } on KudiNetworkException {
+      state = state.copyWith(
+          isLoading: false, error: 'No internet connection.');
     } catch (_) {
       state = state.copyWith(
           isLoading: false, error: 'An unexpected error occurred.');
@@ -240,7 +257,7 @@ class AddMoneyOptionsNotifier extends StateNotifier<AddMoneyOptionsState> {
 
 final addMoneyOptionsProvider =
     StateNotifierProvider<AddMoneyOptionsNotifier, AddMoneyOptionsState>(
-        (ref) => AddMoneyOptionsNotifier(ref.watch(addMoneyServiceProvider)));
+        (ref) => AddMoneyOptionsNotifier(ref.read(_getAddMoneyOptionsUCProvider)));
 
 final selectedAddMoneyOptionProvider =
     StateProvider<AddMoneyOption?>((ref) => null);
@@ -274,20 +291,30 @@ class AccountDetailsState {
 }
 
 class AccountDetailsNotifier extends StateNotifier<AccountDetailsState> {
-  final AddMoneyService _service;
+  final GetAccountDetailsUseCase _useCase;
 
-  AccountDetailsNotifier(this._service) : super(const AccountDetailsState());
+  AccountDetailsNotifier(this._useCase) : super(const AccountDetailsState());
 
   Future<void> loadAccountDetails() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final details = await _service.getAccountDetails();
-      state = AccountDetailsState(accountDetails: details);
+      final details = await _useCase.call();
+      state = AccountDetailsState(
+        accountDetails: AccountDetails(
+          accountNumber: details.accountNumber,
+          accountName: details.accountName,
+          bankName: details.bankName,
+          referenceCode: details.referenceCode,
+        ),
+      );
     } on SocketException {
       state =
           state.copyWith(isLoading: false, error: 'No internet connection.');
     } on TimeoutException {
       state = state.copyWith(isLoading: false, error: 'Request timed out.');
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isLoading: false, error: 'No internet connection.');
     } catch (_) {
       state = state.copyWith(
           isLoading: false, error: 'Failed to load account details.');
@@ -298,8 +325,8 @@ class AccountDetailsNotifier extends StateNotifier<AccountDetailsState> {
 }
 
 final accountDetailsProvider =
-    StateNotifierProvider<AccountDetailsNotifier, AccountDetailsState>(
-        (ref) => AccountDetailsNotifier(ref.watch(addMoneyServiceProvider)));
+    StateNotifierProvider<AccountDetailsNotifier, AccountDetailsState>((ref) =>
+        AccountDetailsNotifier(ref.read(_getAccountDetailsUCProvider)));
 
 // =============================================================================
 // Funding — QR Code
@@ -326,20 +353,23 @@ class QrCodeState {
 }
 
 class QrCodeNotifier extends StateNotifier<QrCodeState> {
-  final AddMoneyService _service;
+  final GenerateQrCodeUseCase _useCase;
 
-  QrCodeNotifier(this._service) : super(const QrCodeState());
+  QrCodeNotifier(this._useCase) : super(const QrCodeState());
 
   Future<void> generateQrCode() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final url = await _service.generateQrCode();
+      final url = await _useCase.call();
       state = QrCodeState(qrCodeUrl: url);
     } on SocketException {
       state =
           state.copyWith(isLoading: false, error: 'No internet connection.');
     } on TimeoutException {
       state = state.copyWith(isLoading: false, error: 'Request timed out.');
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isLoading: false, error: 'No internet connection.');
     } catch (_) {
       state = state.copyWith(
           isLoading: false, error: 'Failed to generate QR code.');
@@ -350,7 +380,7 @@ class QrCodeNotifier extends StateNotifier<QrCodeState> {
 }
 
 final qrCodeProvider = StateNotifierProvider<QrCodeNotifier, QrCodeState>(
-    (ref) => QrCodeNotifier(ref.watch(addMoneyServiceProvider)));
+    (ref) => QrCodeNotifier(ref.read(_generateQrUCProvider)));
 
 // =============================================================================
 // Funding — Banks
@@ -381,22 +411,26 @@ class BanksState {
 }
 
 class BanksNotifier extends StateNotifier<BanksState> {
-  final AddMoneyService _service;
+  final GetBanksUseCase _useCase;
 
-  BanksNotifier(this._service) : super(const BanksState());
+  BanksNotifier(this._useCase) : super(const BanksState());
 
   Future<void> loadBanks() async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final banks = await _service.getBanks();
+      final banks = await _useCase.call();
       state = BanksState(banks: banks);
     } on SocketException {
       state =
           state.copyWith(isLoading: false, error: 'No internet connection.');
     } on TimeoutException {
       state = state.copyWith(isLoading: false, error: 'Request timed out.');
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isLoading: false, error: 'No internet connection.');
     } catch (_) {
-      state = state.copyWith(isLoading: false, error: 'Failed to load banks.');
+      state =
+          state.copyWith(isLoading: false, error: 'Failed to load banks.');
     }
   }
 
@@ -411,7 +445,7 @@ class BanksNotifier extends StateNotifier<BanksState> {
 }
 
 final banksProvider = StateNotifierProvider<BanksNotifier, BanksState>(
-    (ref) => BanksNotifier(ref.watch(addMoneyServiceProvider)));
+    (ref) => BanksNotifier(ref.read(_getBanksUCProvider)));
 
 final selectedBankProvider = StateProvider<Bank?>((ref) => null);
 final bankSearchQueryProvider = StateProvider<String>((ref) => '');
@@ -441,9 +475,9 @@ class UssdTransferState {
 }
 
 class UssdTransferNotifier extends StateNotifier<UssdTransferState> {
-  final AddMoneyService _service;
+  final GenerateUssdCodeUseCase _useCase;
 
-  UssdTransferNotifier(this._service) : super(const UssdTransferState());
+  UssdTransferNotifier(this._useCase) : super(const UssdTransferState());
 
   Future<void> generateUssdCode({
     required String bankCode,
@@ -451,14 +485,16 @@ class UssdTransferNotifier extends StateNotifier<UssdTransferState> {
   }) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final data =
-          await _service.generateUssdCode(bankCode: bankCode, amount: amount);
+      final data = await _useCase.call(bankCode: bankCode, amount: amount);
       state = UssdTransferState(data: data);
     } on SocketException {
       state =
           state.copyWith(isLoading: false, error: 'No internet connection.');
     } on TimeoutException {
       state = state.copyWith(isLoading: false, error: 'Request timed out.');
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isLoading: false, error: 'No internet connection.');
     } catch (_) {
       state = state.copyWith(
           isLoading: false, error: 'Failed to generate USSD code.');
@@ -471,7 +507,7 @@ class UssdTransferNotifier extends StateNotifier<UssdTransferState> {
 
 final ussdTransferProvider =
     StateNotifierProvider<UssdTransferNotifier, UssdTransferState>(
-        (ref) => UssdTransferNotifier(ref.watch(addMoneyServiceProvider)));
+        (ref) => UssdTransferNotifier(ref.read(_generateUssdUCProvider)));
 
 // =============================================================================
 // Funding — Card Top-Up
@@ -512,14 +548,16 @@ class CardTopUpState {
 }
 
 class CardTopUpNotifier extends StateNotifier<CardTopUpState> {
-  final AddMoneyService _service;
+  final InitiateCardTopUpUseCase _initiateUC;
+  final VerifyCardTopUpOtpUseCase _verifyUC;
 
-  CardTopUpNotifier(this._service) : super(const CardTopUpState());
+  CardTopUpNotifier(this._initiateUC, this._verifyUC)
+      : super(const CardTopUpState());
 
   Future<void> initiateTopUp(CardTopUpRequest request) async {
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final response = await _service.initiateCardTopUpWithDetails(request);
+      final response = await _initiateUC.call(request);
       state = CardTopUpState(
         response: response,
         currentStep: response.requiresOtp
@@ -531,6 +569,9 @@ class CardTopUpNotifier extends StateNotifier<CardTopUpState> {
           state.copyWith(isLoading: false, error: 'No internet connection.');
     } on TimeoutException {
       state = state.copyWith(isLoading: false, error: 'Request timed out.');
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isLoading: false, error: 'No internet connection.');
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
     }
@@ -540,7 +581,7 @@ class CardTopUpNotifier extends StateNotifier<CardTopUpState> {
     if (state.response?.otpReference == null) return;
     state = state.copyWith(isLoading: true, clearError: true);
     try {
-      final receipt = await _service.verifyCardTopUpOtp(
+      final receipt = await _verifyUC.call(
         otpReference: state.response!.otpReference!,
         otp: otp,
       );
@@ -554,6 +595,9 @@ class CardTopUpNotifier extends StateNotifier<CardTopUpState> {
           state.copyWith(isLoading: false, error: 'No internet connection.');
     } on TimeoutException {
       state = state.copyWith(isLoading: false, error: 'Request timed out.');
+    } on KudiNetworkException {
+      state =
+          state.copyWith(isLoading: false, error: 'No internet connection.');
     } catch (_) {
       state = state.copyWith(
           isLoading: false, error: 'Invalid OTP. Please try again.');
@@ -565,8 +609,11 @@ class CardTopUpNotifier extends StateNotifier<CardTopUpState> {
 }
 
 final cardTopUpProvider =
-    StateNotifierProvider<CardTopUpNotifier, CardTopUpState>(
-        (ref) => CardTopUpNotifier(ref.watch(addMoneyServiceProvider)));
+    StateNotifierProvider<CardTopUpNotifier, CardTopUpState>((ref) =>
+        CardTopUpNotifier(
+          ref.read(_initiateCardTopUpUCProvider),
+          ref.read(_verifyCardTopUpOtpUCProvider),
+        ));
 
 // =============================================================================
 // Misc

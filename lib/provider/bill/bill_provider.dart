@@ -2,12 +2,15 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/features/auth/presentation/controllers/auth_controllers.dart';
 
 import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/provider/auth/auth_provider.dart';
 import 'package:kudipay/services/bill_service.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
+
+export 'package:kudipay/features/bills/presentation/controllers/bills_controllers.dart';
 // ============================================================================
 // Service Provider
 // ============================================================================

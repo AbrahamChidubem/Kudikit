@@ -75,7 +75,7 @@ class _BankUssdScreenState extends ConsumerState<BankUssdScreen> {
     if (state.error != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(state.error!.message),
+          content: Text(state.error!),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           margin: EdgeInsets.only(

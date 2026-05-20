@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kudipay/core/theme/app_theme.dart';
 import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/features/transfer/domain/entities/transfer_entities.dart';
+import 'package:kudipay/features/transfer/presentation/controllers/transfer_controller.dart';
 import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
 import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
 import 'package:kudipay/provider/bill/bill_provider.dart';

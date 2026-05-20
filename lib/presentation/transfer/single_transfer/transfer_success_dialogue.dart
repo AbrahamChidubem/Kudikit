@@ -1,7 +1,8 @@
 ﻿import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:kudipay/core/utils/responsive.dart';
 import 'package:intl/intl.dart';
+import 'package:kudipay/core/utils/responsive.dart';
+import 'package:kudipay/features/transfer/presentation/controllers/transfer_controller.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transaction_detail.dart';
 import 'package:kudipay/provider/P2P_transfer/P2P_transfer_provider.dart';
 
