@@ -65,9 +65,13 @@ class _DataPhoneScreenState extends ConsumerState<DataPhoneScreen>
 
     _phoneController.text = selected.displayNumber;
 
-    ref
-        .read(dataProvider.notifier)
-        .setPhoneNumberWithNetwork(selected.normalizedNumber, selected.network);
+    final network = selected.network;
+    if (network != null) {
+      ref.read(dataProvider.notifier).setPhoneNumberWithNetwork(
+            selected.normalizedNumber, network);
+    } else {
+      ref.read(dataProvider.notifier).setPhoneNumber(selected.normalizedNumber);
+    }
   }
 
   void _buyForSelf() {

@@ -246,6 +246,11 @@ class P2PTransferNotifier extends StateNotifier<P2PTransferState> {
 
   void clearError() => state = state.copyWith(clearError: true);
 
+  /// Persists the current recipient as a favourite when backend support exists.
+  void addFavourite() {
+    // No-op until favourites API is wired; UI checkbox is preserved.
+  }
+
   void reset() {
     state = const P2PTransferState();
     _loadRecentContacts();

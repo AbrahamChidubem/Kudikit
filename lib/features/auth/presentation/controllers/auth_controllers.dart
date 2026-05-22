@@ -12,7 +12,6 @@ import 'package:kudipay/features/auth/data/repositories/auth_repository_impl.dar
 import 'package:kudipay/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:kudipay/model/user/user.dart';
 import 'package:kudipay/model/user/user_model_extension.dart';
-import 'package:kudipay/services/auth_services.dart';
 import '../../domain/auth_state.dart';
 import '../../domain/entities/user_entities.dart';
 

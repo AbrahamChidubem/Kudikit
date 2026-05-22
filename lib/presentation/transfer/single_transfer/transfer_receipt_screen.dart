@@ -7,7 +7,6 @@ import 'package:kudipay/features/transfer/domain/entities/transfer_entities.dart
 import 'package:kudipay/features/transfer/presentation/controllers/transfer_controller.dart';
 import 'package:kudipay/formatting/widget/contact_picker_bottom_sheet.dart';
 import 'package:kudipay/presentation/qrcode/qr_code_screen.dart';
-import 'package:kudipay/provider/bill/bill_provider.dart';
 import 'package:kudipay/provider/provider.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/transfer_amount_screen.dart';
 import 'package:kudipay/presentation/transfer/single_transfer/bank_selection_bottom_sheet.dart';
@@ -64,8 +63,8 @@ class _TransferRecipientScreenState
     _phoneController.text = selected.displayNumber;
 
     ref
-        .read(dataProvider.notifier)
-        .setPhoneNumberWithNetwork(selected.normalizedNumber, selected.network);
+        .read(p2pTransferProvider.notifier)
+        .validateAccount(selected.normalizedNumber);
   }
 
   @override

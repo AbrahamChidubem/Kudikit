@@ -424,7 +424,7 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
 
   // ── Error View ────────────────────────────────────────────────────────────
 
-  Widget _buildErrorView(BuildContext context, AddMoneyError error) {
+  Widget _buildErrorView(BuildContext context, String message) {
     return Center(
       child: Padding(
         padding: AppLayout.pagePadding(context),
@@ -442,14 +442,14 @@ class _AddMoneyScreenState extends ConsumerState<AddMoneyScreen> {
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Text(
-              error.message,
+              message,
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 16),
                 color: Colors.grey[700],
               ),
               textAlign: TextAlign.center,
             ),
-            if (error.isRetryable) ...[
+            ...[
               SizedBox(height: AppLayout.scaleHeight(context, 24)),
               ElevatedButton.icon(
                 onPressed: () {

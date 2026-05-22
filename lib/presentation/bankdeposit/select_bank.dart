@@ -290,27 +290,13 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
     return logos[logo.toLowerCase()];
   }
 
-  Widget _buildErrorView(BuildContext context, AddMoneyError error) {
-    // Pick icon and title based on the classified error type
-    final IconData icon;
-    final String title;
-    switch (error.type) {
-      case AddMoneyErrorType.network:
-        icon = Icons.wifi_off_rounded;
-        title = 'No internet connection';
-        break;
-      case AddMoneyErrorType.timeout:
-        icon = Icons.timer_off_rounded;
-        title = 'Request timed out';
-        break;
-      case AddMoneyErrorType.authentication:
-        icon = Icons.lock_outline_rounded;
-        title = 'Session expired';
-        break;
-      default:
-        icon = Icons.cloud_off_rounded;
-        title = 'Unable to load banks';
-    }
+  Widget _buildErrorView(BuildContext context, String message) {
+    final lower = message.toLowerCase();
+    final IconData icon = lower.contains('internet') || lower.contains('network')
+        ? Icons.wifi_off_rounded
+        : lower.contains('timed out') || lower.contains('timeout')
+            ? Icons.timer_off_rounded
+            : Icons.cloud_off_rounded;
 
     return Center(
       child: Padding(
@@ -325,49 +311,37 @@ class _SelectBankScreenState extends ConsumerState<SelectBankScreen> {
             ),
             SizedBox(height: AppLayout.scaleHeight(context, 16)),
             Text(
-              title,
-              style: TextStyle(
-                fontSize: AppLayout.fontSize(context, 16),
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[700],
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppLayout.scaleHeight(context, 8)),
-            Text(
-              error.message,
+              message,
               style: TextStyle(
                 fontSize: AppLayout.fontSize(context, 14),
-                color: Colors.grey[500],
+                color: Colors.grey[600],
                 height: 1.5,
               ),
               textAlign: TextAlign.center,
             ),
-            if (error.isRetryable) ...[
-              SizedBox(height: AppLayout.scaleHeight(context, 24)),
-              ElevatedButton.icon(
-                onPressed: () {
-                  ref.read(banksProvider.notifier).loadBanks();
-                },
-                icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
-                label: const Text(
-                  'Try Again',
-                  style: TextStyle(color: Colors.white),
+            SizedBox(height: AppLayout.scaleHeight(context, 24)),
+            ElevatedButton.icon(
+              onPressed: () {
+                ref.read(banksProvider.notifier).loadBanks();
+              },
+              icon: const Icon(Icons.refresh, color: Colors.white, size: 18),
+              label: const Text(
+                'Try Again',
+                style: TextStyle(color: Colors.white),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF069494),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(
+                      AppLayout.scaleWidth(context, 32)),
                 ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF069494),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(
-                        AppLayout.scaleWidth(context, 32)),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.scaleWidth(context, 32),
-                    vertical: AppLayout.scaleHeight(context, 12),
-                  ),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.scaleWidth(context, 32),
+                  vertical: AppLayout.scaleHeight(context, 12),
                 ),
               ),
-            ],
+            ),
           ],
         ),
       ),

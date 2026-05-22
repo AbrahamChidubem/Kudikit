@@ -215,17 +215,18 @@ class DioClient {
       case DioExceptionType.badResponse:
         final code = e.response?.statusCode;
         final body = e.response?.data;
-        final msg = (body is Map ? body['message'] ?? body['error'] : null) ??
+        final msg = (body is Map ? body['message'] ?? body['error'] : null)
+                ?.toString() ??
             'An unexpected error occurred.';
 
         if (code == 401 || code == 403) {
-          final msgStr = msg?.toString() ?? 'An unexpected error occurred.';
+          return KudiUnauthorizedException(msg);
         }
         if (code != null && code >= 500) {
           return KudiServerException(
               'Server error. Please try again later.', code);
         }
-        final msgStr = msg?.toString() ?? 'An unexpected error occurred.';
+        return KudiApiException(msg, code);
 
       case DioExceptionType.cancel:
         return const KudiApiException('Request was cancelled.');

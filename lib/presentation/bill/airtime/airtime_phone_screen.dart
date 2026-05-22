@@ -74,8 +74,13 @@ class _AirtimePhoneScreenState extends ConsumerState<AirtimePhoneScreen>
 
     // Tell the provider about the raw normalized number (0XXXXXXXXXX)
     // Network is already detected — we pass it directly to skip re-detection
-    ref.read(airtimeProvider.notifier)
-        .setPhoneNumberWithNetwork(selected.normalizedNumber, selected.network);
+    final network = selected.network;
+    if (network != null) {
+      ref.read(airtimeProvider.notifier).setPhoneNumberWithNetwork(
+            selected.normalizedNumber, network);
+    } else {
+      ref.read(airtimeProvider.notifier).setPhoneNumber(selected.normalizedNumber);
+    }
   }
 
   void _buyForSelf() {
