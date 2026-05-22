@@ -6,6 +6,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:kudipay/config/dio_client.dart';
+import 'package:kudipay/features/auth/data/auth_services.dart';
 
 import 'package:kudipay/features/auth/domain/entities/user_entities.dart';
 import 'package:kudipay/features/auth/domain/repositories/auth_repositories.dart';
@@ -14,7 +15,7 @@ import 'package:kudipay/model/user/user_model_extension.dart';
  // ADD
 
 
-import 'package:kudipay/services/auth_services.dart';
+
 import 'package:kudipay/services/storage_services.dart';
 
 class AuthRepositoryImpl implements AuthRepository {

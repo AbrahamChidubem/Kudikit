@@ -1,8 +1,20 @@
 // lib/features/bills/domain/usecases/bills_usecases.dart
+//
+// FIX SUMMARY:
+//   🟠 #3 — GetDataPlansUseCase and DetectNetworkUseCase now use String
+//           instead of NetworkProvider, matching the updated BillsRepository
+//           interface. No model-layer types in the domain layer.
+//
+//   🟡 #5 — GetBeneficiariesUseCase now returns List<BillsBeneficiaryEntity>.
+//
+//   🔴 #2 — ValidateIucUseCase, PayCableTvUseCase, ValidateMeterUseCase, and
+//           PayElectricityUseCase are REMOVED. The corresponding repository
+//           methods have been removed from the interface because CableTvNotifier
+//           and ElectricityNotifier own those flows directly. Re-add when/if
+//           those features are migrated through the repository.
 
 import 'package:kudipay/features/bills/domain/entities/bill_entities.dart';
-import 'package:kudipay/features/bills/domain/repositories/bills_repository.dart';
-import 'package:kudipay/model/bill/bill_model.dart';
+import 'package:kudipay/features/bills/domain/usecases/repositories/bills_repository.dart';
 
 class BuyAirtimeUseCase {
   final BillsRepository _repository;
@@ -14,7 +26,9 @@ class BuyAirtimeUseCase {
 class GetDataPlansUseCase {
   final BillsRepository _repository;
   const GetDataPlansUseCase(this._repository);
-  Future<List<DataPlanEntity>> call(NetworkProvider network) =>
+
+  /// [network] is the network name string (e.g. "mtn").
+  Future<List<DataPlanEntity>> call(String network) =>
       _repository.getDataPlans(network);
 }
 
@@ -25,78 +39,17 @@ class BuyDataUseCase {
       _repository.buyData(request);
 }
 
-class ValidateIucUseCase {
-  final BillsRepository _repository;
-  const ValidateIucUseCase(this._repository);
-  Future<CableTvAccountEntity> call({
-    required String iucNumber,
-    required String providerName,
-  }) =>
-      _repository.validateIuc(iucNumber: iucNumber, providerName: providerName);
-}
-
-class PayCableTvUseCase {
-  final BillsRepository _repository;
-  const PayCableTvUseCase(this._repository);
-  Future<BillPaymentResultEntity> call({
-    required String iucNumber,
-    required String providerName,
-    required String planId,
-    required double amount,
-    required bool autoRenew,
-    required String pin,
-  }) =>
-      _repository.payCableTv(
-        iucNumber: iucNumber,
-        providerName: providerName,
-        planId: planId,
-        amount: amount,
-        autoRenew: autoRenew,
-        pin: pin,
-      );
-}
-
-class ValidateMeterUseCase {
-  final BillsRepository _repository;
-  const ValidateMeterUseCase(this._repository);
-  Future<MeterAccountEntity> call({
-    required String meterNumber,
-    required String providerCode,
-    required String meterType,
-  }) =>
-      _repository.validateMeter(
-        meterNumber: meterNumber,
-        providerCode: providerCode,
-        meterType: meterType,
-      );
-}
-
-class PayElectricityUseCase {
-  final BillsRepository _repository;
-  const PayElectricityUseCase(this._repository);
-  Future<BillPaymentResultEntity> call({
-    required String meterNumber,
-    required double amount,
-    required String providerCode,
-    required String pin,
-  }) =>
-      _repository.payElectricity(
-        meterNumber: meterNumber,
-        amount: amount,
-        providerCode: providerCode,
-        pin: pin,
-      );
-}
-
 class GetBeneficiariesUseCase {
   final BillsRepository _repository;
   const GetBeneficiariesUseCase(this._repository);
-  Future<List<BillsBeneficiary>> call() => _repository.getBeneficiaries();
+  Future<List<BillsBeneficiaryEntity>> call() =>
+      _repository.getBeneficiaries();
 }
 
 class DetectNetworkUseCase {
   final BillsRepository _repository;
   const DetectNetworkUseCase(this._repository);
-  NetworkProvider? call(String phoneNumber) =>
-      _repository.detectNetwork(phoneNumber);
+
+  /// Returns the detected network name string (e.g. "mtn"), or null.
+  String? call(String phoneNumber) => _repository.detectNetwork(phoneNumber);
 }

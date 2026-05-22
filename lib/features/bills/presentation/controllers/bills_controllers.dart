@@ -9,27 +9,33 @@
 // The cable TV and electricity notifiers call DioClient directly and are
 // kept as-is — they are already clean and well-structured. Their providers
 // are simply re-exported here so everything lives in one place.
+//
+// FIX SUMMARY:
+//   🟠 #4 — billsServiceProvider now injects DioClient (not the old
+//           BillsService(baseUrl, authToken) pattern). DioClient owns token
+//           management via _AuthInterceptor, so the token is always fresh.
+//
+//   🟠 #3 — detectedNetworkProvider now exposes String? instead of
+//           NetworkProvider? to match the updated repository interface.
+//
+//   🟡 #5 — BeneficiariesNotifier and beneficiariesState updated to use
+//           BillsBeneficiaryEntity instead of the model-layer BillsBeneficiary.
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/core/providers/core_providers.dart';
-import 'package:kudipay/features/auth/presentation/controllers/auth_controllers.dart';
 import 'package:kudipay/features/bills/data/repositories/bills_repositories_impl.dart';
-
-import 'package:kudipay/features/bills/domain/repositories/bills_repository.dart';
+import 'package:kudipay/features/bills/domain/entities/bill_entities.dart';
+import 'package:kudipay/features/bills/domain/usecases/repositories/bills_repository.dart';
 import 'package:kudipay/features/bills/domain/usecases/bills_usecases.dart';
-import 'package:kudipay/model/bill/bill_model.dart';
 import 'package:kudipay/services/bill_service.dart';
-import 'package:kudipay/config/env.dart';
 
 // Re-export cable TV and electricity providers unchanged
 export 'package:kudipay/provider/cable_tv/cable_tv_provider.dart';
 export 'package:kudipay/provider/electricity/electricity_provider.dart';
 
-// =============================================================================
-// Airtime — migrated to use BuyAirtimeUseCase
-// =============================================================================
-
+// Re-export airtime/data notifiers from bill_provider
 export 'package:kudipay/provider/bill/bill_provider.dart'
     show
         AirtimeStep,
@@ -42,12 +48,14 @@ export 'package:kudipay/provider/bill/bill_provider.dart'
         dataProvider;
 
 // =============================================================================
-// DI
+// DI — FIX #4: BillsService now receives DioClient, not raw auth token
 // =============================================================================
 
 final billsServiceProvider = Provider<BillsService>((ref) {
-  final token = ref.watch(authTokenProvider);
-  return BillsService(baseUrl: kBaseUrl, authToken: token);
+  // FIX #4: Use DioClient so token is read lazily per-request via
+  // _AuthInterceptor — stale token issue is eliminated.
+  final dioClient = ref.watch(dioClientProvider);
+  return BillsService(dioClient);
 });
 
 final billsRepositoryProvider = Provider<BillsRepository>((ref) {
@@ -66,11 +74,11 @@ final detectNetworkUseCaseProvider = Provider((ref) =>
     DetectNetworkUseCase(ref.read(billsRepositoryProvider)));
 
 // =============================================================================
-// Beneficiaries — unchanged, just wired via use-case
+// Beneficiaries — FIX #5: uses BillsBeneficiaryEntity
 // =============================================================================
 
 class BeneficiariesState {
-  final List<BillsBeneficiary> beneficiaries;
+  final List<BillsBeneficiaryEntity> beneficiaries;
   final bool isLoading;
   final String? error;
 
@@ -81,7 +89,7 @@ class BeneficiariesState {
   });
 
   BeneficiariesState copyWith({
-    List<BillsBeneficiary>? beneficiaries,
+    List<BillsBeneficiaryEntity>? beneficiaries,
     bool? isLoading,
     String? error,
     bool clearError = false,
@@ -111,7 +119,7 @@ class BeneficiariesNotifier extends StateNotifier<BeneficiariesState> {
     }
   }
 
-  void addBeneficiary(BillsBeneficiary b) =>
+  void addBeneficiary(BillsBeneficiaryEntity b) =>
       state = state.copyWith(
           beneficiaries: [b, ...state.beneficiaries]);
 }
@@ -122,11 +130,11 @@ final beneficiariesProvider =
 });
 
 // =============================================================================
-// Network detection helper
+// Network detection helper — FIX #3: returns String? not NetworkProvider?
 // =============================================================================
 
+/// Returns the detected network name string (e.g. "mtn"), or null.
 final detectedNetworkProvider =
-    Provider.family<NetworkProvider?, String>((ref, phoneNumber) {
+    Provider.family<String?, String>((ref, phoneNumber) {
   return ref.read(detectNetworkUseCaseProvider).call(phoneNumber);
 });
-

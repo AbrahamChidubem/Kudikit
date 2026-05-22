@@ -31,12 +31,11 @@ import 'package:kudipay/core/errors/exceptions.dart';
 import 'package:kudipay/services/connectivity_service.dart';
 import 'package:kudipay/services/storage_services.dart';
 
+// Re-export kBaseUrl so callers that imported it from here still work.
+export 'package:kudipay/config/env.dart' show kBaseUrl;
 // Re-export the canonical exceptions so existing `import dio_client.dart`
 // call-sites continue to compile without adding a second import.
 export 'package:kudipay/core/errors/exceptions.dart';
-
-// Re-export kBaseUrl so callers that imported it from here still work.
-export 'package:kudipay/config/env.dart' show kBaseUrl;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Auth Interceptor — injects Bearer token on every request
@@ -220,13 +219,13 @@ class DioClient {
             'An unexpected error occurred.';
 
         if (code == 401 || code == 403) {
-          return KudiUnauthorizedException(msg as String);
+          final msgStr = msg?.toString() ?? 'An unexpected error occurred.';
         }
         if (code != null && code >= 500) {
           return KudiServerException(
               'Server error. Please try again later.', code);
         }
-        return KudiApiException(msg as String, code);
+        final msgStr = msg?.toString() ?? 'An unexpected error occurred.';
 
       case DioExceptionType.cancel:
         return const KudiApiException('Request was cancelled.');

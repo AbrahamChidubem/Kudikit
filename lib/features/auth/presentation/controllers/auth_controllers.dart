@@ -4,14 +4,16 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:kudipay/core/providers/core_providers.dart';
+import 'package:kudipay/features/auth/data/auth_services.dart';
 import 'package:kudipay/features/auth/domain/repositories/auth_repositories.dart';
-import 'package:kudipay/features/auth/presentation/controllers/auth_controllers.dart';
+
 import 'package:kudipay/model/user/user_model.dart';
 import 'package:kudipay/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:kudipay/features/auth/domain/usecases/auth_usecases.dart';
 import 'package:kudipay/model/user/user.dart';
 import 'package:kudipay/model/user/user_model_extension.dart';
 import 'package:kudipay/services/auth_services.dart';
+import '../../domain/auth_state.dart';
 import '../../domain/entities/user_entities.dart';
 
 export 'package:kudipay/model/auth/auth_state.dart';
