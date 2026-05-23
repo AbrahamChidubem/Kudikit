@@ -1,10 +1,9 @@
+import 'package:flutter_riverpod/legacy.dart'; // keep existing
 import 'package:kudipay/config/dio_client.dart';
 import 'package:kudipay/core/constant/id_type.dart';
 import 'package:kudipay/core/providers/core_providers.dart'; // ← use this
 import 'package:kudipay/model/IDdocument/id_verification_state.dart';
 import 'package:kudipay/presentation/Identity/verification_status.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // ADD this
-import 'package:flutter_riverpod/legacy.dart'; // keep existing
 // Remove the dio_provider.dart import entirely
 
 final idVerificationProvider =
